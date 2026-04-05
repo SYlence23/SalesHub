@@ -1,0 +1,75 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\Programing L\\\u0422\u0406\\Project\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\Project.csproj|d:\\programing l\\\u0442\u0456\\project\\project\\models\\discount.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\Project.csproj|solutionrelative:project\\models\\discount.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\Project.csproj|d:\\programing l\\\u0442\u0456\\project\\project\\controllers\\discountscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\Project.csproj|solutionrelative:project\\controllers\\discountscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\Project.csproj|d:\\programing l\\\u0442\u0456\\project\\project\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\Project.csproj|solutionrelative:project\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Discount.cs",
+              "DocumentMoniker": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\Models\\Discount.cs",
+              "RelativeDocumentMoniker": "Project\\Models\\Discount.cs",
+              "ToolTip": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\Models\\Discount.cs",
+              "RelativeToolTip": "Project\\Models\\Discount.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAZAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-05T13:16:37.766Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "DiscountsController.cs",
+              "DocumentMoniker": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\Controllers\\DiscountsController.cs",
+              "RelativeDocumentMoniker": "Project\\Controllers\\DiscountsController.cs",
+              "ToolTip": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\Controllers\\DiscountsController.cs",
+              "RelativeToolTip": "Project\\Controllers\\DiscountsController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-05T13:13:25.134Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\Program.cs",
+              "RelativeDocumentMoniker": "Project\\Program.cs",
+              "ToolTip": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\Program.cs",
+              "RelativeToolTip": "Project\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-05T13:11:12.328Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
