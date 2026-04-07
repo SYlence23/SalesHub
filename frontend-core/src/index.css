@@ -64,7 +64,7 @@
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center px-5 py-2.5 rounded-2xl font-medium text-white bg-primary-500 hover:bg-primary-600 transition-all shadow-md hover:shadow-lg active:scale-95 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-950;
+    @apply inline-flex items-center justify-center px-5 py-2.5 rounded-xl font-medium text-white bg-primary-500 hover:bg-primary-600 transition-all shadow-md hover:shadow-lg active:scale-95 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-950;
   }
 
   .btn-secondary {
@@ -80,5 +80,9 @@
 
   .animated-gradient:hover {
     background-position: right center;
+  }
+
+  .nav-button {
+    @apply px-3 py-1 rounded-xl text-zinc-600 hover:text-primary-500 hover:bg-primary-500/10 dark:text-zinc-300 dark:hover:text-primary-400 dark:hover:bg-primary-400/20 font-medium transition-all duration-500
   }
 }

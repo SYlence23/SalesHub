@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Tag, MapPin, User } from 'lucide-react';
+import { Tag, User } from 'lucide-react';
 
 export default function Navbar() {
     return (
@@ -14,31 +14,39 @@ export default function Navbar() {
                                 <Tag className="w-6 h-6" />
                             </div>
                             <span className="font-bold text-3xl tracking-tight animated-gradient">
-                                Sales <span className="text-black dark:text-gray-200">Hub</span>
+                                Sales <span className="text-zinc-800 dark:text-zinc-300">Hub</span>
                             </span>
                         </Link>
                     </div>
 
-                    <nav className="flex items-center ">
-                        {/* Center Navigation - Desktop */}
-                        <div className="hidden md:flex items-center gap-8">
-                            <Link to="/offers" className="text-zinc-600 hover:text-primary-500 dark:text-zinc-300 dark:hover:text-primary-400 font-medium transition-colors">
-                                Offers
-                            </Link>
-                            <div className="flex items-center text-zinc-600 hover:text-primary-500 dark:text-zinc-300 dark:hover:text-primary-400 font-medium transition-colors cursor-pointer">
-                                <MapPin className="w-4 h-4 mr-1" />
-                                <span>Cities</span>
+                    <div className="flex items-center gap-6">
+                        <nav className="flex items-center">
+                            {/* Center Navigation - Desktop */}
+                            <div className="hidden md:flex items-center gap-8">
+                                <Link to="/" className="nav-button">
+                                    Home
+                                </Link>
+                                <Link to="/offers" className="nav-button">
+                                    Offers
+                                </Link>
+                                <Link to="/map" className="nav-button">
+                                    Map
+                                </Link>
                             </div>
-                        </div>
-                    </nav>
+                        </nav>
 
-                    {/* Right actions */}
-                    <div className="flex  items-center space-x-4">
-                        <button className="hidden sm:flex btn-primary">
-                            <User className="w-4 h-4 mr-2" />
-                            Sign In
-                        </button>
+                        <span className="text-zinc-600 dark:text-zinc-300 text-2xl select-none">|</span>
+
+                        {/* Right actions */}
+                        <div className="flex  items-center space-x-4">
+                            <button className="hidden sm:flex btn-primary">
+                                <User className="w-4 h-4 mr-2" />
+                                Sign In
+                            </button>
+                        </div>
                     </div>
+
+
                 </div>
 
             </div>
