@@ -13,8 +13,8 @@ export default function Navbar() {
                             <div className="bg-primary-500 text-white p-2 rounded-xl group-hover:bg-primary-600 transition-colors shadow-md">
                                 <Tag className="w-6 h-6" />
                             </div>
-                            <span className="font-bold text-2xl tracking-tight text-zinc-900 dark:text-white">
-                                Sales<span className="text-primary-500">Hub</span>
+                            <span className="font-bold text-3xl tracking-tight bg-gradient-to-l from-primary-600 to-primary-500 bg-clip-text text-transparent dark:bg-gradient-to-r dark:from-primary-500 dark:to-primary-300 dark:bg-clip-text dark:text-transparent"> {/*Need to implement logo for dark mode*/}
+                                Sales Hub {/*Removed span tag here*/}
                             </span>
                         </Link>
                     </div>
