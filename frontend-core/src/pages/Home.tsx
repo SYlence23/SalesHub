@@ -6,7 +6,7 @@ export default function Home() {
           Find the Best <span className="text-primary-500">Discounts</span> in Your City
         </h1>
         <p className="text-xl text-zinc-600 dark:text-zinc-400 mb-10 max-w-2xl mx-auto">
-          SalesHub brings you the most exclusive offers and premium deals right to your fingertips. 
+          SalesHub brings you the most exclusive offers and premium deals right to your fingertips.
         </p>
         <div className="flex justify-center gap-4">
           <button className="btn-primary px-8 py-4 text-lg">
@@ -17,7 +17,7 @@ export default function Home() {
           </button>
         </div>
       </div>
-      
+
       {/* Feature Section Placeholder */}
       <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8">
         {[1, 2, 3].map((i) => (
