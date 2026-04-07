@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Tag, User } from 'lucide-react';
+import { User } from 'lucide-react';
 
 export default function Navbar() {
     return (
