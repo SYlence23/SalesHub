@@ -1,1 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
+
+@theme {
+  /* Using Outfit as the base font to give a premium, modern feel */
+  --font-sans: 'Outfit', 'Inter', system-ui, sans-serif;
+
+  /* Primary Brand Colors (Orange) for discount associations */
+  --color-primary-50: #fff7ed;
+  --color-primary-100: #ffedd5;
+  --color-primary-200: #fed7aa;
+  --color-primary-300: #fdba74;
+  --color-primary-400: #fb923c;
+  --color-primary-500: #f97316;
+  --color-primary-600: #ea580c;
+  --color-primary-700: #c2410c;
+  --color-primary-800: #9a3412;
+  --color-primary-900: #7c2d12;
+  --color-primary-950: #431407;
+
+  /* Dynamic shadow tokens for premium UI */
+  --shadow-glass: 0 4px 30px rgba(0, 0, 0, 0.1);
+  --shadow-glass-dark: 0 4px 30px rgba(0, 0, 0, 0.4);
+}
+
+@layer base {
+  body {
+    /* Smooth transitions and basic typography */
+    @apply bg-zinc-50 text-zinc-900 antialiased font-sans transition-colors duration-300;
+  }
+
+  /* Dark mode global overrides */
+  @media (prefers-color-scheme: dark) {
+    body {
+      @apply bg-zinc-950 text-zinc-100;
+    }
+  }
+
+  /* Custom scrollbar for premium touch */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-zinc-300 rounded-full dark:bg-zinc-700;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-zinc-400 dark:bg-zinc-600;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 dark:bg-zinc-900/60 dark:border-white/10;
+  }
+
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 dark:bg-zinc-900/60 dark:border-white/10 rounded-2xl shadow-[var(--shadow-glass)] dark:shadow-[var(--shadow-glass-dark)];
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-5 py-2.5 rounded-full font-medium text-white bg-primary-500 hover:bg-primary-600 transition-all shadow-md hover:shadow-lg active:scale-95 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-950;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-5 py-2.5 rounded-full font-medium text-zinc-700 bg-zinc-100 hover:bg-zinc-200 transition-all dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 active:scale-95 focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-950;
+  }
+}
