@@ -70,7 +70,7 @@
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center px-5 py-2.5 rounded-full font-medium text-zinc-700 bg-zinc-200 hover:bg-zinc-300 transition-all dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 active:scale-95 border-2 border-zinc-500;
+    @apply inline-flex items-center justify-center px-5 py-2.5 rounded-full font-medium text-zinc-700 bg-white hover:bg-zinc-300 transition-all dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 active:scale-95 border-2 border-zinc-500;
   }
 
   .nav-button {
