@@ -18,6 +18,8 @@
   --color-primary-900: #7c2d12;
   --color-primary-950: #431407;
 
+  --color-navbar-light: #e9eef6;
+
   /* Dynamic shadow tokens for premium UI */
   --shadow-glass: 0 4px 30px rgba(0, 0, 0, 0.1);
   --shadow-glass-dark: 0 4px 30px rgba(0, 0, 0, 0.4);
@@ -56,7 +58,7 @@
 
 @layer components {
   .glass {
-    @apply bg-zinc-100/70 backdrop-blur-md border border-zinc-100 shadow-lg dark:bg-zinc-900/60 dark:border-white/10;
+    @apply bg-navbar-light/70 backdrop-blur-md border border-zinc-100 shadow-lg dark:bg-zinc-900/60 dark:border-white/10;
   }
 
   .glass-card {

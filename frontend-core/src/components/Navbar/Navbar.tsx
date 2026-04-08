@@ -41,7 +41,7 @@ export default function Navbar() {
                             <div className="hidden md:flex items-center gap-4">
                                 {navLinks.map((link) => {
                                     return (
-                                        <Link to={link.path} className="nav-button">
+                                        <Link key={link.name} to={link.path} className="nav-button">
                                             {link.name}
                                         </Link>
                                     );
