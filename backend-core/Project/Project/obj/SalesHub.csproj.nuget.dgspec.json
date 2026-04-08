@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Programing L\\ТІ\\Project\\Project\\SalesHub.csproj": {}
+    "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\SalesHub.csproj": {}
   },
   "projects": {
-    "D:\\Programing L\\ТІ\\Project\\Project\\SalesHub.csproj": {
+    "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\SalesHub.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Programing L\\ТІ\\Project\\Project\\SalesHub.csproj",
+        "projectUniqueName": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\SalesHub.csproj",
         "projectName": "SalesHub",
-        "projectPath": "D:\\Programing L\\ТІ\\Project\\Project\\SalesHub.csproj",
+        "projectPath": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\SalesHub.csproj",
         "packagesPath": "C:\\Users\\ANASTASIYA\\.nuget\\packages\\",
-        "outputPath": "D:\\Programing L\\ТІ\\Project\\Project\\obj\\",
+        "outputPath": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

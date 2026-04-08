@@ -10,8 +10,8 @@
         public string Title { get; set; }
         public string Description { get; set; }
         public bool IsActive { get; set; }
-        public decimal? OldPrice { get; set; }
         public decimal NewPrice { get; set; }
+        public decimal? OldPrice { get; set; }
         public DateTime ValidTo { get; set; }
 
         public OfferCreator Creator { get; set; }

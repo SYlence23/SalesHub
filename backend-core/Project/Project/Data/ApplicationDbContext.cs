@@ -35,9 +35,12 @@ namespace SalesHub.Data
             modelBuilder.Entity<Offer>()
                 .HasMany(o => o.Images).WithOne(i => i.Offer).HasForeignKey(i => i.OfferId);
 
-            // Зберігаємо Enum Creator як число (1 - User, 2 - Parser)
+            
             modelBuilder.Entity<Offer>()
                 .Property(o => o.Creator).HasConversion<int>();
+
+            modelBuilder.Entity<PlaceImage>()
+                .HasOne(pi => pi.Place).WithMany(p => p.Images).HasForeignKey(pi => pi.PlaceId);
 
             // 2. Зв'язок Many-to-Many: Магазини та їх Локації
             modelBuilder.Entity<PlaceLocation>()

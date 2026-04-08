@@ -1,54 +1,77 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "D:\\Programing L\\\u0422\u0406\\Project\\",
+  "WorkspaceRootPath": "D:\\GIT\\SalesHub\\backend-core\\Project\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\programing l\\\u0442\u0456\\project\\project\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\git\\saleshub\\backend-core\\project\\project\\migrations\\20260407092247_initialcreate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\migrations\\20260407092247_initialcreate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\git\\saleshub\\backend-core\\project\\project\\migrations\\applicationdbcontextmodelsnapshot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\migrations\\applicationdbcontextmodelsnapshot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\git\\saleshub\\backend-core\\project\\project\\migrations\\20260408155318_updateofferpricing.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\migrations\\20260408155318_updateofferpricing.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\git\\saleshub\\backend-core\\project\\project\\migrations\\20260408153911_addpricetooffer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\migrations\\20260408153911_addpricetooffer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\git\\saleshub\\backend-core\\project\\project\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\programing l\\\u0442\u0456\\project\\project\\models\\place.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\models\\place.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\programing l\\\u0442\u0456\\project\\project\\models\\offerimage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\models\\offerimage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\programing l\\\u0442\u0456\\project\\project\\models\\offercategories.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\models\\offercategories.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\programing l\\\u0442\u0456\\project\\project\\models\\offer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\models\\offer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\programing l\\\u0442\u0456\\project\\project\\models\\location.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\models\\location.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\programing l\\\u0442\u0456\\project\\project\\models\\baseentity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\models\\baseentity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\programing l\\\u0442\u0456\\project\\project\\controllers\\discountscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\git\\saleshub\\backend-core\\project\\project\\controllers\\discountscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\controllers\\discountscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\programing l\\\u0442\u0456\\project\\project\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\git\\saleshub\\backend-core\\project\\project\\models\\place.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\models\\place.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\programing l\\\u0442\u0456\\project\\project\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\git\\saleshub\\backend-core\\project\\project\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\programing l\\\u0442\u0456\\project\\project\\models\\placeimage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\git\\saleshub\\backend-core\\project\\project\\models\\offer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\models\\offer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\ANASTASIYA\\AppData\\Roaming\\Microsoft\\UserSecrets\\73b22c87-d661-45bb-a8dd-10dea3c68c24\\secrets.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\git\\saleshub\\backend-core\\project\\project\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\git\\saleshub\\backend-core\\project\\project\\models\\location.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\models\\location.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\git\\saleshub\\backend-core\\project\\project\\models\\placelocation.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\models\\placelocation.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\git\\saleshub\\backend-core\\project\\project\\models\\placeimage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\models\\placeimage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\programing l\\\u0442\u0456\\project\\project\\models\\placelocation.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\models\\placelocation.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\git\\saleshub\\backend-core\\project\\project\\project.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}",
+      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\project.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\git\\saleshub\\backend-core\\project\\project\\models\\baseentity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\models\\baseentity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\git\\saleshub\\backend-core\\project\\project\\models\\offercategories.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\models\\offercategories.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\git\\saleshub\\backend-core\\project\\project\\models\\offerimage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\models\\offerimage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -58,7 +81,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 7,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Bookmark",
@@ -66,24 +89,152 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "BaseEntity.cs",
-              "DocumentMoniker": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\Models\\BaseEntity.cs",
-              "RelativeDocumentMoniker": "Project\\Models\\BaseEntity.cs",
-              "ToolTip": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\Models\\BaseEntity.cs",
-              "RelativeToolTip": "Project\\Models\\BaseEntity.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAA==",
+              "DocumentIndex": 0,
+              "Title": "20260407092247_InitialCreate.cs",
+              "DocumentMoniker": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Migrations\\20260407092247_InitialCreate.cs",
+              "RelativeDocumentMoniker": "Project\\Migrations\\20260407092247_InitialCreate.cs",
+              "ToolTip": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Migrations\\20260407092247_InitialCreate.cs",
+              "RelativeToolTip": "Project\\Migrations\\20260407092247_InitialCreate.cs",
+              "ViewState": "AgIAAC4AAAAAAAAAAAAQwDsAAAAlAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-05T15:51:36.611Z",
+              "WhenOpened": "2026-04-07T09:22:48.201Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "20260408153911_AddPriceToOffer.cs",
+              "DocumentMoniker": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Migrations\\20260408153911_AddPriceToOffer.cs",
+              "RelativeDocumentMoniker": "Project\\Migrations\\20260408153911_AddPriceToOffer.cs",
+              "ToolTip": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Migrations\\20260408153911_AddPriceToOffer.cs",
+              "RelativeToolTip": "Project\\Migrations\\20260408153911_AddPriceToOffer.cs",
+              "ViewState": "AgIAACgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-08T15:39:11.352Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "20260408155318_UpdateOfferPricing.cs",
+              "DocumentMoniker": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Migrations\\20260408155318_UpdateOfferPricing.cs",
+              "RelativeDocumentMoniker": "Project\\Migrations\\20260408155318_UpdateOfferPricing.cs",
+              "ToolTip": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Migrations\\20260408155318_UpdateOfferPricing.cs",
+              "RelativeToolTip": "Project\\Migrations\\20260408155318_UpdateOfferPricing.cs",
+              "ViewState": "AgIAAB0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-08T15:53:18.983Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ApplicationDbContextModelSnapshot.cs",
+              "DocumentMoniker": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Migrations\\ApplicationDbContextModelSnapshot.cs",
+              "RelativeDocumentMoniker": "Project\\Migrations\\ApplicationDbContextModelSnapshot.cs",
+              "ToolTip": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Migrations\\ApplicationDbContextModelSnapshot.cs",
+              "RelativeToolTip": "Project\\Migrations\\ApplicationDbContextModelSnapshot.cs",
+              "ViewState": "AgIAABgBAAAAAAAAAAAQwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-08T14:48:42.704Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ApplicationDbContext.cs",
+              "DocumentMoniker": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Data\\ApplicationDbContext.cs",
+              "RelativeDocumentMoniker": "Project\\Data\\ApplicationDbContext.cs",
+              "ToolTip": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Data\\ApplicationDbContext.cs",
+              "RelativeToolTip": "Project\\Data\\ApplicationDbContext.cs",
+              "ViewState": "AgIAAC0AAAAAAAAAAAAIwCoAAAA+AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-05T16:07:38.827Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 5,
+              "Title": "DiscountsController.cs",
+              "DocumentMoniker": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Controllers\\DiscountsController.cs",
+              "RelativeDocumentMoniker": "Project\\Controllers\\DiscountsController.cs",
+              "ToolTip": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Controllers\\DiscountsController.cs",
+              "RelativeToolTip": "Project\\Controllers\\DiscountsController.cs",
+              "ViewState": "AgIAAKQAAAAAAAAAAAAUwIYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-05T13:13:25.134Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Place.cs",
+              "DocumentMoniker": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Models\\Place.cs",
+              "RelativeDocumentMoniker": "Project\\Models\\Place.cs",
+              "ToolTip": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Models\\Place.cs",
+              "RelativeToolTip": "Project\\Models\\Place.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-05T15:35:17.091Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Program.cs",
+              "RelativeDocumentMoniker": "Project\\Program.cs",
+              "ToolTip": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Program.cs",
+              "RelativeToolTip": "Project\\Program.cs",
+              "ViewState": "AgIAABIAAAAAAAAAAAAuwC0AAAAKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-05T13:11:12.328Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Offer.cs",
+              "DocumentMoniker": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Models\\Offer.cs",
+              "RelativeDocumentMoniker": "Project\\Models\\Offer.cs",
+              "ToolTip": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Models\\Offer.cs",
+              "RelativeToolTip": "Project\\Models\\Offer.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-05T13:16:37.766Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\appsettings.json",
+              "RelativeDocumentMoniker": "Project\\appsettings.json",
+              "ToolTip": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\appsettings.json",
+              "RelativeToolTip": "Project\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAABnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-04-05T16:46:46.718Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "secrets.json",
+              "DocumentMoniker": "C:\\Users\\ANASTASIYA\\AppData\\Roaming\\Microsoft\\UserSecrets\\73b22c87-d661-45bb-a8dd-10dea3c68c24\\secrets.json",
+              "ToolTip": "C:\\Users\\ANASTASIYA\\AppData\\Roaming\\Microsoft\\UserSecrets\\73b22c87-d661-45bb-a8dd-10dea3c68c24\\secrets.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAABmAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-04-07T10:26:28.729Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
               "Title": "Location.cs",
-              "DocumentMoniker": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\Models\\Location.cs",
+              "DocumentMoniker": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Models\\Location.cs",
               "RelativeDocumentMoniker": "Project\\Models\\Location.cs",
-              "ToolTip": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\Models\\Location.cs",
+              "ToolTip": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Models\\Location.cs",
               "RelativeToolTip": "Project\\Models\\Location.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAApAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -92,115 +243,11 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "Offer.cs",
-              "DocumentMoniker": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\Models\\Offer.cs",
-              "RelativeDocumentMoniker": "Project\\Models\\Offer.cs",
-              "ToolTip": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\Models\\Offer.cs",
-              "RelativeToolTip": "Project\\Models\\Offer.cs",
-              "ViewState": "AgIAAAwAAAAAAAAAAAA7wAcAAAAkAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-05T13:16:37.766Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "OfferCategories.cs",
-              "DocumentMoniker": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\Models\\OfferCategories.cs",
-              "RelativeDocumentMoniker": "Project\\Models\\OfferCategories.cs",
-              "ToolTip": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\Models\\OfferCategories.cs",
-              "RelativeToolTip": "Project\\Models\\OfferCategories.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAxAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-05T15:53:44.589Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "OfferImage.cs",
-              "DocumentMoniker": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\Models\\OfferImage.cs",
-              "RelativeDocumentMoniker": "Project\\Models\\OfferImage.cs",
-              "ToolTip": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\Models\\OfferImage.cs",
-              "RelativeToolTip": "Project\\Models\\OfferImage.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAFAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-05T15:34:38.798Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "Place.cs",
-              "DocumentMoniker": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\Models\\Place.cs",
-              "RelativeDocumentMoniker": "Project\\Models\\Place.cs",
-              "ToolTip": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\Models\\Place.cs",
-              "RelativeToolTip": "Project\\Models\\Place.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-05T15:35:17.091Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "ApplicationDbContext.cs",
-              "DocumentMoniker": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\Data\\ApplicationDbContext.cs",
-              "RelativeDocumentMoniker": "Project\\Data\\ApplicationDbContext.cs",
-              "ToolTip": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\Data\\ApplicationDbContext.cs",
-              "RelativeToolTip": "Project\\Data\\ApplicationDbContext.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAXAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-05T16:07:38.827Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "DiscountsController.cs",
-              "DocumentMoniker": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\Controllers\\DiscountsController.cs",
-              "RelativeDocumentMoniker": "Project\\Controllers\\DiscountsController.cs",
-              "ToolTip": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\Controllers\\DiscountsController.cs",
-              "RelativeToolTip": "Project\\Controllers\\DiscountsController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAFAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-05T13:13:25.134Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\appsettings.json",
-              "RelativeDocumentMoniker": "Project\\appsettings.json",
-              "ToolTip": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\appsettings.json",
-              "RelativeToolTip": "Project\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAABiAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-04-05T16:46:46.718Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "Program.cs",
-              "DocumentMoniker": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\Program.cs",
-              "RelativeDocumentMoniker": "Project\\Program.cs",
-              "ToolTip": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\Program.cs",
-              "RelativeToolTip": "Project\\Program.cs",
-              "ViewState": "AgIAABUAAAAAAAAAAAAAACgAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-05T13:11:12.328Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 13,
               "Title": "PlaceImage.cs",
-              "DocumentMoniker": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\Models\\PlaceImage.cs",
+              "DocumentMoniker": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Models\\PlaceImage.cs",
               "RelativeDocumentMoniker": "Project\\Models\\PlaceImage.cs",
-              "ToolTip": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\Models\\PlaceImage.cs",
+              "ToolTip": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Models\\PlaceImage.cs",
               "RelativeToolTip": "Project\\Models\\PlaceImage.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -209,15 +256,67 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 14,
+              "Title": "Project.http",
+              "DocumentMoniker": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Project.http",
+              "RelativeDocumentMoniker": "Project\\Project.http",
+              "ToolTip": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Project.http",
+              "RelativeToolTip": "Project\\Project.http",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAsAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003502|",
+              "WhenOpened": "2026-04-06T07:23:24.367Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
               "Title": "PlaceLocation.cs",
-              "DocumentMoniker": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\Models\\PlaceLocation.cs",
+              "DocumentMoniker": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Models\\PlaceLocation.cs",
               "RelativeDocumentMoniker": "Project\\Models\\PlaceLocation.cs",
-              "ToolTip": "D:\\Programing L\\\u0422\u0406\\Project\\Project\\Models\\PlaceLocation.cs",
+              "ToolTip": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Models\\PlaceLocation.cs",
               "RelativeToolTip": "Project\\Models\\PlaceLocation.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-05T15:37:48.878Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "OfferImage.cs",
+              "DocumentMoniker": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Models\\OfferImage.cs",
+              "RelativeDocumentMoniker": "Project\\Models\\OfferImage.cs",
+              "ToolTip": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Models\\OfferImage.cs",
+              "RelativeToolTip": "Project\\Models\\OfferImage.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-05T15:34:38.798Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "OfferCategories.cs",
+              "DocumentMoniker": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Models\\OfferCategories.cs",
+              "RelativeDocumentMoniker": "Project\\Models\\OfferCategories.cs",
+              "ToolTip": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Models\\OfferCategories.cs",
+              "RelativeToolTip": "Project\\Models\\OfferCategories.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAxAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-05T15:53:44.589Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "BaseEntity.cs",
+              "DocumentMoniker": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Models\\BaseEntity.cs",
+              "RelativeDocumentMoniker": "Project\\Models\\BaseEntity.cs",
+              "ToolTip": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\Models\\BaseEntity.cs",
+              "RelativeToolTip": "Project\\Models\\BaseEntity.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-05T15:51:36.611Z",
               "EditorCaption": ""
             }
           ]

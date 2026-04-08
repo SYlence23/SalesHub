@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "uGrH8rRKX/Q=",
+  "dgSpecHash": "nbs4vTGhrvI=",
   "success": true,
-  "projectFilePath": "D:\\Programing L\\ТІ\\Project\\Project\\SalesHub.csproj",
+  "projectFilePath": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\SalesHub.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\ANASTASIYA\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\ANASTASIYA\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.14\\microsoft.aspnetcore.openapi.9.0.14.nupkg.sha512",
