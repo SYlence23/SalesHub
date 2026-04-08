@@ -32,7 +32,7 @@
   /* Dark mode global overrides */
   @media (prefers-color-scheme: dark) {
     body {
-      @apply bg-zinc-950 text-zinc-100;
+      @apply bg-zinc-800 text-zinc-100;
     }
   }
 
@@ -56,7 +56,7 @@
 
 @layer utilities {
   .glass {
-    @apply bg-zinc-100/70 backdrop-blur-md border border-zinc-100 shadow-lg dark:bg-zinc-900/60 dark:border-white/10;
+    @apply bg-zinc-200/70 backdrop-blur-md border border-zinc-100 shadow-lg dark:bg-zinc-900/60 dark:border-white/10;
   }
 
   .glass-card {
