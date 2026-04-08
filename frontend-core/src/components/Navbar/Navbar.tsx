@@ -52,9 +52,12 @@ export default function Navbar() {
                         {/* <span className="text-zinc-600 dark:text-zinc-300 text-2xl select-none">|</span> */}
 
                         {/* Right actions */}
-                        <div className="flex  items-center space-x-4">
+                        <div className="flex  items-center gap-3">
                             <button className="hidden sm:flex btn-primary text-sm">
-                                Sign In
+                                Log In
+                            </button>
+                            <button className="hidden sm:flex btn-secondary text-sm">
+                                Sign Up
                             </button>
                         </div>
                     </div>

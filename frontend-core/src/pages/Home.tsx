@@ -9,10 +9,10 @@ export default function Home() {
           SalesHub brings you the most exclusive offers and premium deals right to your fingertips.
         </p>
         <div className="flex justify-center gap-4">
-          <button className="btn-primary px-8 py-4 text-lg">
+          <button className="btn-primary  text-lg">
             Explore Offers
           </button>
-          <button className="btn-secondary px-8 py-4 text-lg">
+          <button className="btn-secondary  px-8 py-4 text-lg">
             Select Your City
           </button>
         </div>

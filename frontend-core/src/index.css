@@ -54,7 +54,7 @@
   }
 }
 
-@layer utilities {
+@layer components {
   .glass {
     @apply bg-zinc-200/70 backdrop-blur-md border border-zinc-100 shadow-lg dark:bg-zinc-900/60 dark:border-white/10;
   }
@@ -64,14 +64,19 @@
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center px-5 py-2.5 rounded-xl font-medium text-white bg-primary-500 hover:bg-primary-600 transition-all shadow-md hover:shadow-lg active:scale-95 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-950;
+    @apply inline-flex items-center justify-center px-5 py-2.5 rounded-xl font-medium text-white bg-primary-500 hover:bg-primary-600 transition-all shadow-md hover:shadow-lg active:scale-95;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center px-5 py-2.5 rounded-full font-medium text-zinc-700 bg-zinc-200 hover:bg-zinc-300 transition-all dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 active:scale-95 focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-950;
+    @apply inline-flex items-center justify-center px-5 py-2.5 rounded-full font-medium text-zinc-700 bg-zinc-200 hover:bg-zinc-300 transition-all dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 active:scale-95 border-2 border-zinc-500;
   }
 
+  .nav-button {
+    @apply px-3 py-1 rounded-xl text-zinc-600 hover:text-primary-500 dark:text-zinc-300 dark:hover:text-primary-400 font-medium text-base transition-all duration-500;
+  }
+}
 
+@layer utilities {
   .animated-gradient {
     @apply bg-gradient-to-r from-primary-500 via-orange-800 to-primary-500 dark:from-primary-500 dark:via-orange-200 dark:to-primary-500;
     background-size: 300% auto;
@@ -80,9 +85,5 @@
 
   .animated-gradient:hover {
     background-position: right center;
-  }
-
-  .nav-button {
-    @apply px-3 py-1 rounded-xl text-zinc-600 hover:text-primary-500 dark:text-zinc-300 dark:hover:text-primary-400 font-medium text-base transition-all duration-500
   }
 }
