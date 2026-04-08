@@ -68,7 +68,7 @@
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center px-5 py-2.5 rounded-full font-medium text-zinc-700 bg-zinc-100 hover:bg-zinc-200 transition-all dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 active:scale-95 focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-950;
+    @apply inline-flex items-center justify-center px-5 py-2.5 rounded-full font-medium text-zinc-700 bg-zinc-200 hover:bg-zinc-300 transition-all dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 active:scale-95 focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-950;
   }
 
 
@@ -83,6 +83,6 @@
   }
 
   .nav-button {
-    @apply px-3 py-1 rounded-xl text-zinc-600 hover:text-primary-500 dark:text-zinc-300 dark:hover:text-primary-400 font-medium transition-all duration-500
+    @apply px-3 py-1 rounded-xl text-zinc-600 hover:text-primary-500 dark:text-zinc-300 dark:hover:text-primary-400 font-medium text-base transition-all duration-500
   }
 }

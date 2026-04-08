@@ -54,8 +54,7 @@ export default function Navbar() {
 
                         {/* Right actions */}
                         <div className="flex  items-center space-x-4">
-                            <button className="hidden sm:flex btn-primary">
-                                <User className="w-4 h-4 mr-2" />
+                            <button className="hidden sm:flex btn-primary text-sm">
                                 Sign In
                             </button>
                         </div>
