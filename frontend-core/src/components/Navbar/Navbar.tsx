@@ -23,7 +23,7 @@ export default function Navbar() {
 
     return (
         <header className="fixed top-0 left-0 right-0 z-50 glass ">
-            <div className="max-w-7xl mx-auto px-4  sm:px-6 lg:px-8 ">
+            <div className="mx-auto px-4  sm:px-6 lg:px-8 ">
                 <div className="justify-between flex grow h-15">
 
                     {/* Logo */}
@@ -50,7 +50,7 @@ export default function Navbar() {
                             </div>
                         </nav>
 
-                        <span className="text-zinc-600 dark:text-zinc-300 text-2xl select-none">|</span>
+                        {/* <span className="text-zinc-600 dark:text-zinc-300 text-2xl select-none">|</span> */}
 
                         {/* Right actions */}
                         <div className="flex  items-center space-x-4">
