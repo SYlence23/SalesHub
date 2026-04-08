@@ -83,6 +83,6 @@
   }
 
   .nav-button {
-    @apply px-3 py-1 rounded-xl text-zinc-600 hover:text-primary-500 hover:bg-primary-500/10 dark:text-zinc-300 dark:hover:text-primary-400 dark:hover:bg-primary-400/20 font-medium transition-all duration-500
+    @apply px-3 py-1 rounded-xl text-zinc-600 hover:text-primary-500 dark:text-zinc-300 dark:hover:text-primary-400 font-medium transition-all duration-500
   }
 }
