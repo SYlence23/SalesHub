@@ -1,7 +1,26 @@
 import { Link } from 'react-router-dom';
-import { User } from 'lucide-react';
+import { User, HomeIcon } from 'lucide-react';
 
 export default function Navbar() {
+
+    const navLinks = [
+        {
+            name: "Home",
+            path: "/",
+            icon: null
+        },
+        {
+            name: "Offers",
+            path: "/offers",
+            icon: null
+        },
+        {
+            name: "Map",
+            path: "/map",
+            icon: null
+        }
+    ]
+
     return (
         <header className="fixed top-0 left-0 right-0 z-50 glass ">
             <div className="max-w-7xl mx-auto px-4  sm:px-6 lg:px-8 ">
@@ -21,15 +40,13 @@ export default function Navbar() {
                         <nav className="flex items-center">
                             {/* Center Navigation - Desktop */}
                             <div className="hidden md:flex items-center gap-4">
-                                <Link to="/" className="nav-button">
-                                    Home
-                                </Link>
-                                <Link to="/offers" className="nav-button">
-                                    Offers
-                                </Link>
-                                <Link to="/map" className="nav-button">
-                                    Map
-                                </Link>
+                                {navLinks.map((link) => {
+                                    return (
+                                        <Link to={link.path} className="nav-button">
+                                            {link.name}
+                                        </Link>
+                                    );
+                                })}
                             </div>
                         </nav>
 
