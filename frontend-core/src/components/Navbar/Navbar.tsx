@@ -75,7 +75,7 @@ export default function Navbar() {
                         const isActive = location.pathname === link.path;
                         return (
                             <Link key={link.name} to={link.path} className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${isActive ? 'text-primary-500' : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'}`}>
-                                <Icon size={22} strokeWidth={isActive ? 2.5 : 2} className={isActive ? 'drop-shadow-sm' : ''} />
+                                <Icon size={22} strokeWidth={isActive ? 2.5 : 2} className={isActive ? 'drop-shadow-sm' : ''} /> {/*if needed will be replaced with svg icons */}
                                 <span className={`text-[10px] font-medium ${isActive ? 'font-bold' : ''}`}>{link.name}</span>
                             </Link>
                         );
