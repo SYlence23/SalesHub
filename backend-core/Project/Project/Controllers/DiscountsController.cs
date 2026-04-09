@@ -43,6 +43,7 @@ namespace Project.Controllers
         {
             var offer = await _context.Offers
                 .Include(o => o.Place)
+                .Include(o => o.Images)
                 .FirstOrDefaultAsync(o => o.Id == id);
 
             if (offer == null) return NotFound();
@@ -55,9 +56,11 @@ namespace Project.Controllers
         [HttpGet("search")]
         public async Task<IActionResult> Search([FromQuery] string q)
         {
-            if (string.IsNullOrWhiteSpace(q)) return BadRequest(new { message = "Запит порожній" });
+            if (string.IsNullOrWhiteSpace(q)) return BadRequest(new { message = "Request is empty" });
 
             var results = await _context.Offers
+                .Include(o => o.Images) 
+                .Include(o => o.Place)
                 .Where(o => o.Title.Contains(q) || o.Description.Contains(q))
                 .ToListAsync();
 
@@ -73,10 +76,22 @@ namespace Project.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            _context.Offers.Add(offer);
-            await _context.SaveChangesAsync();
+            offer.IsActive = true;
+            offer.Creator = OfferCreator.User;
 
-            return CreatedAtAction(nameof(GetById), new { id = offer.Id }, offer);
+            if (offer.ValidTo <= DateTime.UtcNow)
+                return BadRequest("Invalid datetime.");
+            try
+            {
+                _context.Offers.Add(offer);
+                await _context.SaveChangesAsync();
+
+                return CreatedAtAction(nameof(GetById), new { id = offer.Id }, offer);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
         }
 
         /// <summary>
@@ -85,21 +100,32 @@ namespace Project.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] Offer updatedOffer)
         {
-            if (id != updatedOffer.Id) return BadRequest("ID не збігається");
+            if (id != updatedOffer.Id) return BadRequest("ID doesn't match");
 
-            _context.Entry(updatedOffer).State = EntityState.Modified;
+            var existingOffer = await _context.Offers.FindAsync(id);
+            if (existingOffer == null) return NotFound("Discount not found");
 
+            existingOffer.Title = updatedOffer.Title;
+            existingOffer.Description = updatedOffer.Description;
+            existingOffer.NewPrice = updatedOffer.NewPrice;
+            existingOffer.OldPrice = updatedOffer.OldPrice;
+            existingOffer.ValidTo = updatedOffer.ValidTo;
+            existingOffer.IsActive = updatedOffer.IsActive;
+            existingOffer.CategoryId = updatedOffer.CategoryId;
+            existingOffer.PlaceId = updatedOffer.PlaceId;
+
+            if (existingOffer.NewPrice >= existingOffer.OldPrice)
+                return BadRequest("New price must be less than the old one .");
             try
             {
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!_context.Offers.Any(e => e.Id == id)) return NotFound();
-                throw;
+                return StatusCode(409, "Update conflict. The data has been changed by someone else ");
             }
 
-            return NoContent();
+            return Ok(existingOffer); 
         }
 
         /// <summary>
@@ -173,6 +199,37 @@ namespace Project.Controllers
                 .ToListAsync();
 
             return Ok(offers);
+        }
+
+        [HttpPost("{id:int}/upload-image")]
+        public async Task<IActionResult> UploadImage(int id, IFormFile file)
+        {
+            var offer = await _context.Offers.Include(o => o.Images).FirstOrDefaultAsync(o => o.Id == id);
+            if (offer == null) return NotFound("Discount not found");
+
+            if (file == null || file.Length == 0) return BadRequest("No file selected");
+
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
+            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+            var uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(fileStream);
+            }
+
+            var image = new OfferImage
+            {
+                ImageUrl = $"/images/{uniqueFileName}",
+                OfferId = id
+            };
+
+            offer.Images.Add(image);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { url = image.ImageUrl });
         }
     }
 }

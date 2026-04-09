@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SalesHub")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8c9f494b398d548ca14f5610eefe28192ce6dd21")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a92fc3b2e062d3aad015fdbba7effb1637a00ae8")]
 [assembly: System.Reflection.AssemblyProductAttribute("SalesHub")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SalesHub")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
