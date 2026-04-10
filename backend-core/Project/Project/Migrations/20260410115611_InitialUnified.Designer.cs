@@ -13,8 +13,8 @@ using SalesHub.Data;
 namespace SalesHub.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260408153911_AddPriceToOffer")]
-    partial class AddPriceToOffer
+    [Migration("20260410115611_InitialUnified")]
+    partial class InitialUnified
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -120,9 +120,6 @@ namespace SalesHub.Migrations
 
                     b.Property<int>("PlaceId")
                         .HasColumnType("integer");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("numeric");
 
                     b.Property<string>("Title")
                         .IsRequired()

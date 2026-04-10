@@ -1,9 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using NetTopologySuite.Geometries;
-using SalesHub.Data;
-using SalesHub.Models;
+﻿using Microsoft.AspNetCore.Mvc;
+using SalesHub.DTOs;
+using SalesHub.Services;
 
 namespace Project.Controllers
 {
@@ -11,225 +8,111 @@ namespace Project.Controllers
     [ApiController]
     public class DiscountsController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IDiscountService _discountService;
 
-        public DiscountsController(ApplicationDbContext context)
+        public DiscountsController(IDiscountService discountService)
         {
-            _context = context;
+            _discountService = discountService;
         }
 
-        /// <summary>
-        /// Отримати список усіх активних знижок з пагінацією
-        /// </summary>
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            var query = _context.Offers.AsNoTracking();
+            if (page <= 0 || pageSize <= 0)
+                return BadRequest("Page and PageSize must be greater than zero.");
 
-            var total = await query.CountAsync();
-            var data = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return Ok(new { Total = total, Page = page, Data = data });
+            var result = await _discountService.GetAllAsync(page, pageSize);
+            return Ok(new { Total = result.Total, Page = page, Data = result.Data });
         }
 
-        /// <summary>
-        /// Отримати повну інформацію про одну знижку за її ID
-        /// </summary>
+        [HttpGet("by-category-name/{categoryName}")]
+        public async Task<IActionResult> GetByCategoryName(string categoryName)
+        {
+            // Просто викликаємо сервіс. Якщо карусель дала ім'я — ми за ним шукаємо.
+            var offers = await _discountService.GetByCategoryNameAsync(categoryName);
+
+             return Ok(offers);
+        }
+
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var offer = await _context.Offers
-                .Include(o => o.Place)
-                .Include(o => o.Images)
-                .FirstOrDefaultAsync(o => o.Id == id);
+            if (id <= 0) return BadRequest("Invalid ID.");
 
-            if (offer == null) return NotFound();
+            var offer = await _discountService.GetByIdAsync(id);
+            if (offer == null)
+                return NotFound(new { message = $"Discount with ID {id} not found." });
+
             return Ok(offer);
         }
 
-        /// <summary>
-        /// Пошук знижок за ключовим словом (назва або опис)
-        /// </summary>
         [HttpGet("search")]
         public async Task<IActionResult> Search([FromQuery] string q)
         {
-            if (string.IsNullOrWhiteSpace(q)) return BadRequest(new { message = "Request is empty" });
+            if (string.IsNullOrWhiteSpace(q) || q.Length < 3)
+                return BadRequest(new { message = "Search query must be at least 3 characters long." });
 
-            var results = await _context.Offers
-                .Include(o => o.Images) 
-                .Include(o => o.Place)
-                .Where(o => o.Title.Contains(q) || o.Description.Contains(q))
-                .ToListAsync();
-
+            var results = await _discountService.SearchAsync(q);
             return Ok(results);
         }
 
-
-        /// <summary>
-        /// Створити нову знижку
-        /// </summary>
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Offer offer)
+        public async Task<IActionResult> Create([FromBody] OfferCreateDto dto)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            offer.IsActive = true;
-            offer.Creator = OfferCreator.User;
+            //   бізнес-валідація цін
+            if (dto.OldPrice.HasValue && dto.NewPrice >= dto.OldPrice.Value)
+            {
+                return UnprocessableEntity(new { message = "The new price must be lower than the old price." });
+            }
 
-            if (offer.ValidTo <= DateTime.UtcNow)
-                return BadRequest("Invalid datetime.");
             try
             {
-                _context.Offers.Add(offer);
-                await _context.SaveChangesAsync();
-
-                return CreatedAtAction(nameof(GetById), new { id = offer.Id }, offer);
+                var id = await _discountService.CreateOfferAsync(dto);
+                return CreatedAtAction(nameof(GetById), new { id = id }, new { id });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Internal server error: " + ex.Message);
+                return StatusCode(500, new { message = "Error saving offer", details = ex.Message });
             }
-        }
-
-        /// <summary>
-        /// Повне оновлення даних про знижку
-        /// </summary>
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> Update(int id, [FromBody] Offer updatedOffer)
-        {
-            if (id != updatedOffer.Id) return BadRequest("ID doesn't match");
-
-            var existingOffer = await _context.Offers.FindAsync(id);
-            if (existingOffer == null) return NotFound("Discount not found");
-
-            existingOffer.Title = updatedOffer.Title;
-            existingOffer.Description = updatedOffer.Description;
-            existingOffer.NewPrice = updatedOffer.NewPrice;
-            existingOffer.OldPrice = updatedOffer.OldPrice;
-            existingOffer.ValidTo = updatedOffer.ValidTo;
-            existingOffer.IsActive = updatedOffer.IsActive;
-            existingOffer.CategoryId = updatedOffer.CategoryId;
-            existingOffer.PlaceId = updatedOffer.PlaceId;
-
-            if (existingOffer.NewPrice >= existingOffer.OldPrice)
-                return BadRequest("New price must be less than the old one .");
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                return StatusCode(409, "Update conflict. The data has been changed by someone else ");
-            }
-
-            return Ok(existingOffer); 
-        }
-
-        /// <summary>
-        /// Часткове оновлення (деактивація знижки)
-        /// </summary>
-        [HttpPatch("{id:int}/status")]
-        public async Task<IActionResult> UpdateStatus(int id, [FromQuery] bool isActive)
-        {
-            var offer = await _context.Offers.FindAsync(id);
-            if (offer == null) return NotFound();
-
-            offer.IsActive = isActive;
-            await _context.SaveChangesAsync();
-
-            return Ok(offer);
-        }
-
-        /// <summary>
-        /// Видалення знижки з бази
-        /// </summary>
-        [HttpDelete("{id:int}")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var offer = await _context.Offers.FindAsync(id);
-            if (offer == null) return NotFound();
-
-            _context.Offers.Remove(offer);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-
-        /// <summary>
-        /// Знайти знижки в радіусі X метрів від користувача
-        /// </summary>
-        [HttpGet("nearby")]
-        public async Task<IActionResult> GetNearby(double lat, double lon, double radiusMeters = 2000)
-        {
-            var userLocation = new Point(lon, lat) { SRID = 4326 };
-
-            var offers = await _context.Offers
-                .Include(o => o.Place)
-                .Where(o => o.Place != null && o.Place.Location != null && o.Place.Location.Distance(userLocation) <= radiusMeters)
-                .OrderBy(o => o.Place!.Location!.Distance(userLocation))
-                .Select(o => new {
-                    o.Id,
-                    o.Title,
-                    Price = o.NewPrice,
-                    StoreName = o.Place!.Name,
-                    Distance = Math.Round(o.Place.Location!.Distance(userLocation))
-                })
-                .ToListAsync();
-
-            return Ok(offers);
-        }
-
-        /// <summary>
-        /// Отримати знижки у видимому прямокутнику карти (Bounds)
-        /// </summary>
-        [HttpGet("map-bounds")]
-        public async Task<IActionResult> GetInBounds(double minLat, double minLon, double maxLat, double maxLon)
-        {
-            var boundary = new Envelope(minLon, maxLon, minLat, maxLat);
-            var factory = new GeometryFactory(new PrecisionModel(), 4326);
-            var polygon = factory.ToGeometry(boundary);
-
-            var offers = await _context.Offers
-                .Include(o => o.Place)
-                .Where(o => o.Place != null && o.Place.Location != null && o.Place.Location.Within(polygon))
-                .ToListAsync();
-
-            return Ok(offers);
         }
 
         [HttpPost("{id:int}/upload-image")]
         public async Task<IActionResult> UploadImage(int id, IFormFile file)
         {
-            var offer = await _context.Offers.Include(o => o.Images).FirstOrDefaultAsync(o => o.Id == id);
-            if (offer == null) return NotFound("Discount not found");
+            if (file == null || file.Length == 0)
+                return BadRequest("No file selected or file is empty.");
 
-            if (file == null || file.Length == 0) return BadRequest("No file selected");
+            var offerExists = await _discountService.GetByIdAsync(id);
+            if (offerExists == null) return NotFound("Discount not found.");
 
-            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
-            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
-
-            var uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
-            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            try
             {
-                await file.CopyToAsync(fileStream);
+                var url = await _discountService.UploadImageAsync(id, file);
+                return Ok(new { url });
             }
-
-            var image = new OfferImage
+            catch (Exception ex)
             {
-                ImageUrl = $"/images/{uniqueFileName}",
-                OfferId = id
-            };
+                return BadRequest(new { message = "Upload failed", error = ex.Message });
+            }
+        }
 
-            offer.Images.Add(image);
-            await _context.SaveChangesAsync();
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var deleted = await _discountService.DeleteAsync(id);
+            if (!deleted) return NotFound(new { message = "Discount not found" });
 
-            return Ok(new { url = image.ImageUrl });
+            return NoContent();
+        }
+        [HttpPatch("{id:int}/status")]
+        public async Task<IActionResult> UpdateStatus(int id, [FromQuery] bool isActive)
+        {
+            var result = await _discountService.UpdateStatusAsync(id, isActive);
+            if (!result) return NotFound("Offer not found");
+
+            return Ok(new { message = $"Status updated to {isActive}" });
         }
     }
 }

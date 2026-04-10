@@ -41,15 +41,14 @@ namespace SalesHub.Data
 
             modelBuilder.Entity<PlaceImage>()
                 .HasOne(pi => pi.Place).WithMany(p => p.Images).HasForeignKey(pi => pi.PlaceId);
-
-            // 2. Зв'язок Many-to-Many: Магазини та їх Локації
+            
             modelBuilder.Entity<PlaceLocation>()
                 .HasOne(pl => pl.Place).WithMany(p => p.PlaceLocations).HasForeignKey(pl => pl.PlaceId);
 
             modelBuilder.Entity<PlaceLocation>()
                 .HasOne(pl => pl.Location).WithMany(l => l.PlaceLocations).HasForeignKey(pl => pl.LocationId);
 
-            // 4. Ієрархія категорій (батьківська -> підкатегорії)
+        
             modelBuilder.Entity<OfferCategory>()
                 .HasOne(c => c.Parent).WithMany(c => c.SubCategories).HasForeignKey(c => c.ParentId);
         }

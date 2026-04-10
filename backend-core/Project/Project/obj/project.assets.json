@@ -3078,23 +3078,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\ANASTASIYA\\.nuget\\packages\\": {},
+    "C:\\Users\\LEGEND\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\SalesHub.csproj",
+      "projectUniqueName": "D:\\LEGEND\\OneDrive\\Робочий стіл\\sales\\SalesHub\\backend-core\\Project\\Project\\SalesHub.csproj",
       "projectName": "SalesHub",
-      "projectPath": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\SalesHub.csproj",
-      "packagesPath": "C:\\Users\\ANASTASIYA\\.nuget\\packages\\",
-      "outputPath": "D:\\GIT\\SalesHub\\backend-core\\Project\\Project\\obj\\",
+      "projectPath": "D:\\LEGEND\\OneDrive\\Робочий стіл\\sales\\SalesHub\\backend-core\\Project\\Project\\SalesHub.csproj",
+      "packagesPath": "C:\\Users\\LEGEND\\.nuget\\packages\\",
+      "outputPath": "D:\\LEGEND\\OneDrive\\Робочий стіл\\sales\\SalesHub\\backend-core\\Project\\Project\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\ANASTASIYA\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\LEGEND\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -3121,7 +3121,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.300"
+      "SdkAnalysisLevel": "10.0.200"
     },
     "frameworks": {
       "net9.0": {
@@ -3179,7 +3179,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.312/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

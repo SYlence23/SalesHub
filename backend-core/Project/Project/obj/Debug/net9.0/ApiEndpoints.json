@@ -29,8 +29,8 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "offer",
-        "Type": "SalesHub.Models.Offer",
+        "Name": "dto",
+        "Type": "SalesHub.DTOs.OfferCreateDto",
         "IsRequired": true
       }
     ],
@@ -47,27 +47,6 @@
       {
         "Name": "id",
         "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "Project.Controllers.DiscountsController",
-    "Method": "Update",
-    "RelativePath": "api/Discounts/{id}",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
-      },
-      {
-        "Name": "updatedOffer",
-        "Type": "SalesHub.Models.Offer",
         "IsRequired": true
       }
     ],
@@ -112,30 +91,20 @@
   },
   {
     "ContainingType": "Project.Controllers.DiscountsController",
-    "Method": "GetInBounds",
-    "RelativePath": "api/Discounts/map-bounds",
-    "HttpMethod": "GET",
+    "Method": "UploadImage",
+    "RelativePath": "api/Discounts/{id}/upload-image",
+    "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "minLat",
-        "Type": "System.Double",
-        "IsRequired": false
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
       },
       {
-        "Name": "minLon",
-        "Type": "System.Double",
-        "IsRequired": false
-      },
-      {
-        "Name": "maxLat",
-        "Type": "System.Double",
-        "IsRequired": false
-      },
-      {
-        "Name": "maxLon",
-        "Type": "System.Double",
+        "Name": "file",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
         "IsRequired": false
       }
     ],
@@ -143,26 +112,16 @@
   },
   {
     "ContainingType": "Project.Controllers.DiscountsController",
-    "Method": "GetNearby",
-    "RelativePath": "api/Discounts/nearby",
+    "Method": "GetByCategoryName",
+    "RelativePath": "api/Discounts/by-category-name/{categoryName}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "lat",
-        "Type": "System.Double",
-        "IsRequired": false
-      },
-      {
-        "Name": "lon",
-        "Type": "System.Double",
-        "IsRequired": false
-      },
-      {
-        "Name": "radiusMeters",
-        "Type": "System.Double",
-        "IsRequired": false
+        "Name": "categoryName",
+        "Type": "System.String",
+        "IsRequired": true
       }
     ],
     "ReturnTypes": []

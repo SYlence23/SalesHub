@@ -1,0 +1,14 @@
+
+.vs/
+[Bb]in/
+[Oo]bj/
+*.user
+*.userosscache
+*.sln.docstates
+.DS_Store
+appsettings.Development.json
+UserSecrets/
+
+ 
+artifacts/
+publish/
