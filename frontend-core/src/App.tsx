@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar/Navbar';
 import Home from './pages/Home';
+import Login from './pages/Login';
 
 function App() {
   return (
@@ -9,6 +10,7 @@ function App() {
       <main className="grow pt-15">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
         </Routes>
       </main>
 
