@@ -19,9 +19,9 @@ export default function OfferCard({ offer }: OfferCardProps) {
   return (
     <div className="glass-card overflow-hidden group flex flex-col h-full hover:-translate-y-1 transition-transform duration-300">
       <div className="relative h-48 sm:h-56 w-full overflow-hidden bg-zinc-100 dark:bg-zinc-800">
-        <img 
-          src={offer.mainImageUrl} 
-          alt={offer.title} 
+        <img
+          src={offer.mainImageUrl}
+          alt={offer.title}
           className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
           onError={(e) => {
             // Fallback for missing mocked images
@@ -50,9 +50,6 @@ export default function OfferCard({ offer }: OfferCardProps) {
               {offer.newPrice.toFixed(2)} ₴
             </div>
           </div>
-          <button className="btn-primary px-4 py-2 text-sm rounded-lg">
-            View Deal
-          </button>
         </div>
       </div>
     </div>
