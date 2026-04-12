@@ -1,17 +1,8 @@
-import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Tag, Map as MapIcon } from 'lucide-react';
-import AuthModal from '../Auth/AuthModal';
 
 export default function Navbar() {
     const location = useLocation();
-    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-    const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
-
-    const openAuthModal = (mode: 'login' | 'register') => {
-        setAuthModalMode(mode);
-        setIsAuthModalOpen(true);
-    };
 
     const navLinks = [
         {
@@ -64,18 +55,12 @@ export default function Navbar() {
 
                         {/* Right actions */}
                         <div className="flex items-center gap-3">
-                            <button 
-                                onClick={() => openAuthModal('login')}
-                                className="flex btn-primary text-sm px-4 py-2"
-                            >
+                            <Link to="/login" className="flex btn-primary text-sm px-4 py-2">
                                 Log In
-                            </button>
-                            <button 
-                                onClick={() => openAuthModal('register')}
-                                className="hidden sm:flex btn-secondary text-sm px-4 py-2"
-                            >
+                            </Link>
+                            <Link to="/register" className="hidden sm:flex btn-secondary text-sm px-4 py-2">
                                 Sign Up
-                            </button>
+                            </Link>
                         </div>
 
                     </div>
@@ -97,12 +82,6 @@ export default function Navbar() {
                     })}
                 </div>
             </nav>
-
-            <AuthModal 
-                isOpen={isAuthModalOpen} 
-                onClose={() => setIsAuthModalOpen(false)} 
-                initialMode={authModalMode} 
-            />
         </>
     );
 }
