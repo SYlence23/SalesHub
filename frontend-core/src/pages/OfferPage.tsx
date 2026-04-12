@@ -8,7 +8,7 @@ import OfferFilters, { type Category } from '../components/Offer/OfferFilters';
 
 export default function OfferPage() {
     const [searchParams, setSearchParams] = useSearchParams();
-    
+
     const [offers, setOffers] = useState<Offer[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -35,6 +35,15 @@ export default function OfferPage() {
     const handleSearchChange = (term: string) => updateFilter('searchTerm', term || null);
     const handleCategoryChange = (id: number | null) => updateFilter('categoryId', id?.toString() || null);
     const handleSortChange = (option: string) => updateFilter('sortOption', option);
+
+
+    useEffect(() => {
+        const newParams = new URLSearchParams();
+        if (searchTerm) newParams.set('searchTerm', searchTerm);
+        if (selectedCategory !== null) newParams.set('categoryId', selectedCategory.toString());
+        if (sortOption) newParams.set('sortOption', sortOption);
+        setSearchParams(newParams);
+    }, [searchTerm, selectedCategory, sortOption]);
 
     // Fetch categories on mount
     useEffect(() => {
