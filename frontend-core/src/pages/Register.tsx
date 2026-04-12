@@ -1,12 +1,12 @@
 import React from 'react';
-import LoginForm from '../components/Auth/LoginForm';
+import RegisterForm from '../components/Auth/RegisterForm';
 
-const Login = () => {
+const Register = () => {
     return (
         <div className="flex items-center justify-center w-full py-12 px-4">
-            <LoginForm />
+            <RegisterForm />
         </div>
     );
 };
 
-export default Login;
+export default Register;
