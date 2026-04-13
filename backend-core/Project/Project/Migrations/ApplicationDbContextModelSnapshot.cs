@@ -122,7 +122,10 @@ namespace SalesHub.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("ValidTo")
+                    b.Property<DateTime?>("ValidFrom")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ValidTo")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
@@ -209,9 +212,6 @@ namespace SalesHub.Migrations
 
                     b.Property<bool>("IsOnline")
                         .HasColumnType("boolean");
-
-                    b.Property<Point>("Location")
-                        .HasColumnType("geometry");
 
                     b.Property<string>("Name")
                         .IsRequired()

@@ -3,60 +3,56 @@
   "WorkspaceRootPath": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\legend\\onedrive\\\u0440\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\saleshub\\backend-core\\project\\project\\.gitignore||{3B902123-F8A7-4915-9F01-361F908088D0}",
-      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\.gitignore||{3B902123-F8A7-4915-9F01-361F908088D0}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\legend\\onedrive\\\u0440\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\saleshub\\backend-core\\project\\project\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\legend\\onedrive\\\u0440\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\saleshub\\backend-core\\project\\project\\services\\idiscountservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\services\\idiscountservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\legend\\onedrive\\\u0440\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\saleshub\\backend-core\\project\\project\\models\\place.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\models\\place.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\legend\\onedrive\\\u0440\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\saleshub\\backend-core\\project\\project\\controllers\\discountscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\controllers\\discountscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\legend\\onedrive\\\u0440\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\saleshub\\backend-core\\project\\project\\migrations\\applicationdbcontextmodelsnapshot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\migrations\\applicationdbcontextmodelsnapshot.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\legend\\onedrive\\\u0440\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\saleshub\\backend-core\\project\\project\\migrations\\20260410115611_initialunified.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\migrations\\20260410115611_initialunified.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\legend\\onedrive\\\u0440\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\saleshub\\backend-core\\project\\project\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\data\\applicationdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\legend\\onedrive\\\u0440\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\saleshub\\backend-core\\project\\project\\dtos\\offercreatedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\dtos\\offercreatedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\legend\\onedrive\\\u0440\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\saleshub\\backend-core\\project\\project\\services\\discountservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\services\\discountservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\legend\\onedrive\\\u0440\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\saleshub\\backend-core\\project\\project\\models\\baseentity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\models\\baseentity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\legend\\onedrive\\\u0440\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\saleshub\\backend-core\\project\\project\\models\\offercategories.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\models\\offercategories.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\legend\\onedrive\\\u0440\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\saleshub\\backend-core\\project\\project\\models\\location.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\models\\location.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\legend\\onedrive\\\u0440\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\saleshub\\backend-core\\project\\project\\dtos\\offerresponsedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\dtos\\offerresponsedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\legend\\onedrive\\\u0440\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\saleshub\\backend-core\\project\\project\\models\\placeimage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\models\\placeimage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\legend\\onedrive\\\u0440\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\saleshub\\backend-core\\project\\project\\dtos\\offerresponsedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\dtos\\offerresponsedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\legend\\onedrive\\\u0440\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\saleshub\\backend-core\\project\\project\\models\\offercategories.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\models\\offercategories.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\legend\\onedrive\\\u0440\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\saleshub\\backend-core\\project\\project\\services\\discountservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\services\\discountservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\legend\\onedrive\\\u0440\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\saleshub\\backend-core\\project\\project\\models\\placelocation.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\models\\placelocation.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\legend\\onedrive\\\u0440\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\saleshub\\backend-core\\project\\project\\models\\offerimage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\models\\offerimage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\legend\\onedrive\\\u0440\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\saleshub\\backend-core\\project\\project\\models\\offer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\models\\offer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\legend\\onedrive\\\u0440\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\saleshub\\backend-core\\project\\project\\models\\baseentity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\models\\baseentity.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\legend\\onedrive\\\u0440\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\saleshub\\backend-core\\project\\project\\models\\location.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\models\\location.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\legend\\onedrive\\\u0440\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\saleshub\\backend-core\\project\\project\\dtos\\offerupdatedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\dtos\\offerupdatedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|d:\\legend\\onedrive\\\u0440\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\saleshub\\backend-core\\project\\project\\services\\idiscountservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{CFFAE70D-223B-44A6-B46C-8FC6E33AED91}|Project\\SalesHub.csproj|solutionrelative:project\\services\\idiscountservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -66,73 +62,46 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 13,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 4,
               "Title": "OfferCategories.cs",
               "DocumentMoniker": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Models\\OfferCategories.cs",
               "RelativeDocumentMoniker": "Project\\Models\\OfferCategories.cs",
               "ToolTip": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Models\\OfferCategories.cs",
               "RelativeToolTip": "Project\\Models\\OfferCategories.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAQAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-09T20:05:22.473Z",
               "IsPinned": true
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 3,
               "Title": "PlaceImage.cs",
               "DocumentMoniker": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Models\\PlaceImage.cs",
               "RelativeDocumentMoniker": "Project\\Models\\PlaceImage.cs",
               "ToolTip": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Models\\PlaceImage.cs",
               "RelativeToolTip": "Project\\Models\\PlaceImage.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAoAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-09T20:05:22.458Z",
               "IsPinned": true
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 2,
               "Title": "OfferResponseDto.cs",
               "DocumentMoniker": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\DTOs\\OfferResponseDto.cs",
               "RelativeDocumentMoniker": "Project\\DTOs\\OfferResponseDto.cs",
               "ToolTip": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\DTOs\\OfferResponseDto.cs",
               "RelativeToolTip": "Project\\DTOs\\OfferResponseDto.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAUAAAAAAAAAAAAgwA8AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-04-10T06:49:07.17Z",
               "IsPinned": true
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "DiscountService.cs",
-              "DocumentMoniker": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Services\\DiscountService.cs",
-              "RelativeDocumentMoniker": "Project\\Services\\DiscountService.cs",
-              "ToolTip": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Services\\DiscountService.cs",
-              "RelativeToolTip": "Project\\Services\\DiscountService.cs",
-              "ViewState": "AgIAAI8AAAAAAAAAAAAIwK4AAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-10T10:24:30.722Z",
-              "IsPinned": true,
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": ".gitignore",
-              "DocumentMoniker": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\.gitignore",
-              "RelativeDocumentMoniker": "Project\\.gitignore",
-              "ToolTip": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\.gitignore",
-              "RelativeToolTip": "Project\\.gitignore",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAIAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2026-04-10T12:32:09.315Z",
-              "EditorCaption": ""
             },
             {
               "$type": "Bookmark",
@@ -140,81 +109,40 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "ApplicationDbContext.cs",
-              "DocumentMoniker": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Data\\ApplicationDbContext.cs",
-              "RelativeDocumentMoniker": "Project\\Data\\ApplicationDbContext.cs",
-              "ToolTip": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Data\\ApplicationDbContext.cs",
-              "RelativeToolTip": "Project\\Data\\ApplicationDbContext.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACsAAAAMAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-10T12:01:20.892Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "OfferCreateDto.cs",
-              "DocumentMoniker": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\DTOs\\OfferCreateDto.cs",
-              "RelativeDocumentMoniker": "Project\\DTOs\\OfferCreateDto.cs",
-              "ToolTip": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\DTOs\\OfferCreateDto.cs",
-              "RelativeToolTip": "Project\\DTOs\\OfferCreateDto.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABsAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-10T12:01:15.109Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "ApplicationDbContextModelSnapshot.cs",
-              "DocumentMoniker": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Migrations\\ApplicationDbContextModelSnapshot.cs",
-              "RelativeDocumentMoniker": "Project\\Migrations\\ApplicationDbContextModelSnapshot.cs",
-              "ToolTip": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Migrations\\ApplicationDbContextModelSnapshot.cs",
-              "RelativeToolTip": "Project\\Migrations\\ApplicationDbContextModelSnapshot.cs",
-              "ViewState": "AgIAABYAAAAAAAAAAAAQwFMBAAAyAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-10T12:01:10.126Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 5,
-              "Title": "20260410115611_InitialUnified.cs",
-              "DocumentMoniker": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Migrations\\20260410115611_InitialUnified.cs",
-              "RelativeDocumentMoniker": "Project\\Migrations\\20260410115611_InitialUnified.cs",
-              "ToolTip": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Migrations\\20260410115611_InitialUnified.cs",
-              "RelativeToolTip": "Project\\Migrations\\20260410115611_InitialUnified.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Title": "DiscountService.cs",
+              "DocumentMoniker": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Services\\DiscountService.cs",
+              "RelativeDocumentMoniker": "Project\\Services\\DiscountService.cs",
+              "ToolTip": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Services\\DiscountService.cs",
+              "RelativeToolTip": "Project\\Services\\DiscountService.cs",
+              "ViewState": "AgIAAIcAAAAAAAAAAAAIwIUAAAAtAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-10T12:01:07.521Z",
+              "WhenOpened": "2026-04-13T16:53:11.968Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Place.cs",
+              "DocumentMoniker": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Models\\Place.cs",
+              "RelativeDocumentMoniker": "Project\\Models\\Place.cs",
+              "ToolTip": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Models\\Place.cs",
+              "RelativeToolTip": "Project\\Models\\Place.cs",
+              "ViewState": "AgIAAAgAAAAAAAAAAAAgwAgAAAAsAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-13T16:53:00.265Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "DiscountsController.cs",
-              "DocumentMoniker": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Controllers\\DiscountsController.cs",
-              "RelativeDocumentMoniker": "Project\\Controllers\\DiscountsController.cs",
-              "ToolTip": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Controllers\\DiscountsController.cs",
-              "RelativeToolTip": "Project\\Controllers\\DiscountsController.cs",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAmwBwAAABOAAAAAAAAAA==",
+              "DocumentIndex": 8,
+              "Title": "Offer.cs",
+              "DocumentMoniker": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Models\\Offer.cs",
+              "RelativeDocumentMoniker": "Project\\Models\\Offer.cs",
+              "ToolTip": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Models\\Offer.cs",
+              "RelativeToolTip": "Project\\Models\\Offer.cs",
+              "ViewState": "AgIAAAcAAAAAAAAAAAAzwA0AAAAuAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-10T10:44:08.309Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "IDiscountService.cs",
-              "DocumentMoniker": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Services\\IDiscountService.cs",
-              "RelativeDocumentMoniker": "Project\\Services\\IDiscountService.cs",
-              "ToolTip": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Services\\IDiscountService.cs",
-              "RelativeToolTip": "Project\\Services\\IDiscountService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-10T10:43:57.773Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-13T16:52:48.723Z"
             },
             {
               "$type": "Document",
@@ -224,32 +152,79 @@
               "RelativeDocumentMoniker": "Project\\Models\\BaseEntity.cs",
               "ToolTip": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Models\\BaseEntity.cs",
               "RelativeToolTip": "Project\\Models\\BaseEntity.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-10T10:39:45.683Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-13T16:52:47.832Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 10,
               "Title": "Location.cs",
               "DocumentMoniker": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Models\\Location.cs",
               "RelativeDocumentMoniker": "Project\\Models\\Location.cs",
               "ToolTip": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Models\\Location.cs",
               "RelativeToolTip": "Project\\Models\\Location.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAABAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-09T20:05:22.458Z"
+              "WhenOpened": "2026-04-13T16:52:47.248Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 11,
+              "Title": "OfferUpdateDto.cs",
+              "DocumentMoniker": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\DTOs\\OfferUpdateDto.cs",
+              "RelativeDocumentMoniker": "Project\\DTOs\\OfferUpdateDto.cs",
+              "ToolTip": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\DTOs\\OfferUpdateDto.cs",
+              "RelativeToolTip": "Project\\DTOs\\OfferUpdateDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-13T16:30:19.335Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "PlaceLocation.cs",
+              "DocumentMoniker": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Models\\PlaceLocation.cs",
+              "RelativeDocumentMoniker": "Project\\Models\\PlaceLocation.cs",
+              "ToolTip": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Models\\PlaceLocation.cs",
+              "RelativeToolTip": "Project\\Models\\PlaceLocation.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-13T16:15:00.202Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "OfferImage.cs",
+              "DocumentMoniker": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Models\\OfferImage.cs",
+              "RelativeDocumentMoniker": "Project\\Models\\OfferImage.cs",
+              "ToolTip": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Models\\OfferImage.cs",
+              "RelativeToolTip": "Project\\Models\\OfferImage.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-13T16:14:49.659Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "IDiscountService.cs",
+              "DocumentMoniker": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Services\\IDiscountService.cs",
+              "RelativeDocumentMoniker": "Project\\Services\\IDiscountService.cs",
+              "ToolTip": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\Services\\IDiscountService.cs",
+              "RelativeToolTip": "Project\\Services\\IDiscountService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-10T10:43:57.773Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
               "Title": "appsettings.json",
               "DocumentMoniker": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\appsettings.json",
               "RelativeDocumentMoniker": "Project\\appsettings.json",
               "ToolTip": "D:\\LEGEND\\OneDrive\\\u0420\u043E\u0431\u043E\u0447\u0438\u0439 \u0441\u0442\u0456\u043B\\sales\\SalesHub\\backend-core\\Project\\Project\\appsettings.json",
               "RelativeToolTip": "Project\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAABkAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
               "WhenOpened": "2026-04-09T20:05:22.364Z",
               "EditorCaption": ""

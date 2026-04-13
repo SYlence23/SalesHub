@@ -7,21 +7,23 @@
         [Required(ErrorMessage = "Title is required")]
         public string Title { get; set; }
         public string? Description { get; set; }
+
         [Required]
         public decimal NewPrice { get; set; }
-
         public decimal? OldPrice { get; set; }
 
-        [Required]
-        public DateTime ValidTo { get; set; }
+        // Змінюємо на nullable і прибираємо [Required]
+        public DateTime? ValidFrom { get; set; }
+        public DateTime? ValidTo { get; set; }
 
+        [Required]
         public int PlaceId { get; set; }
+        [Required]
         public int CategoryId { get; set; }
 
-        
+        // Ці поля можна залишити, якщо ви хочете ПРИ СТВОРЕННІ оффера 
+        // автоматично створювати нову локацію для Place.
         public double? Latitude { get; set; }
-
-        
         public double? Longitude { get; set; }
     }
 }
