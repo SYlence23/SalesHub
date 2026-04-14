@@ -16,23 +16,21 @@ namespace Project.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetAll(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? searchTerm = null,
+            [FromQuery] int? categoryId = null,
+            [FromQuery] string? sortOption = null)
         {
             if (page <= 0 || pageSize <= 0)
                 return BadRequest("Page and PageSize must be greater than zero.");
 
-            var result = await _discountService.GetAllAsync(page, pageSize);
+            var result = await _discountService.GetAllAsync(page, pageSize, searchTerm, categoryId, sortOption);
             return Ok(new { Total = result.Total, Page = page, Data = result.Data });
         }
 
-        [HttpGet("by-category-name/{categoryName}")]
-        public async Task<IActionResult> GetByCategoryName(string categoryName)
-        {
-            // Просто викликаємо сервіс. Якщо карусель дала ім'я — ми за ним шукаємо.
-            var offers = await _discountService.GetByCategoryNameAsync(categoryName);
-
-             return Ok(offers);
-        }
+        
 
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
@@ -46,15 +44,6 @@ namespace Project.Controllers
             return Ok(offer);
         }
 
-        [HttpGet("search")]
-        public async Task<IActionResult> Search([FromQuery] string q)
-        {
-            if (string.IsNullOrWhiteSpace(q) || q.Length < 3)
-                return BadRequest(new { message = "Search query must be at least 3 characters long." });
-
-            var results = await _discountService.SearchAsync(q);
-            return Ok(results);
-        }
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] OfferCreateDto dto)

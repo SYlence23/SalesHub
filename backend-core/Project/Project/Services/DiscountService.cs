@@ -16,13 +16,32 @@ namespace SalesHub.Services
             _context = context;
         }
 
-        public async Task<(IEnumerable<OfferPreviewDto> Data, int Total)> GetAllAsync(int page, int pageSize)
+        public async Task<(IEnumerable<OfferPreviewDto> Data, int Total)> GetAllAsync(int page, int pageSize, string? searchTerm = null, int? categoryId = null, string? sortOption = null)
         {
             var query = _context.Offers.AsNoTracking().Where(o => o.IsActive);
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var term = searchTerm.Trim().ToLower();
+                query = query.Where(o => o.Title.ToLower().Contains(term) || o.Description.ToLower().Contains(term));
+            }
+
+            if (categoryId.HasValue)
+            {
+                query = query.Where(o => o.CategoryId == categoryId.Value);
+            }
+
             var total = await query.CountAsync();
+
+            query = sortOption switch
+            {
+                "lowest-price" => query.OrderBy(o => o.NewPrice),
+                "highest-price" => query.OrderByDescending(o => o.NewPrice),
+                _ => query.OrderByDescending(o => o.Id)
+            };
+
             var data = await query
                 .Include(o => o.Place)
-                .OrderByDescending(o => o.Id)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .Select(MapToPreviewDto())
@@ -31,15 +50,7 @@ namespace SalesHub.Services
             return (data, total);
         }
 
-        public async Task<IEnumerable<OfferPreviewDto>> GetByCategoryNameAsync(string categoryName)
-        {
-            return await _context.Offers
-                .AsNoTracking()
-                .Where(o => o.Category.Name.ToLower() == categoryName.ToLower() && o.IsActive)
-                .Include(o => o.Place)
-                .Select(MapToPreviewDto())
-                .ToListAsync();
-        }
+        
 
         public async Task<OfferResponseDto?> GetByIdAsync(int id)
         {
@@ -69,16 +80,7 @@ namespace SalesHub.Services
                 })
                 .FirstOrDefaultAsync();
         }
-        public async Task<IEnumerable<OfferPreviewDto>> SearchAsync(string query)
-        {
-            var searchTerm = query.Trim().ToLower();
-            return await _context.Offers
-                .AsNoTracking()
-                .Include(o => o.Place)
-                .Where(o => o.IsActive && (o.Title.ToLower().Contains(searchTerm) || o.Description.ToLower().Contains(searchTerm)))
-                .Select(MapToPreviewDto())
-                .ToListAsync();
-        }
+        
 
         public async Task<int> CreateOfferAsync(OfferCreateDto dto)
         {

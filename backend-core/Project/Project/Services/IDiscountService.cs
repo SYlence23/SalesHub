@@ -5,10 +5,8 @@ namespace SalesHub.Services
 {
     public interface IDiscountService
     {
-        Task<(IEnumerable<OfferPreviewDto> Data, int Total)> GetAllAsync(int page, int pageSize);
-        Task<IEnumerable<OfferPreviewDto>> GetByCategoryNameAsync(string categoryName);
+        Task<(IEnumerable<OfferPreviewDto> Data, int Total)> GetAllAsync(int page, int pageSize, string? searchTerm = null, int? categoryId = null, string? sortOption = null);
         Task<OfferResponseDto?> GetByIdAsync(int id);
-        Task<IEnumerable<OfferPreviewDto>> SearchAsync(string query);
         Task<int> CreateOfferAsync(OfferCreateDto dto);
         Task<bool> UpdateStatusAsync(int id, bool isActive);
         Task<bool> DeleteAsync(int id);
