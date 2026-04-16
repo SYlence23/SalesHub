@@ -6,6 +6,12 @@ import OfferCard, { type Offer } from '../components/Offer/OfferCard';
 import OfferSkeletonCard from '../components/Offer/OfferSkeletonCard';
 import OfferFilters, { type Category } from '../components/Offer/OfferFilters';
 
+interface ApiOfferResponse {
+    total: number;
+    page: number;
+    data: Offer[];
+}
+
 export default function OfferPage() {
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -49,7 +55,7 @@ export default function OfferPage() {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await axios.get<Category[]>('/api/category');
+                const response = await axios.get<Category[]>('/api/Discounts/categories');
                 if (Array.isArray(response.data)) {
                     setCategories(response.data);
                 } else {
@@ -74,9 +80,9 @@ export default function OfferPage() {
                 if (selectedCategory !== null) params.append('categoryId', selectedCategory.toString());
                 if (sortOption) params.append('sortOption', sortOption);
 
-                const response = await axios.get<Offer[]>(`/api/offer?${params.toString()}`);
-                if (Array.isArray(response.data)) {
-                    setOffers(response.data);
+                const response = await axios.get<ApiOfferResponse>(`/api/Discounts?${params.toString()}`);
+                if (Array.isArray(response.data.data)) {
+                    setOffers(response.data.data);
                 } else {
                     console.error("Expected array of offers, got:", typeof response.data);
                     setOffers([]);

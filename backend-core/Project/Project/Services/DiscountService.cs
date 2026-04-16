@@ -35,8 +35,10 @@ namespace SalesHub.Services
 
             query = sortOption switch
             {
-                "lowest-price" => query.OrderBy(o => o.NewPrice),
-                "highest-price" => query.OrderByDescending(o => o.NewPrice),
+                "newest" => query.OrderBy(o => o.CreatedAt),
+                "price_asc" => query.OrderBy(o => o.NewPrice),
+                "price_desc" => query.OrderByDescending(o => o.NewPrice),
+                "discount_desc" => query.OrderByDescending(query => (query.OldPrice - query.NewPrice) * 100 / query.OldPrice),
                 _ => query.OrderByDescending(o => o.Id)
             };
 
@@ -50,7 +52,13 @@ namespace SalesHub.Services
             return (data, total);
         }
 
-        
+        public async Task<IEnumerable<CategoryPreviewDto>> GetCategoriesAsync()
+        { 
+            return await _context.OfferCategories
+                .AsNoTracking()
+                .Select(c => new CategoryPreviewDto { Id = c.Id, Name = c.Name })
+                .ToListAsync();
+        }
 
         public async Task<OfferResponseDto?> GetByIdAsync(int id)
         {
