@@ -55,12 +55,12 @@ export default function Navbar() {
 
                         {/* Right actions */}
                         <div className="flex items-center gap-3">
-                            <button className="flex btn-primary text-sm px-4 py-2">
+                            <Link to="/login" className="flex btn-primary text-sm px-4 py-2">
                                 Log In
-                            </button>
-                            <button className="hidden sm:flex btn-secondary text-sm px-4 py-2">
+                            </Link>
+                            <Link to="/register" className="hidden sm:flex btn-secondary text-sm px-4 py-2">
                                 Sign Up
-                            </button>
+                            </Link>
                         </div>
 
                     </div>
