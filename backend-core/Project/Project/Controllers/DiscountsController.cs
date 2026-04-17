@@ -30,7 +30,13 @@ namespace Project.Controllers
             return Ok(new { Total = result.Total, Page = page, Data = result.Data });
         }
 
-        
+        [HttpGet("categories")]
+        public async Task<IActionResult> GetCategories()
+        {
+            var categories = await _discountService.GetCategoriesAsync();
+            return Ok(categories);
+        }
+
 
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
