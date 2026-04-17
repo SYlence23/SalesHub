@@ -28,8 +28,8 @@ export default function OfferFilters({
   isMobileDrawerOpen = false,
   onCloseMobileDrawer
 }: OfferFiltersProps) {
-  
-  const FilterContent = () => (
+
+  const FilterContent = (
     <div className="flex flex-col gap-6">
       {/* Search */}
       <div>
@@ -98,7 +98,7 @@ export default function OfferFilters({
 
       {/* Apply Button (Mobile only) */}
       <div className="mt-4 lg:hidden">
-        <button 
+        <button
           onClick={onCloseMobileDrawer}
           className="w-full btn-primary"
         >
@@ -113,7 +113,7 @@ export default function OfferFilters({
       {/* Desktop Sidebar */}
       <div className="hidden lg:block w-72 shrink-0">
         <div className="glass-card p-6 sticky top-24">
-          <FilterContent />
+          {FilterContent}
         </div>
       </div>
 
@@ -121,24 +121,24 @@ export default function OfferFilters({
       {isMobileDrawerOpen && (
         <div className="fixed inset-0 z-50 lg:hidden flex">
           {/* Backdrop */}
-          <div 
+          <div
             className="fixed inset-0 bg-black/50 backdrop-blur-sm"
             onClick={onCloseMobileDrawer}
           />
-          
+
           {/* Drawer */}
           <div className="relative w-full max-w-xs h-full bg-white dark:bg-zinc-900 shadow-2xl p-6 overflow-y-auto transform transition-transform ml-auto flex flex-col border-l border-zinc-200 dark:border-white/10">
             <div className="flex items-center justify-between mb-8">
               <h3 className="font-bold text-2xl">Filters</h3>
-              <button 
+              <button
                 onClick={onCloseMobileDrawer}
                 className="p-2 -mr-2 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800"
               >
                 <X className="w-6 h-6" />
               </button>
             </div>
-            
-            <FilterContent />
+
+            {FilterContent}
           </div>
         </div>
       )}
