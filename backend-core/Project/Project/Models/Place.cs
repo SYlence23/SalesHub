@@ -1,4 +1,5 @@
-﻿namespace SalesHub.Models
+﻿using NetTopologySuite.Geometries;
+namespace SalesHub.Models
 {
     public class Place : BaseEntity
     {

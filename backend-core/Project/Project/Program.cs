@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SalesHub.Data;
-using Scalar.AspNetCore; 
+using Scalar.AspNetCore;
+using SalesHub.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,7 +17,7 @@ builder.Services.AddControllers()
     {
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     });
-
+builder.Services.AddScoped<IDiscountService, DiscountService>();
 builder.Services.AddOpenApi();
 
 builder.Services.AddCors(options =>
@@ -28,15 +29,15 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
-
+app.UseStaticFiles();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-
     app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();
+
 
 app.UseCors("AllowAll");
 
