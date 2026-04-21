@@ -117,7 +117,10 @@ export default function OfferFilters({
       </div>
 
       {/* Apply Button */}
-      <div className="mt-4">
+      <div className="mt-4 flex flex-col gap-2">
+        <button className="btn-secondary py-2" onClick={() => { onApplyFilters({ searchTerm: '', selectedCategory: null, sortOption: 'newest' }) }}>
+          Clear Filters
+        </button>
         <button
           onClick={handleApply}
           className="w-full btn-primary"
