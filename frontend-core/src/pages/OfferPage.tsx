@@ -153,7 +153,7 @@ export default function OfferPage() {
                             </p>
                             <button
                                 onClick={() => {
-                                    handleApplyFilters({ searchTerm: '', selectedCategory: null, sortOption });
+                                    handleApplyFilters({ searchTerm: '', selectedCategory: null, sortOption: 'newest' });
                                 }}
                                 className="mt-6 btn-primary"
                             >

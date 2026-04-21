@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Search, X } from 'lucide-react';
 
 export interface Category {
@@ -30,11 +30,15 @@ export default function OfferFilters({
   const [localSelectedCategory, setLocalSelectedCategory] = useState<number | null>(selectedCategory);
   const [localSortOption, setLocalSortOption] = useState(sortOption);
 
-  useEffect(() => {
+  const [prevProps, setPrevProps] = useState({ searchTerm, selectedCategory, sortOption });
+
+
+  if (searchTerm !== prevProps.searchTerm || selectedCategory !== prevProps.selectedCategory || sortOption !== prevProps.sortOption) {
+    setPrevProps({ searchTerm, selectedCategory, sortOption });
     setLocalSearchTerm(searchTerm);
     setLocalSelectedCategory(selectedCategory);
     setLocalSortOption(sortOption);
-  }, [searchTerm, selectedCategory, sortOption]);
+  }
 
   const handleApply = () => {
     onApplyFilters({
