@@ -28,28 +28,25 @@ export default function OfferPage() {
     const selectedCategory = selectedCategoryStr ? parseInt(selectedCategoryStr, 10) : null;
     const sortOption = searchParams.get('sortOption') || 'newest';
 
-    const updateFilter = (key: string, value: string | null) => {
+    const handleApplyFilters = (filters: { searchTerm: string; selectedCategory: number | null; sortOption: string }) => {
         const newParams = new URLSearchParams(searchParams);
-        if (value) {
-            newParams.set(key, value);
+        if (filters.searchTerm) {
+            newParams.set('searchTerm', filters.searchTerm);
         } else {
-            newParams.delete(key);
+            newParams.delete('searchTerm');
+        }
+        if (filters.selectedCategory !== null) {
+            newParams.set('categoryId', filters.selectedCategory.toString());
+        } else {
+            newParams.delete('categoryId');
+        }
+        if (filters.sortOption) {
+            newParams.set('sortOption', filters.sortOption);
+        } else {
+            newParams.delete('sortOption');
         }
         setSearchParams(newParams);
     };
-
-    const handleSearchChange = (term: string) => updateFilter('searchTerm', term || null);
-    const handleCategoryChange = (id: number | null) => updateFilter('categoryId', id?.toString() || null);
-    const handleSortChange = (option: string) => updateFilter('sortOption', option);
-
-
-    useEffect(() => {
-        const newParams = new URLSearchParams();
-        if (searchTerm) newParams.set('searchTerm', searchTerm);
-        if (selectedCategory !== null) newParams.set('categoryId', selectedCategory.toString());
-        if (sortOption) newParams.set('sortOption', sortOption);
-        setSearchParams(newParams);
-    }, [searchTerm, selectedCategory, sortOption]);
 
     // Fetch categories on mount
     useEffect(() => {
@@ -124,11 +121,9 @@ export default function OfferPage() {
                 <OfferFilters
                     categories={categories}
                     searchTerm={searchTerm}
-                    setSearchTerm={handleSearchChange}
                     selectedCategory={selectedCategory}
-                    setSelectedCategory={handleCategoryChange}
                     sortOption={sortOption}
-                    setSortOption={handleSortChange}
+                    onApplyFilters={handleApplyFilters}
                     isMobileDrawerOpen={isMobileDrawerOpen}
                     onCloseMobileDrawer={() => setIsMobileDrawerOpen(false)}
                 />
@@ -158,8 +153,7 @@ export default function OfferPage() {
                             </p>
                             <button
                                 onClick={() => {
-                                    handleSearchChange('');
-                                    handleCategoryChange(null);
+                                    handleApplyFilters({ searchTerm: '', selectedCategory: null, sortOption });
                                 }}
                                 className="mt-6 btn-primary"
                             >
