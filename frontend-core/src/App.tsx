@@ -11,7 +11,7 @@ function App() {
       <Navbar />
       <main className="grow pt-15">
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/offers" element={<OfferPage />} />
           <Route path="/register" element={<Register />} />
