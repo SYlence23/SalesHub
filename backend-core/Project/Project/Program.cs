@@ -18,6 +18,7 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     });
 builder.Services.AddScoped<IDiscountService, DiscountService>();
+builder.Services.AddScoped<IPlaceService, PlaceService>();
 builder.Services.AddOpenApi();
 
 builder.Services.AddCors(options =>

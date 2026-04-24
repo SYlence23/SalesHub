@@ -1,0 +1,402 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { ImagePlus, MapPin, Loader2, Plus, ChevronLeft } from 'lucide-react';
+import { type Category } from '../components/Offer/OfferFilters';
+
+interface Place {
+    id: number;
+    name: string;
+    description: string;
+    isOnline: boolean;
+    offerUrl: string;
+}
+
+export default function OfferCreatePage() {
+    const navigate = useNavigate();
+    
+    // Core Form State
+    const [title, setTitle] = useState('');
+    const [description, setDescription] = useState('');
+    const [newPrice, setNewPrice] = useState('');
+    const [oldPrice, setOldPrice] = useState('');
+    const [validFrom, setValidFrom] = useState('');
+    const [validTo, setValidTo] = useState('');
+    const [categoryId, setCategoryId] = useState('');
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+    // Place State
+    const [places, setPlaces] = useState<Place[]>([]);
+    const [selectedPlaceId, setSelectedPlaceId] = useState('');
+    const [isNewPlace, setIsNewPlace] = useState(false);
+    
+    // New Place Form State
+    const [placeName, setPlaceName] = useState('');
+    const [placeDescription, setPlaceDescription] = useState('');
+    const [isOnline, setIsOnline] = useState(false);
+    const [offerUrl, setOfferUrl] = useState('');
+    const [latitude, setLatitude] = useState('');
+    const [longitude, setLongitude] = useState('');
+
+    // Fetching / Meta State
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchDependencies = async () => {
+            try {
+                const [catsResponse, placesResponse] = await Promise.all([
+                    axios.get<Category[]>('/api/Discounts/categories'),
+                    axios.get<Place[]>('/api/Places')
+                ]);
+                setCategories(catsResponse.data);
+                setPlaces(placesResponse.data);
+            } catch (err) {
+                console.error("Failed to load initial data", err);
+                setError("Could not load categories or places. Please try refreshing.");
+            }
+        };
+        fetchDependencies();
+    }, []);
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setImagePreview(URL.createObjectURL(file));
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError(null);
+        setIsSubmitting(true);
+
+        try {
+            let finalPlaceId = selectedPlaceId;
+
+            // 1. Create Place if needed
+            if (isNewPlace) {
+                const placeData = {
+                    name: placeName,
+                    description: placeDescription,
+                    isOnline,
+                    offerUrl: offerUrl || null,
+                    latitude: latitude ? parseFloat(latitude) : null,
+                    longitude: longitude ? parseFloat(longitude) : null,
+                };
+                
+                const placeRes = await axios.post<{id: number}>('/api/Places', placeData);
+                finalPlaceId = placeRes.data.id.toString();
+            }
+
+            if (!finalPlaceId) {
+                throw new Error("Please select or create a place.");
+            }
+
+            if (!categoryId) {
+                throw new Error("Please select a category.");
+            }
+
+            // 2. Create Offer
+            const offerData = {
+                title,
+                description,
+                newPrice: parseFloat(newPrice),
+                oldPrice: oldPrice ? parseFloat(oldPrice) : null,
+                validFrom: validFrom ? new Date(validFrom).toISOString() : null,
+                validTo: validTo ? new Date(validTo).toISOString() : null,
+                placeId: parseInt(finalPlaceId),
+                categoryId: parseInt(categoryId),
+            };
+
+            await axios.post('/api/Discounts', offerData);
+
+            // Cloud Image upload is left for future development as requested
+            // if (imageFile) { /* Handle external image upload here in the future */ }
+
+            navigate('/offers');
+        } catch (err: any) {
+            console.error("Error creating offer:", err);
+            setError(err.response?.data?.message || err.message || "An unexpected error occurred.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <button 
+                onClick={() => navigate('/offers')}
+                className="flex items-center text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 mb-6 transition-colors"
+            >
+                <ChevronLeft className="w-5 h-5 mr-1" />
+                Back to Offers
+            </button>
+            
+            <div className="mb-8">
+                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
+                    Create New <span className="text-primary-500">Offer</span>
+                </h1>
+                <p className="text-zinc-500 dark:text-zinc-400">
+                    Fill in the details to publish a new discount or deal.
+                </p>
+            </div>
+
+            {error && (
+                <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-4 rounded-lg mb-8 border border-red-200 dark:border-red-800/30">
+                    {error}
+                </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-8">
+                {/* --- IMAGE UPLOAD (UI ONLY) --- */}
+                <div className="glass-card p-6 rounded-2xl">
+                    <h2 className="text-xl font-semibold mb-4">Offer Image</h2>
+                    <div className="flex items-center justify-center w-full">
+                        <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-zinc-300 border-dashed rounded-lg cursor-pointer bg-zinc-50 dark:hover:bg-zinc-800/50 dark:bg-zinc-900/50 hover:bg-zinc-100 dark:border-zinc-700 transition-all">
+                            {imagePreview ? (
+                                <img src={imagePreview} alt="Preview" className="w-full h-full object-cover rounded-lg" />
+                            ) : (
+                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <ImagePlus className="w-10 h-10 mb-3 text-zinc-400" />
+                                    <p className="mb-2 text-sm text-zinc-500 dark:text-zinc-400">
+                                        <span className="font-semibold">Click to upload</span> or drag and drop
+                                    </p>
+                                    <p className="text-xs text-zinc-500 dark:text-zinc-400">PNG, JPG or WEBP (MAX. 800x400px)</p>
+                                </div>
+                            )}
+                            <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+                        </label>
+                    </div>
+                </div>
+
+                {/* --- BASIC INFO --- */}
+                <div className="glass-card p-6 rounded-2xl space-y-6">
+                    <h2 className="text-xl font-semibold mb-4">Basic Details</h2>
+                    
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Title *</label>
+                        <input
+                            type="text"
+                            required
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            className="input-field w-full"
+                            placeholder="e.g. 50% Off Summer Collection"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Description</label>
+                        <textarea
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            className="input-field w-full min-h-[100px] resize-y"
+                            placeholder="Describe your offer..."
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-medium mb-2">Category *</label>
+                            <select
+                                required
+                                value={categoryId}
+                                onChange={(e) => setCategoryId(e.target.value)}
+                                className="input-field w-full appearance-none"
+                            >
+                                <option value="" disabled>Select a category</option>
+                                {categories.map(c => (
+                                    <option key={c.id} value={c.id}>{c.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                {/* --- PRICING & DATES --- */}
+                <div className="glass-card p-6 rounded-2xl space-y-6">
+                    <h2 className="text-xl font-semibold mb-4">Pricing & Dates</h2>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-medium mb-2">New Price *</label>
+                            <input
+                                type="number"
+                                required
+                                min="0"
+                                step="0.01"
+                                value={newPrice}
+                                onChange={(e) => setNewPrice(e.target.value)}
+                                className="input-field w-full"
+                                placeholder="0.00"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-2">Old Price (Optional)</label>
+                            <input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={oldPrice}
+                                onChange={(e) => setOldPrice(e.target.value)}
+                                className="input-field w-full"
+                                placeholder="0.00"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-2">Valid From</label>
+                            <input
+                                type="datetime-local"
+                                value={validFrom}
+                                onChange={(e) => setValidFrom(e.target.value)}
+                                className="input-field w-full"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-2">Valid To</label>
+                            <input
+                                type="datetime-local"
+                                value={validTo}
+                                onChange={(e) => setValidTo(e.target.value)}
+                                className="input-field w-full"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* --- PLACE DETAILS --- */}
+                <div className="glass-card p-6 rounded-2xl space-y-6 border-l-4 border-primary-500">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-xl font-semibold">Store / Place</h2>
+                        <button
+                            type="button"
+                            onClick={() => setIsNewPlace(!isNewPlace)}
+                            className="text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 flex items-center gap-1"
+                        >
+                            {isNewPlace ? (
+                                <>Select Existing Place</>
+                            ) : (
+                                <><Plus className="w-4 h-4" /> Add New Place</>
+                            )}
+                        </button>
+                    </div>
+
+                    {!isNewPlace ? (
+                        <div>
+                            <label className="block text-sm font-medium mb-2">Select Place *</label>
+                            <select
+                                required={!isNewPlace}
+                                value={selectedPlaceId}
+                                onChange={(e) => setSelectedPlaceId(e.target.value)}
+                                className="input-field w-full appearance-none"
+                            >
+                                <option value="" disabled>Select an existing store</option>
+                                {places.map(p => (
+                                    <option key={p.id} value={p.id}>{p.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                    ) : (
+                        <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
+                            <div>
+                                <label className="block text-sm font-medium mb-2">Store Name *</label>
+                                <input
+                                    type="text"
+                                    required={isNewPlace}
+                                    value={placeName}
+                                    onChange={(e) => setPlaceName(e.target.value)}
+                                    className="input-field w-full"
+                                    placeholder="e.g. Mega Store Downtown"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-2">Store Description</label>
+                                <input
+                                    type="text"
+                                    value={placeDescription}
+                                    onChange={(e) => setPlaceDescription(e.target.value)}
+                                    className="input-field w-full"
+                                    placeholder="Brief description..."
+                                />
+                            </div>
+                            
+                            <label className="flex items-center gap-3 p-4 border border-zinc-200 dark:border-zinc-800 rounded-xl cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors">
+                                <input
+                                    type="checkbox"
+                                    checked={isOnline}
+                                    onChange={(e) => setIsOnline(e.target.checked)}
+                                    className="w-5 h-5 rounded border-zinc-300 text-primary-500 focus:ring-primary-500"
+                                />
+                                <div>
+                                    <p className="font-medium">Online Store</p>
+                                    <p className="text-sm text-zinc-500">This offer is valid online only.</p>
+                                </div>
+                            </label>
+
+                            {isOnline ? (
+                                <div>
+                                    <label className="block text-sm font-medium mb-2">Offer URL</label>
+                                    <input
+                                        type="url"
+                                        value={offerUrl}
+                                        onChange={(e) => setOfferUrl(e.target.value)}
+                                        className="input-field w-full"
+                                        placeholder="https://..."
+                                    />
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-zinc-50 dark:bg-zinc-900/30 rounded-xl border border-zinc-200 dark:border-zinc-800/50">
+                                    <div className="col-span-full flex items-center gap-2 text-zinc-600 dark:text-zinc-400 mb-2">
+                                        <MapPin className="w-4 h-4" />
+                                        <span className="text-sm font-medium">Physical Location Coordinates</span>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">Latitude</label>
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            value={latitude}
+                                            onChange={(e) => setLatitude(e.target.value)}
+                                            className="input-field w-full"
+                                            placeholder="48.8566"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">Longitude</label>
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            value={longitude}
+                                            onChange={(e) => setLongitude(e.target.value)}
+                                            className="input-field w-full"
+                                            placeholder="2.3522"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                <div className="flex justify-end pt-4">
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="btn-primary w-full sm:w-auto px-10 py-3 text-lg relative overflow-hidden"
+                    >
+                        {isSubmitting ? (
+                            <span className="flex items-center gap-2">
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                                Publishing...
+                            </span>
+                        ) : (
+                            "Publish Offer"
+                        )}
+                    </button>
+                </div>
+            </form>
+        </div>
+    );
+}

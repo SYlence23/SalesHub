@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Filter } from 'lucide-react';
 import OfferCard, { type Offer } from '../components/Offer/OfferCard';
@@ -14,6 +14,7 @@ interface ApiOfferResponse {
 
 export default function OfferPage() {
     const [searchParams, setSearchParams] = useSearchParams();
+    const navigate = useNavigate();
 
     const [offers, setOffers] = useState<Offer[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
@@ -106,14 +107,22 @@ export default function OfferPage() {
                     </p>
                 </div>
 
-                {/* Mobile Filter Toggle Button */}
-                <button
-                    onClick={() => setIsMobileDrawerOpen(true)}
-                    className="lg:hidden btn-secondary gap-2"
-                >
-                    <Filter className="w-5 h-5" />
-                    <span>Filters</span>
-                </button>
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={() => navigate('/offers/create')}
+                        className="btn-primary"
+                    >
+                        Create Offer
+                    </button>
+                    {/* Mobile Filter Toggle Button */}
+                    <button
+                        onClick={() => setIsMobileDrawerOpen(true)}
+                        className="lg:hidden btn-secondary gap-2"
+                    >
+                        <Filter className="w-5 h-5" />
+                        <span>Filters</span>
+                    </button>
+                </div>
             </div>
 
             <div className="flex flex-col lg:flex-row gap-8">
