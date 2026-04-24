@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ImagePlus, MapPin, Loader2, Plus, ChevronLeft } from 'lucide-react';
+import { ImagePlus, MapPin, Loader2, Plus, ChevronLeft, X } from 'lucide-react';
 import { type Category } from '../components/Offer/OfferFilters';
 
 interface Place {
@@ -14,7 +14,7 @@ interface Place {
 
 export default function OfferCreatePage() {
     const navigate = useNavigate();
-    
+
     // Core Form State
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -23,13 +23,13 @@ export default function OfferCreatePage() {
     const [validFrom, setValidFrom] = useState('');
     const [validTo, setValidTo] = useState('');
     const [categoryId, setCategoryId] = useState('');
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
     // Place State
     const [places, setPlaces] = useState<Place[]>([]);
     const [selectedPlaceId, setSelectedPlaceId] = useState('');
     const [isNewPlace, setIsNewPlace] = useState(false);
-    
+
     // New Place Form State
     const [placeName, setPlaceName] = useState('');
     const [placeDescription, setPlaceDescription] = useState('');
@@ -61,10 +61,15 @@ export default function OfferCreatePage() {
     }, []);
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            setImagePreview(URL.createObjectURL(file));
+        if (e.target.files && e.target.files.length > 0) {
+            const files = Array.from(e.target.files);
+            const newPreviews = files.map(file => URL.createObjectURL(file));
+            setImagePreviews(prev => [...prev, ...newPreviews]);
         }
+    };
+
+    const removeImage = (indexToRemove: number) => {
+        setImagePreviews(prev => prev.filter((_, index) => index !== indexToRemove));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -85,8 +90,8 @@ export default function OfferCreatePage() {
                     latitude: latitude ? parseFloat(latitude) : null,
                     longitude: longitude ? parseFloat(longitude) : null,
                 };
-                
-                const placeRes = await axios.post<{id: number}>('/api/Places', placeData);
+
+                const placeRes = await axios.post<{ id: number }>('/api/Places', placeData);
                 finalPlaceId = placeRes.data.id.toString();
             }
 
@@ -126,14 +131,14 @@ export default function OfferCreatePage() {
 
     return (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <button 
+            <button
                 onClick={() => navigate('/offers')}
                 className="flex items-center text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 mb-6 transition-colors"
             >
                 <ChevronLeft className="w-5 h-5 mr-1" />
                 Back to Offers
             </button>
-            
+
             <div className="mb-8">
                 <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
                     Create New <span className="text-primary-500">Offer</span>
@@ -152,21 +157,35 @@ export default function OfferCreatePage() {
             <form onSubmit={handleSubmit} className="space-y-8">
                 {/* --- IMAGE UPLOAD (UI ONLY) --- */}
                 <div className="glass-card p-6 rounded-2xl">
-                    <h2 className="text-xl font-semibold mb-4">Offer Image</h2>
-                    <div className="flex items-center justify-center w-full">
-                        <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-zinc-300 border-dashed rounded-lg cursor-pointer bg-zinc-50 dark:hover:bg-zinc-800/50 dark:bg-zinc-900/50 hover:bg-zinc-100 dark:border-zinc-700 transition-all">
-                            {imagePreview ? (
-                                <img src={imagePreview} alt="Preview" className="w-full h-full object-cover rounded-lg" />
-                            ) : (
-                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                    <ImagePlus className="w-10 h-10 mb-3 text-zinc-400" />
-                                    <p className="mb-2 text-sm text-zinc-500 dark:text-zinc-400">
-                                        <span className="font-semibold">Click to upload</span> or drag and drop
-                                    </p>
-                                    <p className="text-xs text-zinc-500 dark:text-zinc-400">PNG, JPG or WEBP (MAX. 800x400px)</p>
+                    <h2 className="text-xl font-semibold mb-4">Offer Images</h2>
+                    
+                    {imagePreviews.length > 0 && (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-4">
+                            {imagePreviews.map((preview, index) => (
+                                <div key={index} className="relative aspect-square rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700">
+                                    <img src={preview} alt={`Preview ${index}`} className="w-full h-full object-cover" />
+                                    <button 
+                                        type="button" 
+                                        onClick={() => removeImage(index)}
+                                        className="absolute top-2 right-2 p-1.5 bg-red-500/80 hover:bg-red-600 text-white rounded-full transition-colors backdrop-blur-sm"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
                                 </div>
-                            )}
-                            <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+                            ))}
+                        </div>
+                    )}
+
+                    <div className="flex items-center justify-center w-full">
+                        <label className={`flex flex-col items-center justify-center w-full border-2 border-zinc-300 border-dashed rounded-lg cursor-pointer bg-zinc-50 dark:hover:bg-zinc-800/50 dark:bg-zinc-900/50 hover:bg-zinc-100 dark:border-zinc-700 transition-all ${imagePreviews.length > 0 ? 'h-32' : 'h-64'}`}>
+                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                <ImagePlus className={`${imagePreviews.length > 0 ? 'w-6 h-6 mb-2' : 'w-10 h-10 mb-3'} text-zinc-400`} />
+                                <p className={`mb-2 text-zinc-500 dark:text-zinc-400 ${imagePreviews.length > 0 ? 'text-sm' : ''}`}>
+                                    <span className="font-semibold">Click to upload</span> or drag and drop
+                                </p>
+                                {!imagePreviews.length && <p className="text-xs text-zinc-500 dark:text-zinc-400">PNG, JPG or WEBP (MAX. 800x400px)</p>}
+                            </div>
+                            <input type="file" className="hidden" accept="image/*" multiple onChange={handleImageChange} />
                         </label>
                     </div>
                 </div>
@@ -174,7 +193,7 @@ export default function OfferCreatePage() {
                 {/* --- BASIC INFO --- */}
                 <div className="glass-card p-6 rounded-2xl space-y-6">
                     <h2 className="text-xl font-semibold mb-4">Basic Details</h2>
-                    
+
                     <div>
                         <label className="block text-sm font-medium mb-2">Title *</label>
                         <input
@@ -182,7 +201,7 @@ export default function OfferCreatePage() {
                             required
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
-                            className="input-field w-full"
+                            className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
                             placeholder="e.g. 50% Off Summer Collection"
                         />
                     </div>
@@ -192,7 +211,7 @@ export default function OfferCreatePage() {
                         <textarea
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            className="input-field w-full min-h-[100px] resize-y"
+                            className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all min-h-[100px] resize-x"
                             placeholder="Describe your offer..."
                         />
                     </div>
@@ -204,7 +223,7 @@ export default function OfferCreatePage() {
                                 required
                                 value={categoryId}
                                 onChange={(e) => setCategoryId(e.target.value)}
-                                className="input-field w-full appearance-none"
+                                className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all appearance-none"
                             >
                                 <option value="" disabled>Select a category</option>
                                 {categories.map(c => (
@@ -218,7 +237,7 @@ export default function OfferCreatePage() {
                 {/* --- PRICING & DATES --- */}
                 <div className="glass-card p-6 rounded-2xl space-y-6">
                     <h2 className="text-xl font-semibold mb-4">Pricing & Dates</h2>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label className="block text-sm font-medium mb-2">New Price *</label>
@@ -229,7 +248,7 @@ export default function OfferCreatePage() {
                                 step="0.01"
                                 value={newPrice}
                                 onChange={(e) => setNewPrice(e.target.value)}
-                                className="input-field w-full"
+                                className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
                                 placeholder="0.00"
                             />
                         </div>
@@ -241,7 +260,7 @@ export default function OfferCreatePage() {
                                 step="0.01"
                                 value={oldPrice}
                                 onChange={(e) => setOldPrice(e.target.value)}
-                                className="input-field w-full"
+                                className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
                                 placeholder="0.00"
                             />
                         </div>
@@ -251,7 +270,7 @@ export default function OfferCreatePage() {
                                 type="datetime-local"
                                 value={validFrom}
                                 onChange={(e) => setValidFrom(e.target.value)}
-                                className="input-field w-full"
+                                className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
                             />
                         </div>
                         <div>
@@ -260,14 +279,14 @@ export default function OfferCreatePage() {
                                 type="datetime-local"
                                 value={validTo}
                                 onChange={(e) => setValidTo(e.target.value)}
-                                className="input-field w-full"
+                                className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
                             />
                         </div>
                     </div>
                 </div>
 
                 {/* --- PLACE DETAILS --- */}
-                <div className="glass-card p-6 rounded-2xl space-y-6 border-l-4 border-primary-500">
+                <div className="glass-card p-6 rounded-2xl space-y-6 border-2 border-primary-500">
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-xl font-semibold">Store / Place</h2>
                         <button
@@ -290,7 +309,7 @@ export default function OfferCreatePage() {
                                 required={!isNewPlace}
                                 value={selectedPlaceId}
                                 onChange={(e) => setSelectedPlaceId(e.target.value)}
-                                className="input-field w-full appearance-none"
+                                className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all appearance-none"
                             >
                                 <option value="" disabled>Select an existing store</option>
                                 {places.map(p => (
@@ -307,7 +326,7 @@ export default function OfferCreatePage() {
                                     required={isNewPlace}
                                     value={placeName}
                                     onChange={(e) => setPlaceName(e.target.value)}
-                                    className="input-field w-full"
+                                    className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
                                     placeholder="e.g. Mega Store Downtown"
                                 />
                             </div>
@@ -317,11 +336,11 @@ export default function OfferCreatePage() {
                                     type="text"
                                     value={placeDescription}
                                     onChange={(e) => setPlaceDescription(e.target.value)}
-                                    className="input-field w-full"
+                                    className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
                                     placeholder="Brief description..."
                                 />
                             </div>
-                            
+
                             <label className="flex items-center gap-3 p-4 border border-zinc-200 dark:border-zinc-800 rounded-xl cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors">
                                 <input
                                     type="checkbox"
@@ -342,7 +361,7 @@ export default function OfferCreatePage() {
                                         type="url"
                                         value={offerUrl}
                                         onChange={(e) => setOfferUrl(e.target.value)}
-                                        className="input-field w-full"
+                                        className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
                                         placeholder="https://..."
                                     />
                                 </div>
@@ -359,7 +378,7 @@ export default function OfferCreatePage() {
                                             step="any"
                                             value={latitude}
                                             onChange={(e) => setLatitude(e.target.value)}
-                                            className="input-field w-full"
+                                            className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
                                             placeholder="48.8566"
                                         />
                                     </div>
@@ -370,7 +389,7 @@ export default function OfferCreatePage() {
                                             step="any"
                                             value={longitude}
                                             onChange={(e) => setLongitude(e.target.value)}
-                                            className="input-field w-full"
+                                            className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
                                             placeholder="2.3522"
                                         />
                                     </div>
