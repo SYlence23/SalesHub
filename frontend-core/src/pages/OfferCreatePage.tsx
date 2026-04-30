@@ -12,22 +12,37 @@ interface Place {
     offerUrl: string;
 }
 
+interface OfferData {
+    title: string;
+    description: string;
+    newPrice: number;
+    oldPrice: number;
+    validFrom: string | null;
+    validTo: string;
+    placeId: number;
+    categoryId: number;
+    imageUrls: string[];
+}
+
 export default function OfferCreatePage() {
     const navigate = useNavigate();
 
+    const { localTitle, localDescription, localNewPrice, localOldPrice, localValidFrom, localValidTo, localPlaceId, localCategoryId, localImageUrls } = JSON.parse(localStorage.getItem('offerData') || '{}');
+
+
     // Core Form State
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [newPrice, setNewPrice] = useState('');
-    const [oldPrice, setOldPrice] = useState('');
-    const [validFrom, setValidFrom] = useState('');
-    const [validTo, setValidTo] = useState('');
-    const [categoryId, setCategoryId] = useState('');
-    const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+    const [title, setTitle] = useState(localTitle || '');
+    const [description, setDescription] = useState(localDescription || '');
+    const [newPrice, setNewPrice] = useState(localNewPrice || '');
+    const [oldPrice, setOldPrice] = useState(localOldPrice || '');
+    const [validFrom, setValidFrom] = useState(localValidFrom || '');
+    const [validTo, setValidTo] = useState(localValidTo || '');
+    const [categoryId, setCategoryId] = useState(localCategoryId || '');
+    const [imagePreviews, setImagePreviews] = useState<string[]>(localImageUrls || []);
 
     // Place State
     const [places, setPlaces] = useState<Place[]>([]);
-    const [selectedPlaceId, setSelectedPlaceId] = useState('');
+    const [selectedPlaceId, setSelectedPlaceId] = useState(localPlaceId || '');
     const [isNewPlace, setIsNewPlace] = useState(false);
 
     // New Place Form State
@@ -60,17 +75,53 @@ export default function OfferCreatePage() {
         fetchDependencies();
     }, []);
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+
+    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             const files = Array.from(e.target.files);
-            const newPreviews = files.map(file => URL.createObjectURL(file));
-            setImagePreviews(prev => [...prev, ...newPreviews]);
+            try {
+                const newPreviews = await Promise.all(files.map(async file => {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    const { data } = await axios.post<{ message: string, url: string }>("/api/File/uploadImage?prefix=offer-images", formData);
+                    return data.url;
+                }));
+                setImagePreviews([...imagePreviews, ...newPreviews]);
+            } catch (err) {
+                console.error("Failed to upload images", err);
+                setError("Could not upload images. Please try refreshing.");
+            } finally {
+                e.target.value = "";
+            }
+
         }
     };
 
     const removeImage = (indexToRemove: number) => {
         setImagePreviews(prev => prev.filter((_, index) => index !== indexToRemove));
     };
+
+
+
+    useEffect(() => {
+        localStorage.setItem('offerData', JSON.stringify({
+            localTitle: title,
+            localDescription: description,
+            localNewPrice: newPrice,
+            localOldPrice: oldPrice,
+            localValidFrom: validFrom,
+            localValidTo: validTo,
+            localPlaceId: selectedPlaceId,
+            localCategoryId: categoryId,
+            localImageUrls: imagePreviews
+        }));
+        new Promise((resolve) => {
+            setTimeout(() => {
+                resolve(true);
+                localStorage.removeItem('offerData');
+            }, 180000);
+        });
+    }, [title, description, newPrice, oldPrice, validFrom, validTo, selectedPlaceId, categoryId, imagePreviews])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -104,15 +155,16 @@ export default function OfferCreatePage() {
             }
 
             // 2. Create Offer
-            const offerData = {
+            const offerData: OfferData = {
                 title,
                 description,
                 newPrice: parseFloat(newPrice),
-                oldPrice: oldPrice ? parseFloat(oldPrice) : null,
+                oldPrice: parseFloat(oldPrice),
                 validFrom: validFrom ? new Date(validFrom).toISOString() : null,
-                validTo: validTo ? new Date(validTo).toISOString() : null,
+                validTo: new Date(validTo).toISOString(),
                 placeId: parseInt(finalPlaceId),
                 categoryId: parseInt(categoryId),
+                imageUrls: imagePreviews
             };
 
             await axios.post('/api/Discounts', offerData);
@@ -185,7 +237,7 @@ export default function OfferCreatePage() {
                                 </p>
                                 {!imagePreviews.length && <p className="text-xs text-zinc-500 dark:text-zinc-400">PNG, JPG or WEBP (MAX. 800x400px)</p>}
                             </div>
-                            <input type="file" className="hidden" accept="image/*" multiple onChange={handleImageChange} />
+                            <input type="file" className="hidden" multiple onChange={handleImageChange} />
                         </label>
                     </div>
                 </div>

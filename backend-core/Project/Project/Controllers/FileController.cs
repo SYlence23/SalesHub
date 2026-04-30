@@ -19,21 +19,30 @@ namespace SalesHub.Controllers
             _configuration = configuration;
         }
 
-        [HttpPost]
+        [HttpPost("uploadImage")]
         public async Task<IActionResult> UploadFileAsync(IFormFile file, string? prefix, string bucketName = "saleshub-bucket-132831331335-eu-central-1-an")
         {
-            var bucketExist = await Amazon.S3.Util.AmazonS3Util.DoesS3BucketExistV2Async(_s3Client, bucketName);
-            if (!bucketExist) return NotFound($"Bucket {bucketName} does not exist");
-            var fileKey = string.IsNullOrEmpty(prefix) ? file.FileName : $"{prefix.TrimEnd('/')}/{file.FileName}";
-            var request = new PutObjectRequest()
+            try
             {
-                BucketName = bucketName,
-                Key = fileKey,
-                InputStream = file.OpenReadStream()
-            };
-            request.Metadata.Add("Content-Type", file.ContentType);
-            await _s3Client.PutObjectAsync(request);
-            return Ok(new { message = "File successfuly uploaded", https = $"https://{bucketName}.s3.{_configuration["AWS:Region"]}.amazonaws.com/{fileKey}" });
+                var bucketExist = await Amazon.S3.Util.AmazonS3Util.DoesS3BucketExistV2Async(_s3Client, bucketName);
+                if (!bucketExist) return NotFound($"Bucket {bucketName} does not exist");
+                var fileKey = string.IsNullOrEmpty(prefix) ? file.FileName : $"{prefix.TrimEnd('/')}/{file.FileName}";
+                var request = new PutObjectRequest()
+                {
+                    BucketName = bucketName,
+                    Key = fileKey,
+                    InputStream = file.OpenReadStream()
+                };
+                request.Metadata.Add("Content-Type", file.ContentType);
+                await _s3Client.PutObjectAsync(request);
+                return Ok(new { Message = "File successfuly uploaded", Url = $"https://{bucketName}.s3.{_configuration["AWS:Region"]}.amazonaws.com/{fileKey}" });
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return NoContent();
+            }
+            
         }
         [HttpGet]
         public async Task<IActionResult> GetAllFilesAsync(string? prefix, string bucketName = "saleshub-bucket-132831331335-eu-central-1-an")
