@@ -158,14 +158,14 @@ export default function OfferCreatePage() {
                 {/* --- IMAGE UPLOAD (UI ONLY) --- */}
                 <div className="glass-card p-6 rounded-2xl">
                     <h2 className="text-xl font-semibold mb-4">Offer Images</h2>
-                    
+
                     {imagePreviews.length > 0 && (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-4">
                             {imagePreviews.map((preview, index) => (
                                 <div key={index} className="relative aspect-square rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700">
                                     <img src={preview} alt={`Preview ${index}`} className="w-full h-full object-cover" />
-                                    <button 
-                                        type="button" 
+                                    <button
+                                        type="button"
                                         onClick={() => removeImage(index)}
                                         className="absolute top-2 right-2 p-1.5 bg-red-500/80 hover:bg-red-600 text-white rounded-full transition-colors backdrop-blur-sm"
                                     >
