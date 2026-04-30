@@ -21,7 +21,7 @@ interface OfferData {
     validTo: string;
     placeId: number;
     categoryId: number;
-    imageUrls: string[];
+    imageUrls: { url: string, fileName: string, prefix: string }[];
 }
 
 export default function OfferCreatePage() {
@@ -38,7 +38,7 @@ export default function OfferCreatePage() {
     const [validFrom, setValidFrom] = useState(localValidFrom || '');
     const [validTo, setValidTo] = useState(localValidTo || '');
     const [categoryId, setCategoryId] = useState(localCategoryId || '');
-    const [imagePreviews, setImagePreviews] = useState<string[]>(localImageUrls || []);
+    const [imagePreviews, setImagePreviews] = useState<{ url: string, fileName: string, prefix: string }[]>(localImageUrls || []);
 
     // Place State
     const [places, setPlaces] = useState<Place[]>([]);
@@ -83,8 +83,8 @@ export default function OfferCreatePage() {
                 const newPreviews = await Promise.all(files.map(async file => {
                     const formData = new FormData();
                     formData.append('file', file);
-                    const { data } = await axios.post<{ message: string, url: string }>("/api/File/uploadImage?prefix=offer-images", formData);
-                    return data.url;
+                    const { data } = await axios.post<{ message: string, url: string, fileName: string, prefix: string }>("/api/File/uploadImage?prefix=offer-images", formData);
+                    return { url: data.url, fileName: data.fileName, prefix: data.prefix };
                 }));
                 setImagePreviews([...imagePreviews, ...newPreviews]);
             } catch (err) {
@@ -97,11 +97,16 @@ export default function OfferCreatePage() {
         }
     };
 
-    const removeImage = (indexToRemove: number) => {
-        setImagePreviews(prev => prev.filter((_, index) => index !== indexToRemove));
+    const removeImage = async (keyToRemove: string) => {
+        setImagePreviews(prev => prev.filter((preview) => `${preview.prefix}/${preview.fileName}` !== keyToRemove));
+        await axios.delete(`/api/File?prefix=${keyToRemove}`);
     };
 
-
+    const removeAllImages = async () => {
+        imagePreviews.forEach(async (preview) => {
+            await removeImage(`${preview.prefix}/${preview.fileName}`);
+        });
+    }
 
     useEffect(() => {
         localStorage.setItem('offerData', JSON.stringify({
@@ -118,6 +123,7 @@ export default function OfferCreatePage() {
         new Promise((resolve) => {
             setTimeout(() => {
                 resolve(true);
+                removeAllImages();
                 localStorage.removeItem('offerData');
             }, 180000);
         });
@@ -213,12 +219,12 @@ export default function OfferCreatePage() {
 
                     {imagePreviews.length > 0 && (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-4">
-                            {imagePreviews.map((preview, index) => (
-                                <div key={index} className="relative aspect-square rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700">
-                                    <img src={preview} alt={`Preview ${index}`} className="w-full h-full object-cover" />
+                            {imagePreviews.map((preview) => (
+                                <div key={`${preview.prefix}/${preview.fileName}`} className="relative aspect-square rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700">
+                                    <img src={preview.url} alt={`Preview ${preview.fileName}`} className="w-full h-full object-cover" />
                                     <button
                                         type="button"
-                                        onClick={() => removeImage(index)}
+                                        onClick={() => removeImage(`${preview.prefix}/${preview.fileName}`)}
                                         className="absolute top-2 right-2 p-1.5 bg-red-500/80 hover:bg-red-600 text-white rounded-full transition-colors backdrop-blur-sm"
                                     >
                                         <X className="w-4 h-4" />
@@ -237,7 +243,7 @@ export default function OfferCreatePage() {
                                 </p>
                                 {!imagePreviews.length && <p className="text-xs text-zinc-500 dark:text-zinc-400">PNG, JPG or WEBP (MAX. 800x400px)</p>}
                             </div>
-                            <input type="file" className="hidden" multiple onChange={handleImageChange} />
+                            <input type="file" className="hidden" accept='image/*' multiple onChange={handleImageChange} />
                         </label>
                     </div>
                 </div>

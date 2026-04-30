@@ -13,6 +13,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         o => o.UseNetTopologySuite()
     ));
 
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {

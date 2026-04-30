@@ -1,4 +1,4 @@
-﻿using Amazon.S3;
+using Amazon.S3;
 using Amazon.S3.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -26,7 +26,10 @@ namespace SalesHub.Controllers
             {
                 var bucketExist = await Amazon.S3.Util.AmazonS3Util.DoesS3BucketExistV2Async(_s3Client, bucketName);
                 if (!bucketExist) return NotFound($"Bucket {bucketName} does not exist");
-                var fileKey = string.IsNullOrEmpty(prefix) ? file.FileName : $"{prefix.TrimEnd('/')}/{file.FileName}";
+                
+                var uniqueFileName = $"{Guid.NewGuid()}_{file.FileName}";
+                var fileKey = string.IsNullOrEmpty(prefix) ? uniqueFileName : $"{prefix.TrimEnd('/')}/{uniqueFileName}";
+                
                 var request = new PutObjectRequest()
                 {
                     BucketName = bucketName,
@@ -35,7 +38,14 @@ namespace SalesHub.Controllers
                 };
                 request.Metadata.Add("Content-Type", file.ContentType);
                 await _s3Client.PutObjectAsync(request);
-                return Ok(new { Message = "File successfuly uploaded", Url = $"https://{bucketName}.s3.{_configuration["AWS:Region"]}.amazonaws.com/{fileKey}" });
+                
+                return Ok(new 
+                { 
+                    Message = "File successfuly uploaded", 
+                    Url = $"https://{bucketName}.s3.{_configuration["AWS:Region"]}.amazonaws.com/{fileKey}",
+                    FileName = uniqueFileName,
+                    Prefix = prefix ?? string.Empty
+                });
             }
             catch (Exception e)
             {
