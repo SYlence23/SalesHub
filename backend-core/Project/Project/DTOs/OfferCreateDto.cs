@@ -20,9 +20,8 @@
         public int PlaceId { get; set; }
         [Required]
         public int CategoryId { get; set; }
+        public List<string> ImageUrls { get; set; }
 
-        // Ці поля можна залишити, якщо ви хочете ПРИ СТВОРЕННІ оффера 
-        // автоматично створювати нову локацію для Place.
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
     }

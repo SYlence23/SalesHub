@@ -21,7 +21,7 @@ interface OfferData {
     validTo: string;
     placeId: number;
     categoryId: number;
-    imageUrls: { url: string, fileName: string, prefix: string }[];
+    imageUrls: { url: string, fileName: string, prefix: string }[] | string[];
 }
 
 export default function OfferCreatePage() {
@@ -39,6 +39,7 @@ export default function OfferCreatePage() {
     const [validTo, setValidTo] = useState(localValidTo || '');
     const [categoryId, setCategoryId] = useState(localCategoryId || '');
     const [imagePreviews, setImagePreviews] = useState<{ url: string, fileName: string, prefix: string }[]>(localImageUrls || []);
+    const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
     // Place State
     const [places, setPlaces] = useState<Place[]>([]);
@@ -75,6 +76,29 @@ export default function OfferCreatePage() {
         fetchDependencies();
     }, []);
 
+    const handleDragStart = (e: React.DragEvent<HTMLDivElement>, index: number) => {
+        setDraggedIndex(index);
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", index.toString());
+    };
+
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>, index: number) => {
+        e.preventDefault();
+        if (draggedIndex === null || draggedIndex === index) return;
+
+        const newPreviews = [...imagePreviews];
+        const draggedItem = newPreviews[draggedIndex];
+
+        newPreviews.splice(draggedIndex, 1);
+        newPreviews.splice(index, 0, draggedItem);
+
+        setImagePreviews(newPreviews);
+        setDraggedIndex(index);
+    };
+
+    const handleDragEnd = () => {
+        setDraggedIndex(null);
+    };
 
     const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
@@ -170,13 +194,12 @@ export default function OfferCreatePage() {
                 validTo: new Date(validTo).toISOString(),
                 placeId: parseInt(finalPlaceId),
                 categoryId: parseInt(categoryId),
-                imageUrls: imagePreviews
+                imageUrls: imagePreviews.map(img => img.url)
             };
 
             await axios.post('/api/Discounts', offerData);
 
-            // Cloud Image upload is left for future development as requested
-            // if (imageFile) { /* Handle external image upload here in the future */ }
+            localStorage.removeItem('offerData');
 
             navigate('/offers');
         } catch (err: any) {
@@ -219,9 +242,16 @@ export default function OfferCreatePage() {
 
                     {imagePreviews.length > 0 && (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-4">
-                            {imagePreviews.map((preview) => (
-                                <div key={`${preview.prefix}/${preview.fileName}`} className="relative aspect-square rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700">
-                                    <img src={preview.url} alt={`Preview ${preview.fileName}`} className="w-full h-full object-cover" />
+                            {imagePreviews.map((preview, index) => (
+                                <div
+                                    key={`${preview.prefix}/${preview.fileName}`}
+                                    className={`relative aspect-square rounded-lg overflow-hidden border ${draggedIndex === index ? 'border-primary-500 opacity-50 scale-95' : 'border-zinc-200 dark:border-zinc-700'} cursor-move transition-all duration-200`}
+                                    draggable
+                                    onDragStart={(e) => handleDragStart(e, index)}
+                                    onDragOver={(e) => handleDragOver(e, index)}
+                                    onDragEnd={handleDragEnd}
+                                >
+                                    <img src={preview.url} alt={`Preview ${preview.fileName}`} className="w-full h-full object-cover pointer-events-none" />
                                     <button
                                         type="button"
                                         onClick={() => removeImage(`${preview.prefix}/${preview.fileName}`)}
@@ -229,6 +259,11 @@ export default function OfferCreatePage() {
                                     >
                                         <X className="w-4 h-4" />
                                     </button>
+                                    {index === 0 && (
+                                        <div className="absolute bottom-2 left-2 px-2 py-1 bg-primary-500/90 text-white text-xs font-bold rounded shadow-sm backdrop-blur-md">
+                                            Main
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
