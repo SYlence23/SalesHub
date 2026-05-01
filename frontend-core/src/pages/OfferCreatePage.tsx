@@ -100,18 +100,23 @@ export default function OfferCreatePage() {
         setDraggedIndex(null);
     };
 
+
+    const [isImageLoading, setIsImageLoading] = useState(false);
     const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             const files = Array.from(e.target.files);
             try {
                 const newPreviews = await Promise.all(files.map(async file => {
+                    setIsImageLoading(true);
                     const formData = new FormData();
                     formData.append('file', file);
                     const { data } = await axios.post<{ message: string, url: string, fileName: string, prefix: string }>("/api/File/uploadImage?prefix=offer-images", formData);
                     return { url: data.url, fileName: data.fileName, prefix: data.prefix };
                 }));
+                setIsImageLoading(false);
                 setImagePreviews([...imagePreviews, ...newPreviews]);
             } catch (err) {
+                setIsImageLoading(false);
                 console.error("Failed to upload images", err);
                 setError("Could not upload images. Please try refreshing.");
             } finally {
@@ -240,8 +245,9 @@ export default function OfferCreatePage() {
                 <div className="glass-card p-6 rounded-2xl">
                     <h2 className="text-xl font-semibold mb-4">Offer Images</h2>
 
-                    {imagePreviews.length > 0 && (
+                    {(imagePreviews.length > 0 || isImageLoading) && (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-4">
+
                             {imagePreviews.map((preview, index) => (
                                 <div
                                     key={`${preview.prefix}/${preview.fileName}`}
@@ -266,6 +272,13 @@ export default function OfferCreatePage() {
                                     )}
                                 </div>
                             ))}
+
+                            {isImageLoading && (
+                                <div className="relative aspect-square rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 flex flex-col items-center justify-center">
+                                    <Loader2 className="w-8 h-8 text-primary-500 animate-spin mb-2" />
+                                    <span className="text-xs text-zinc-500 font-medium">Uploading...</span>
+                                </div>
+                            )}
                         </div>
                     )}
 
