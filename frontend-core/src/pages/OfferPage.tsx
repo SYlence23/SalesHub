@@ -99,10 +99,10 @@ export default function OfferPage() {
             <div className="flex items-center justify-between mb-8">
                 <div>
                     <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
-                        Explore <span className="text-primary-500">Offers</span>
+                        Знайдіть <span className="text-primary-500">пропозиції</span>
                     </h1>
                     <p className="text-zinc-500 dark:text-zinc-400">
-                        Find the best deals and discounts tailored for you.
+                        Знайдіть найкращі пропозиції та знижки.
                     </p>
                 </div>
 
@@ -112,7 +112,7 @@ export default function OfferPage() {
                     className="lg:hidden btn-secondary gap-2"
                 >
                     <Filter className="w-5 h-5" />
-                    <span>Filters</span>
+                    <span>Фільтри</span>
                 </button>
             </div>
 
@@ -147,9 +147,9 @@ export default function OfferPage() {
                     ) : (
                         // Empty State
                         <div className="glass-card p-12 text-center">
-                            <h3 className="text-2xl font-bold mb-2">No offers found</h3>
+                            <h3 className="text-2xl font-bold mb-2">Знижок не знайдено</h3>
                             <p className="text-zinc-500 dark:text-zinc-400">
-                                Try adjusting your filters or search terms to find what you're looking for.
+                                Спробуйте змінити фільтри або пошукові запити, щоб знайти те, що ви шукаєте.
                             </p>
                             <button
                                 onClick={() => {
@@ -157,7 +157,7 @@ export default function OfferPage() {
                                 }}
                                 className="mt-6 btn-primary"
                             >
-                                Clear Filters
+                                Очистити фільтри
                             </button>
                         </div>
                     )}

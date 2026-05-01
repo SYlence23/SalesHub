@@ -6,17 +6,17 @@ export default function Navbar() {
 
     const navLinks = [
         {
-            name: "Home",
+            name: "Головна",
             path: "/",
             icon: Home
         },
         {
-            name: "Offers",
+            name: "Пропозиції",
             path: "/offers",
             icon: Tag
         },
         {
-            name: "Map",
+            name: "Карта",
             path: "/map",
             icon: MapIcon
         }
@@ -56,10 +56,10 @@ export default function Navbar() {
                         {/* Right actions */}
                         <div className="flex items-center gap-3">
                             <Link to="/login" className="flex btn-primary text-sm px-4 py-2">
-                                Log In
+                                Увійти
                             </Link>
                             <Link to="/register" className="hidden sm:flex btn-secondary text-sm px-4 py-2">
-                                Sign Up
+                                Зареєструватися
                             </Link>
                         </div>
 
