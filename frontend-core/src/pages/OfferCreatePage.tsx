@@ -104,20 +104,26 @@ export default function OfferCreatePage() {
     const [isImageLoading, setIsImageLoading] = useState(false);
     const [imageQuantity, setImageQuantity] = useState(0);
     const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0 && imagePreviews.length + e.target.files.length > 8) {
+            setError("You can only upload up to 8 images");
+            return;
+        }
+
         if (e.target.files && e.target.files.length > 0) {
             const files = Array.from(e.target.files);
 
             setIsImageLoading(true);
-            setImageQuantity(files.length);
+            setImageQuantity(prev => prev + files.length);
 
             try {
                 const newPreviews = await Promise.all(files.map(async file => {
                     const formData = new FormData();
                     formData.append('file', file);
                     const { data } = await axios.post<{ message: string, url: string, fileName: string, prefix: string }>("/api/File/uploadImage?prefix=offer-images", formData);
+                    setImageQuantity(prev => prev - 1);
                     return { url: data.url, fileName: data.fileName, prefix: data.prefix };
                 }));
-                setImagePreviews([...imagePreviews, ...newPreviews]);
+                setImagePreviews(prevPreviews => [...prevPreviews, ...newPreviews]);
             } catch (err) {
                 console.error("Failed to upload images", err);
                 setError("Could not upload images. Please try refreshing.");
@@ -287,7 +293,7 @@ export default function OfferCreatePage() {
                     )}
 
                     <div className="flex items-center justify-center w-full">
-                        <label className={`flex flex-col items-center justify-center w-full border-2 border-zinc-300 border-dashed rounded-lg cursor-pointer bg-zinc-50 dark:hover:bg-zinc-800/50 dark:bg-zinc-900/50 hover:bg-zinc-100 dark:border-zinc-700 transition-all ${imagePreviews.length > 0 ? 'h-32' : 'h-64'}`}>
+                        {(imagePreviews.length < 8) && (<label className={`flex flex-col items-center justify-center w-full border-2 border-zinc-300 border-dashed rounded-lg cursor-pointer bg-zinc-50 dark:hover:bg-zinc-800/50 dark:bg-zinc-900/50 hover:bg-zinc-100 dark:border-zinc-700 transition-all ${imagePreviews.length > 0 ? 'h-32' : 'h-64'}`}>
                             <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                 <ImagePlus className={`${imagePreviews.length > 0 ? 'w-6 h-6 mb-2' : 'w-10 h-10 mb-3'} text-zinc-400`} />
                                 <p className={`mb-2 text-zinc-500 dark:text-zinc-400 ${imagePreviews.length > 0 ? 'text-sm' : ''}`}>
@@ -296,7 +302,8 @@ export default function OfferCreatePage() {
                                 {!imagePreviews.length && <p className="text-xs text-zinc-500 dark:text-zinc-400">PNG, JPG or WEBP (MAX. 800x400px)</p>}
                             </div>
                             <input type="file" className="hidden" accept='image/*' multiple onChange={handleImageChange} />
-                        </label>
+                        </label>)}
+
                     </div>
                 </div>
 
