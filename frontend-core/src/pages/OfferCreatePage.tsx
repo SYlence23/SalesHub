@@ -246,7 +246,7 @@ export default function OfferCreatePage() {
 
             // 1. Create Place if needed
             if (isNewPlace) {
-                const placeData = {
+                const placeData: PlaceCreateDTO = {
                     name: placeForm.name,
                     description: placeForm.description,
                     isOnline: placeForm.isOnline,
