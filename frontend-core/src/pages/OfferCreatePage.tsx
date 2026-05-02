@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ImagePlus, MapPin, Loader2, Plus, ChevronLeft, X } from 'lucide-react';
 import { type Category } from '../components/Offer/OfferFilters';
+import localforage from 'localforage';
 
 interface Place {
     id: number;
@@ -12,7 +13,18 @@ interface Place {
     offerUrl: string;
 }
 
-interface OfferData {
+interface OfferDataForm {
+    title: string;
+    description: string;
+    newPrice: number;
+    oldPrice: number;
+    validFrom: string;
+    validTo: string;
+    placeId: number;
+    categoryId: number;
+}
+
+interface OfferDataDTO {
     title: string;
     description: string;
     newPrice: number;
@@ -21,29 +33,53 @@ interface OfferData {
     validTo: string;
     placeId: number;
     categoryId: number;
-    imageUrls: { url: string, fileName: string, prefix: string }[] | string[];
+    imageFiles: File[] | null;
 }
 
 export default function OfferCreatePage() {
     const navigate = useNavigate();
 
-    const { localTitle, localDescription, localNewPrice, localOldPrice, localValidFrom, localValidTo, localPlaceId, localCategoryId, localImageUrls } = JSON.parse(localStorage.getItem('offerData') || '{}');
+    const localOfferData = JSON.parse(localStorage.getItem('offerData') || '{}');
 
 
+    const [offerForm, setOfferForm] = useState<OfferDataForm>({
+        title: localOfferData.title || '',
+        description: localOfferData.description || '',
+        newPrice: localOfferData.newPrice || 0,
+        oldPrice: localOfferData.oldPrice || 0,
+        validFrom: localOfferData.validFrom || '',
+        validTo: localOfferData.validTo || '',
+        placeId: localOfferData.placeId || 0,
+        categoryId: localOfferData.categoryId || 0,
+    })
+
+    const handleOfferFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setOfferForm(prev => ({
+            ...prev,
+            [name]: value,
+        }));
+    }
+
+    // const [placeForm, setPlaceForm] = useState<Place>({
+    //     name: '',
+    //     description: '',
+    //     isOnline: false,
+    //     offerUrl: '',
+    //     latitude: 0,
+    //     longitude: 0,
+    // })
     // Core Form State
-    const [title, setTitle] = useState(localTitle || '');
-    const [description, setDescription] = useState(localDescription || '');
-    const [newPrice, setNewPrice] = useState(localNewPrice || '');
-    const [oldPrice, setOldPrice] = useState(localOldPrice || '');
-    const [validFrom, setValidFrom] = useState(localValidFrom || '');
-    const [validTo, setValidTo] = useState(localValidTo || '');
-    const [categoryId, setCategoryId] = useState(localCategoryId || '');
-    const [imagePreviews, setImagePreviews] = useState<{ url: string, fileName: string, prefix: string }[]>(localImageUrls || []);
+
+    const [imagePreviews, setImagePreviews] = useState<string[]>([]);
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+
+
+
 
     // Place State
     const [places, setPlaces] = useState<Place[]>([]);
-    const [selectedPlaceId, setSelectedPlaceId] = useState(localPlaceId || '');
+    const [selectedPlaceId, setSelectedPlaceId] = useState('');
     const [isNewPlace, setIsNewPlace] = useState(false);
 
     // New Place Form State
@@ -59,6 +95,8 @@ export default function OfferCreatePage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+
+
     useEffect(() => {
         const fetchDependencies = async () => {
             try {
@@ -73,8 +111,19 @@ export default function OfferCreatePage() {
                 setError("Could not load categories or places. Please try refreshing.");
             }
         };
+
+        const loadOfferImages = async () => {
+            const temp = await localforage.getItem('offerImages') || [];
+            setImagePreviews((temp as File[]).map((image: File) => URL.createObjectURL(image)));
+        }
+
+
+        loadOfferImages();
         fetchDependencies();
     }, []);
+
+
+
 
     const handleDragStart = (e: React.DragEvent<HTMLDivElement>, index: number) => {
         setDraggedIndex(index);
@@ -101,6 +150,8 @@ export default function OfferCreatePage() {
     };
 
 
+
+
     const [isImageLoading, setIsImageLoading] = useState(false);
     const [imageQuantity, setImageQuantity] = useState(0);
     const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,14 +167,13 @@ export default function OfferCreatePage() {
             setImageQuantity(prev => prev + files.length);
 
             try {
-                const newPreviews = await Promise.all(files.map(async file => {
-                    const formData = new FormData();
-                    formData.append('file', file);
-                    const { data } = await axios.post<{ message: string, url: string, fileName: string, prefix: string }>("/api/File/uploadImage?prefix=offer-images", formData);
-                    setImageQuantity(prev => prev - 1);
-                    return { url: data.url, fileName: data.fileName, prefix: data.prefix };
-                }));
-                setImagePreviews(prevPreviews => [...prevPreviews, ...newPreviews]);
+                const uploadedImages = (await localforage.getItem<File[]>('offerImages')) || [];
+                const newImages = [...uploadedImages, ...files];
+                await localforage.setItem('offerImages', newImages);
+
+                const previews = newImages.map(file => URL.createObjectURL(file));
+                setImagePreviews(previews);
+
             } catch (err) {
                 console.error("Failed to upload images", err);
                 setError("Could not upload images. Please try refreshing.");
@@ -136,37 +186,28 @@ export default function OfferCreatePage() {
         }
     };
 
-    const removeImage = async (keyToRemove: string) => {
-        setImagePreviews(prev => prev.filter((preview) => `${preview.prefix}/${preview.fileName}` !== keyToRemove));
-        await axios.delete(`/api/File?prefix=${keyToRemove}`);
+    const removeImage = async (keyToRemove: number) => {
+        setImagePreviews(prev => prev.filter((_, index) => index !== keyToRemove));
+        const uploadedImages = (await localforage.getItem<File[]>('offerImages')) || [];
+        localforage.setItem('offerImages', uploadedImages.filter((_, index) => index !== keyToRemove));
     };
 
     const removeAllImages = async () => {
-        imagePreviews.forEach(async (preview) => {
-            await removeImage(`${preview.prefix}/${preview.fileName}`);
-        });
+        await localforage.removeItem('offerImages');
+        setImagePreviews([]);
     }
 
     useEffect(() => {
-        localStorage.setItem('offerData', JSON.stringify({
-            localTitle: title,
-            localDescription: description,
-            localNewPrice: newPrice,
-            localOldPrice: oldPrice,
-            localValidFrom: validFrom,
-            localValidTo: validTo,
-            localPlaceId: selectedPlaceId,
-            localCategoryId: categoryId,
-            localImageUrls: imagePreviews
-        }));
-        new Promise((resolve) => {
-            setTimeout(() => {
-                resolve(true);
-                removeAllImages();
-                localStorage.removeItem('offerData');
-            }, 180000);
-        });
-    }, [title, description, newPrice, oldPrice, validFrom, validTo, selectedPlaceId, categoryId, imagePreviews])
+        localStorage.setItem('offerData', JSON.stringify(offerForm));
+    }, [offerForm])
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            removeAllImages();
+            localStorage.removeItem('offerData');
+        }, 180000);
+        return () => clearTimeout(timer);
+    }, [offerForm])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -195,21 +236,25 @@ export default function OfferCreatePage() {
                 throw new Error("Please select or create a place.");
             }
 
-            if (!categoryId) {
+            if (!offerForm.categoryId) {
                 throw new Error("Please select a category.");
             }
 
+            const imageFiles = (await localforage.getItem<File[]>('offerImages') || []);
+            const formData = new FormData();
+            imageFiles.forEach((file) => {
+                formData.append('imageFile', file);
+            });
             // 2. Create Offer
-            const offerData: OfferData = {
-                title,
-                description,
-                newPrice: parseFloat(newPrice),
-                oldPrice: parseFloat(oldPrice),
-                validFrom: validFrom ? new Date(validFrom).toISOString() : null,
-                validTo: new Date(validTo).toISOString(),
+            const offerData: OfferDataDTO = {
+                ...offerForm,
+                newPrice: offerForm.newPrice,
+                oldPrice: offerForm.oldPrice,
+                validFrom: offerForm.validFrom ? new Date(offerForm.validFrom).toISOString() : null,
+                validTo: new Date(offerForm.validTo).toISOString(),
                 placeId: parseInt(finalPlaceId),
-                categoryId: parseInt(categoryId),
-                imageUrls: imagePreviews.map(img => img.url)
+                categoryId: offerForm.categoryId,
+                imageFiles: imageFiles.length > 0 ? imageFiles : null,
             };
 
             await axios.post('/api/Discounts', offerData);
@@ -260,17 +305,17 @@ export default function OfferCreatePage() {
 
                             {imagePreviews.map((preview, index) => (
                                 <div
-                                    key={`${preview.prefix}/${preview.fileName}`}
+                                    key={index}
                                     className={`relative aspect-square rounded-lg overflow-hidden border ${draggedIndex === index ? 'border-primary-500 opacity-50 scale-95' : 'border-zinc-200 dark:border-zinc-700'} cursor-move transition-all duration-200`}
                                     draggable
                                     onDragStart={(e) => handleDragStart(e, index)}
                                     onDragOver={(e) => handleDragOver(e, index)}
                                     onDragEnd={handleDragEnd}
                                 >
-                                    <img src={preview.url} alt={`Preview ${preview.fileName}`} className="w-full h-full object-cover pointer-events-none" />
+                                    <img src={preview} alt={`Preview ${index}`} className="w-full h-full object-cover pointer-events-none" />
                                     <button
                                         type="button"
-                                        onClick={() => removeImage(`${preview.prefix}/${preview.fileName}`)}
+                                        onClick={() => removeImage(index)}
                                         className="absolute top-2 right-2 p-1.5 bg-red-500/80 hover:bg-red-600 text-white rounded-full transition-colors backdrop-blur-sm"
                                     >
                                         <X className="w-4 h-4" />
@@ -316,8 +361,9 @@ export default function OfferCreatePage() {
                         <input
                             type="text"
                             required
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
+                            name="title"
+                            value={offerForm.title}
+                            onChange={handleOfferFormChange}
                             className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
                             placeholder="e.g. 50% Off Summer Collection"
                         />
@@ -326,8 +372,9 @@ export default function OfferCreatePage() {
                     <div>
                         <label className="block text-sm font-medium mb-2">Description</label>
                         <textarea
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
+                            name="description"
+                            value={offerForm.description}
+                            onChange={handleOfferFormChange}
                             className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all min-h-[100px] resize-x"
                             placeholder="Describe your offer..."
                         />
@@ -338,8 +385,9 @@ export default function OfferCreatePage() {
                             <label className="block text-sm font-medium mb-2">Category *</label>
                             <select
                                 required
-                                value={categoryId}
-                                onChange={(e) => setCategoryId(e.target.value)}
+                                name="categoryId"
+                                value={offerForm.categoryId}
+                                onChange={handleOfferFormChange}
                                 className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all appearance-none"
                             >
                                 <option value="" disabled>Select a category</option>
@@ -363,8 +411,9 @@ export default function OfferCreatePage() {
                                 required
                                 min="0"
                                 step="0.01"
-                                value={newPrice}
-                                onChange={(e) => setNewPrice(e.target.value)}
+                                name="newPrice"
+                                value={offerForm.newPrice}
+                                onChange={handleOfferFormChange}
                                 className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
                                 placeholder="0.00"
                             />
@@ -375,8 +424,9 @@ export default function OfferCreatePage() {
                                 type="number"
                                 min="0"
                                 step="0.01"
-                                value={oldPrice}
-                                onChange={(e) => setOldPrice(e.target.value)}
+                                name="oldPrice"
+                                value={offerForm.oldPrice}
+                                onChange={handleOfferFormChange}
                                 className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
                                 placeholder="0.00"
                             />
@@ -385,8 +435,9 @@ export default function OfferCreatePage() {
                             <label className="block text-sm font-medium mb-2">Valid From</label>
                             <input
                                 type="datetime-local"
-                                value={validFrom}
-                                onChange={(e) => setValidFrom(e.target.value)}
+                                name="validFrom"
+                                value={offerForm.validFrom}
+                                onChange={handleOfferFormChange}
                                 className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
                             />
                         </div>
@@ -394,8 +445,9 @@ export default function OfferCreatePage() {
                             <label className="block text-sm font-medium mb-2">Valid To</label>
                             <input
                                 type="datetime-local"
-                                value={validTo}
-                                onChange={(e) => setValidTo(e.target.value)}
+                                name="validTo"
+                                value={offerForm.validTo}
+                                onChange={handleOfferFormChange}
                                 className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
                             />
                         </div>

@@ -22,7 +22,5 @@
         public int CategoryId { get; set; }
         public List<string> ImageUrls { get; set; }
 
-        public double? Latitude { get; set; }
-        public double? Longitude { get; set; }
     }
 }
