@@ -49,6 +49,12 @@ export default function OfferFilters({
     if (onCloseMobileDrawer) onCloseMobileDrawer();
   };
 
+  const handleApplyKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleApply();
+    }
+  };
+
   const FilterContent = (
     <div className="flex flex-col gap-6">
       {/* Search */}
@@ -64,6 +70,8 @@ export default function OfferFilters({
             placeholder="Search offers..."
             value={localSearchTerm}
             onChange={(e) => setLocalSearchTerm(e.target.value)}
+            onKeyDown={handleApplyKeyPress}
+
           />
         </div>
       </div>
