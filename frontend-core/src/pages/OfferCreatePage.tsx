@@ -5,13 +5,33 @@ import { ImagePlus, MapPin, Loader2, Plus, ChevronLeft, X } from 'lucide-react';
 import { type Category } from '../components/Offer/OfferFilters';
 import localforage from 'localforage';
 
-interface Place {
+interface PlaceDTO {
     id: number;
     name: string;
     description: string;
     isOnline: boolean;
     offerUrl: string;
 }
+
+interface PlaceCreateDTO {
+    name: string;
+    description: string;
+    isOnline: boolean;
+    offerUrl: string;
+    latitude: number;
+    longitude: number;
+}
+
+interface PlaceForm {
+    name: string;
+    description: string;
+    isOnline: boolean;
+    offerUrl: string;
+    latitude: number;
+    longitude: number;
+}
+
+
 
 interface OfferDataForm {
     title: string;
@@ -33,24 +53,24 @@ interface OfferDataDTO {
     validTo: string;
     placeId: number;
     categoryId: number;
-    imageFiles: File[] | null;
+    imageUrls: string[] | null;
 }
 
 export default function OfferCreatePage() {
     const navigate = useNavigate();
 
     const localOfferData = JSON.parse(localStorage.getItem('offerData') || '{}');
-
+    const localPlaceData = JSON.parse(localStorage.getItem('placeData') || '{}');
 
     const [offerForm, setOfferForm] = useState<OfferDataForm>({
         title: localOfferData.title || '',
         description: localOfferData.description || '',
-        newPrice: localOfferData.newPrice || 0,
-        oldPrice: localOfferData.oldPrice || 0,
+        newPrice: localOfferData.newPrice || '',
+        oldPrice: localOfferData.oldPrice || '',
         validFrom: localOfferData.validFrom || '',
         validTo: localOfferData.validTo || '',
-        placeId: localOfferData.placeId || 0,
-        categoryId: localOfferData.categoryId || 0,
+        placeId: localOfferData.placeId || '',
+        categoryId: localOfferData.categoryId || '',
     })
 
     const handleOfferFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -61,15 +81,26 @@ export default function OfferCreatePage() {
         }));
     }
 
-    // const [placeForm, setPlaceForm] = useState<Place>({
-    //     name: '',
-    //     description: '',
-    //     isOnline: false,
-    //     offerUrl: '',
-    //     latitude: 0,
-    //     longitude: 0,
-    // })
-    // Core Form State
+
+
+    const [placeForm, setPlaceForm] = useState<PlaceForm>({
+        name: localPlaceData.name || '',
+        description: localPlaceData.description || '',
+        isOnline: localPlaceData.isOnline || false,
+        offerUrl: localPlaceData.offerUrl || '',
+        latitude: localPlaceData.latitude || 0,
+        longitude: localPlaceData.longitude || 0,
+    })
+
+    const handlePlaceFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        const target = e.target;
+        const value = target.type === "checkbox" ? (target as HTMLInputElement).checked : target.value;
+        const name = target.name;
+        setPlaceForm(prev => ({
+            ...prev,
+            [name]: value,
+        }));
+    }
 
     const [imagePreviews, setImagePreviews] = useState<string[]>([]);
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -78,17 +109,11 @@ export default function OfferCreatePage() {
 
 
     // Place State
-    const [places, setPlaces] = useState<Place[]>([]);
+    const [places, setPlaces] = useState<PlaceDTO[]>([]);
     const [selectedPlaceId, setSelectedPlaceId] = useState('');
     const [isNewPlace, setIsNewPlace] = useState(false);
 
-    // New Place Form State
-    const [placeName, setPlaceName] = useState('');
-    const [placeDescription, setPlaceDescription] = useState('');
-    const [isOnline, setIsOnline] = useState(false);
-    const [offerUrl, setOfferUrl] = useState('');
-    const [latitude, setLatitude] = useState('');
-    const [longitude, setLongitude] = useState('');
+
 
     // Fetching / Meta State
     const [categories, setCategories] = useState<Category[]>([]);
@@ -102,7 +127,7 @@ export default function OfferCreatePage() {
             try {
                 const [catsResponse, placesResponse] = await Promise.all([
                     axios.get<Category[]>('/api/Discounts/categories'),
-                    axios.get<Place[]>('/api/Places')
+                    axios.get<PlaceDTO[]>('/api/Places')
                 ]);
                 setCategories(catsResponse.data);
                 setPlaces(placesResponse.data);
@@ -199,15 +224,17 @@ export default function OfferCreatePage() {
 
     useEffect(() => {
         localStorage.setItem('offerData', JSON.stringify(offerForm));
-    }, [offerForm])
+        localStorage.setItem('placeData', JSON.stringify(placeForm));
+    }, [offerForm, placeForm])
 
     useEffect(() => {
         const timer = setTimeout(() => {
             removeAllImages();
             localStorage.removeItem('offerData');
+            localStorage.removeItem('placeData');
         }, 180000);
         return () => clearTimeout(timer);
-    }, [offerForm])
+    }, [offerForm, placeForm])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -220,12 +247,12 @@ export default function OfferCreatePage() {
             // 1. Create Place if needed
             if (isNewPlace) {
                 const placeData = {
-                    name: placeName,
-                    description: placeDescription,
-                    isOnline,
-                    offerUrl: offerUrl || null,
-                    latitude: latitude ? parseFloat(latitude) : null,
-                    longitude: longitude ? parseFloat(longitude) : null,
+                    name: placeForm.name,
+                    description: placeForm.description,
+                    isOnline: placeForm.isOnline,
+                    offerUrl: placeForm.offerUrl,
+                    latitude: placeForm.latitude,
+                    longitude: placeForm.longitude,
                 };
 
                 const placeRes = await axios.post<{ id: number }>('/api/Places', placeData);
@@ -241,10 +268,17 @@ export default function OfferCreatePage() {
             }
 
             const imageFiles = (await localforage.getItem<File[]>('offerImages') || []);
-            const formData = new FormData();
-            imageFiles.forEach((file) => {
-                formData.append('imageFile', file);
-            });
+            let imageUrls: string[] = [];
+            if (imageFiles.length > 0) {
+                const objectUrls = Promise.all(imageFiles.map(async (file) => {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    const response = await axios.post<{ message: string, url: string, fileName: string, prefix: string }>('/api/File/uploadImage', formData);
+                    return response.data.url;
+                }))
+                imageUrls = await objectUrls;
+            }
+            console.log(imageUrls);
             // 2. Create Offer
             const offerData: OfferDataDTO = {
                 ...offerForm,
@@ -254,12 +288,14 @@ export default function OfferCreatePage() {
                 validTo: new Date(offerForm.validTo).toISOString(),
                 placeId: parseInt(finalPlaceId),
                 categoryId: offerForm.categoryId,
-                imageFiles: imageFiles.length > 0 ? imageFiles : null,
+                imageUrls: imageUrls
             };
 
             await axios.post('/api/Discounts', offerData);
 
             localStorage.removeItem('offerData');
+            localStorage.removeItem('placeData');
+            localforage.removeItem('offerImages');
 
             navigate('/offers');
         } catch (err: any) {
@@ -493,8 +529,9 @@ export default function OfferCreatePage() {
                                 <input
                                     type="text"
                                     required={isNewPlace}
-                                    value={placeName}
-                                    onChange={(e) => setPlaceName(e.target.value)}
+                                    name='name'
+                                    value={placeForm.name}
+                                    onChange={handlePlaceFormChange}
                                     className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
                                     placeholder="e.g. Mega Store Downtown"
                                 />
@@ -503,8 +540,9 @@ export default function OfferCreatePage() {
                                 <label className="block text-sm font-medium mb-2">Store Description</label>
                                 <input
                                     type="text"
-                                    value={placeDescription}
-                                    onChange={(e) => setPlaceDescription(e.target.value)}
+                                    name="description"
+                                    value={placeForm.description}
+                                    onChange={handlePlaceFormChange}
                                     className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
                                     placeholder="Brief description..."
                                 />
@@ -513,8 +551,9 @@ export default function OfferCreatePage() {
                             <label className="flex items-center gap-3 p-4 border border-zinc-200 dark:border-zinc-800 rounded-xl cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors">
                                 <input
                                     type="checkbox"
-                                    checked={isOnline}
-                                    onChange={(e) => setIsOnline(e.target.checked)}
+                                    name="isOnline"
+                                    checked={placeForm.isOnline}
+                                    onChange={handlePlaceFormChange}
                                     className="w-5 h-5 rounded border-zinc-300 text-primary-500 focus:ring-primary-500"
                                 />
                                 <div>
@@ -523,13 +562,14 @@ export default function OfferCreatePage() {
                                 </div>
                             </label>
 
-                            {isOnline ? (
+                            {placeForm.isOnline ? (
                                 <div>
                                     <label className="block text-sm font-medium mb-2">Offer URL</label>
                                     <input
                                         type="url"
-                                        value={offerUrl}
-                                        onChange={(e) => setOfferUrl(e.target.value)}
+                                        name="offerUrl"
+                                        value={placeForm.offerUrl}
+                                        onChange={handlePlaceFormChange}
                                         className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
                                         placeholder="https://..."
                                     />
@@ -545,8 +585,9 @@ export default function OfferCreatePage() {
                                         <input
                                             type="number"
                                             step="any"
-                                            value={latitude}
-                                            onChange={(e) => setLatitude(e.target.value)}
+                                            name="latitude"
+                                            value={placeForm.latitude}
+                                            onChange={handlePlaceFormChange}
                                             className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
                                             placeholder="48.8566"
                                         />
@@ -556,8 +597,9 @@ export default function OfferCreatePage() {
                                         <input
                                             type="number"
                                             step="any"
-                                            value={longitude}
-                                            onChange={(e) => setLongitude(e.target.value)}
+                                            name="longitude"
+                                            value={placeForm.longitude}
+                                            onChange={handlePlaceFormChange}
                                             className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
                                             placeholder="2.3522"
                                         />
