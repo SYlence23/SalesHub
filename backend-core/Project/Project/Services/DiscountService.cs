@@ -1,3 +1,4 @@
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
 using SalesHub.Data;
@@ -32,7 +33,6 @@ namespace SalesHub.Services
                 query = query.Where(o => o.CategoryId == categoryId.Value);
             }
 
-            var total = await query.CountAsync();
 
             query = sortOption switch
             {
@@ -50,11 +50,11 @@ namespace SalesHub.Services
                 .Select(MapToPreviewDto())
                 .ToListAsync();
 
-            return (data, total);
+            return (data, total: await query.CountAsync());
         }
 
         public async Task<IEnumerable<CategoryPreviewDto>> GetCategoriesAsync()
-        { 
+        {
             return await _context.OfferCategories
                 .AsNoTracking()
                 .Select(c => new CategoryPreviewDto { Id = c.Id, Name = c.Name })
@@ -78,31 +78,78 @@ namespace SalesHub.Services
                     CategoryName = o.Category.Name,
                     NewPrice = o.NewPrice,
                     OldPrice = o.OldPrice,
-                    ValidFrom = o.ValidFrom, 
+                    ValidFrom = o.ValidFrom,
                     ValidTo = o.ValidTo,
                     IsOnline = o.Place.IsOnline,
                     StoreName = o.Place.Name,
                     OfferUrl = o.Place.OfferUrl,
-                     Latitude = o.Place.PlaceLocations.Select(pl => (double?)pl.Location.Coordinates.Y).FirstOrDefault(),
+                    Latitude = o.Place.PlaceLocations.Select(pl => (double?)pl.Location.Coordinates.Y).FirstOrDefault(),
                     Longitude = o.Place.PlaceLocations.Select(pl => (double?)pl.Location.Coordinates.X).FirstOrDefault(),
                     ImageUrls = o.Images.Select(i => i.ImageUrl).ToList()
                 })
                 .FirstOrDefaultAsync();
         }
-        
+
 
         public async Task<int> CreateOfferAsync(OfferCreateDto dto)
         {
+            return await CreateOfferAsync(dto, CancellationToken.None);
+        }
+
+        public async Task<int> CreateOfferAsync(OfferCreateDto dto, CancellationToken cancellationToken = default)
+        {
+            int finalPlaceId;
+
+            if (dto.PlaceId.HasValue
+                && dto.PlaceId.Value > 0)
+            {
+                finalPlaceId = dto.PlaceId.Value;
+            }
+            else if (!string.IsNullOrWhiteSpace(dto.NewPlaceName))
+            {
+                var newLocation = new SalesHub.Models.Location
+                {
+                    Address = dto.NewPlaceAddress ?? "Address not provided",
+                    Coordinates = (dto.Longitude.HasValue && dto.Latitude.HasValue)
+                       ? new Point(dto.Longitude.Value, dto.Latitude.Value) { SRID = 4326 } : null
+                };
+
+                var newPlace = new Place
+                {
+                    Name = dto.NewPlaceName,
+                    Description = dto.Description ?? "New place added by user",
+                    IsOnline = false,
+                    OfferUrl = ""
+                };
+
+                var placeLocation = new PlaceLocation
+                {
+                    Place = newPlace,
+                    Location = newLocation
+                };
+
+                newPlace.PlaceLocations.Add(placeLocation);
+
+                _context.Places.Add(newPlace);
+                await _context.SaveChangesAsync(cancellationToken);
+
+                finalPlaceId = newPlace.Id;
+            }
+            else
+            {
+                throw new ArgumentException("You must provide either an existing PlaceId or a NewPlaceName.");
+            }
+
             var offer = new Offer
             {
                 Title = dto.Title,
-                Description = dto.Description,
+                Description = dto.Description ?? "",
                 NewPrice = dto.NewPrice,
-                OldPrice = dto.OldPrice,      
+                OldPrice = dto.OldPrice,
                 ValidFrom = dto.ValidFrom ?? DateTime.UtcNow,
                 ValidTo = dto.ValidTo,
                 CategoryId = dto.CategoryId,
-                PlaceId = dto.PlaceId,
+                PlaceId = finalPlaceId,
                 IsActive = true,
                 Creator = OfferCreator.User,
                 Images = dto.ImageUrls?.Select((url, index) => new OfferImage
@@ -113,17 +160,19 @@ namespace SalesHub.Services
             };
 
             _context.Offers.Add(offer);
-            await _context.SaveChangesAsync();
-            
+            await _context.SaveChangesAsync(cancellationToken);
+
             return offer.Id;
         }
-
         public async Task<bool> UpdateStatusAsync(int id, bool isActive)
         {
             var offer = await _context.Offers.FindAsync(id);
             if (offer == null) return false;
+
             offer.IsActive = isActive;
-            return await _context.SaveChangesAsync() > 0;
+
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<bool> DeleteAsync(int id)
@@ -155,25 +204,91 @@ namespace SalesHub.Services
                 .OrderBy(x => x.Distance)
                 .ToListAsync();
         }
-        public async Task<string> UploadImageAsync(int id, IFormFile file)
+        public async Task<string> UploadImageAsync(int id, IFormFile file, CancellationToken cancellationToken = default)
+        {
+            var urls = await UploadImagesAsync(id, new[] { file }, cancellationToken);
+            return urls.FirstOrDefault() ?? string.Empty;
+        }
+
+        public async Task<IEnumerable<string>> UploadImagesAsync(int id, IEnumerable<IFormFile> files, CancellationToken cancellationToken = default)
         {
             var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
             if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
 
-            var fileName = Guid.NewGuid().ToString() + "_" + file.FileName;
-            var filePath = Path.Combine(uploadsFolder, fileName);
+            var result = new List<string>();
 
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            foreach (var file in files)
             {
-                await file.CopyToAsync(stream);
+                var fileName = Guid.NewGuid().ToString() + "_" + file.FileName;
+                var filePath = Path.Combine(uploadsFolder, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream, cancellationToken);
+                }
+
+                var image = new OfferImage { ImageUrl = $"/images/{fileName}", OfferId = id };
+                _context.OfferImages.Add(image);
+                result.Add(image.ImageUrl);
             }
 
-            var image = new OfferImage { ImageUrl = $"/images/{fileName}", OfferId = id };
-            _context.OfferImages.Add(image);
-            await _context.SaveChangesAsync();
-            return image.ImageUrl;
+            await _context.SaveChangesAsync(cancellationToken);
+            return result;
         }
+        public async Task<IEnumerable<OfferMapPinDto>> GetByRadiusAsync(LocationSearchRequest request)
+        {
+            // Створюємо точку користувача (SRID 4326 - стандарт для GPS)
+            var userLocation = new Point(request.Longitude, request.Latitude) { SRID = 4326 };
+            double radiusInMeters = request.RadiusInKm * 1000;
 
+            return await _context.Offers
+                .AsNoTracking()
+                .Where(o => o.IsActive)
+                // Фільтруємо через зв'язок Place -> PlaceLocations
+                .Where(o => o.Place.PlaceLocations.Any(pl =>
+                    pl.Location.Coordinates.Distance(userLocation) <= radiusInMeters))
+                .Select(o => new OfferMapPinDto
+                {
+                    Id = o.Id,
+                    Title = o.Title,
+                    NewPrice = o.NewPrice,
+                    Latitude = o.Place.PlaceLocations.Select(pl => pl.Location.Coordinates.Y).FirstOrDefault(),
+                    Longitude = o.Place.PlaceLocations.Select(pl => pl.Location.Coordinates.X).FirstOrDefault()
+                })
+                .ToListAsync();
+        }
+        public async Task<IEnumerable<OfferMapPinDto>> GetInBoundsAsync(double minLat, double maxLat, double minLon, double maxLon)
+        {
+            var boundary = new Envelope(minLon, maxLon, minLat, maxLat);
+            var factory = new GeometryFactory(new PrecisionModel(), 4326);
+            var polygon = factory.ToGeometry(boundary);
+
+            return await _context.Offers
+                .AsNoTracking()
+                .Where(o => o.IsActive)
+                .Where(o => o.Place.PlaceLocations.Any(pl => pl.Location.Coordinates.Within(polygon)))
+                .Select(o => new OfferMapPinDto
+                {
+                    Id = o.Id,
+                    Title = o.Title,
+                    NewPrice = o.NewPrice,
+                    // Беремо першу доступну локацію для координат піна
+                    Latitude = o.Place.PlaceLocations.Select(pl => pl.Location.Coordinates.Y).FirstOrDefault(),
+                    Longitude = o.Place.PlaceLocations.Select(pl => pl.Location.Coordinates.X).FirstOrDefault()
+                })
+                .ToListAsync();
+        }
+        
+        public async Task<IEnumerable<OfferPreviewDto>> GetByUserIdAsync(int userId)
+        {
+            // Припускаємо, що у моделі Offer є поле CreatorId або подібне, 
+            // або ви фільтруєте за якимось іншим критерієм авторства
+            return await _context.Offers
+                .AsNoTracking()
+                .Where(o => (int)o.Creator == userId) // Перевірте тип конвертації вашого Enum Creator
+                .Select(MapToPreviewDto())
+                .ToListAsync();
+        }
         private static Expression<Func<Offer, OfferPreviewDto>> MapToPreviewDto()
         {
             return o => new OfferPreviewDto
@@ -187,6 +302,7 @@ namespace SalesHub.Services
                 MainImageUrl = o.Images.OrderBy(i => i.Id).Select(i => i.ImageUrl).FirstOrDefault()
                 // Distance заповнюється окремо в методі GetNearbyAsync
             };
+            
         }
     }
-    }
+}
