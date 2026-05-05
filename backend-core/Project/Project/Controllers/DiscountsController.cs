@@ -32,17 +32,18 @@ namespace Project.Controllers
         /// Retrieves all active discounts with pagination and search.
         /// </summary>
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetAll(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? searchTerm = null,
+            [FromQuery] int? categoryId = null,
+            [FromQuery] string? sortOption = null)
         {
-            var query = _context.Offers.AsNoTracking();
+            if (page <= 0 || pageSize <= 0)
+                return BadRequest("Page and PageSize must be greater than zero.");
 
-            var total = await query.CountAsync();
-            var data = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return Ok(new { Total = total, Page = page, Data = data });
+            var result = await _discountService.GetAllAsync(page, pageSize, searchTerm, categoryId, sortOption);
+            return Ok(new { Total = result.Total, Page = page, Data = result.Data });
         }
 
 
@@ -61,33 +62,18 @@ namespace Project.Controllers
         /// Gets full details of a specific discount
         /// </summary>
         [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetById([FromRoute] int id)
+        public async Task<IActionResult> GetById(int id)
         {
-            var offer = await _context.Offers
-                .Include(o => o.Place)
-                .Include(o => o.Images)
-                .FirstOrDefaultAsync(o => o.Id == id);
+            if (id <= 0) return BadRequest("Invalid ID.");
 
-            if (offer == null) return NotFound();
+            var offer = await _discountService.GetByIdAsync(id);
+            if (offer == null)
+                return NotFound(new { message = $"Discount with ID {id} not found." });
+
             return Ok(offer);
         }
 
-        /// <summary>
-        ///search discounts by title or description. Case-insensitive, partial matches allowed.
-        /// </summary>
-        [HttpGet("search")]
-        public async Task<IActionResult> Search([FromQuery] string q)
-        {
-            if (string.IsNullOrWhiteSpace(q)) return BadRequest(new { message = "Request is empty" });
-
-            var results = await _context.Offers
-                .Include(o => o.Images)
-                .Include(o => o.Place)
-                .Where(o => o.Title.Contains(q) || o.Description.Contains(q))
-                .ToListAsync();
-
-            return Ok(results);
-        }
+        
 
 
         /// <summary>
@@ -108,6 +94,11 @@ namespace Project.Controllers
 
             try
             {
+                if (dto.OldPrice.HasValue && dto.NewPrice >= dto.OldPrice.Value)
+                {
+                    return UnprocessableEntity(new { message = "The new price must be lower than the old price." });
+                }
+
                 var id = await _discountService.CreateOfferAsync(dto, cancellationToken);
                 _logger.LogInformation("Created offer {OfferId} by user {User}", id, User?.Identity?.Name ?? "anonymous");
                 return CreatedAtAction(nameof(GetById), new { id = id }, new { id });
@@ -120,7 +111,7 @@ namespace Project.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unexpected error while creating offer");
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, new { message = "Error saving offer", details = ex.Message });
             }
         }
 
@@ -168,72 +159,6 @@ namespace Project.Controllers
 
             return result ? Ok() : NotFound();
         }
-
-        /// <summary>
-        /// Gets discounts within the visible map rectangle (Bounds)
-        /// </summary>
-        [HttpGet("map-bounds")]
-        public async Task<IActionResult> GetInBounds(double minLat, double minLon, double maxLat, double maxLon)
-        {
-            var boundary = new Envelope(minLon, maxLon, minLat, maxLat);
-            var factory = new GeometryFactory(new PrecisionModel(), 4326);
-            var polygon = factory.ToGeometry(boundary);
-
-            var offers = await _context.Offers
-                .Include(o => o.Place)
-                .Where(o => o.Place != null && o.Place.Location != null && o.Place.Location.Within(polygon))
-                .ToListAsync();
-
-            return Ok(offers);
-        }
-
-        /// <summary>
-        /// get discounts sorted by proximity to the user's location.
-        /// </summary>
-        [HttpGet("nearby")]
-        public async Task<IActionResult> GetNearby(double lat, double lon, double radiusMeters = 2000)
-        {
-            var userLocation = new Point(lon, lat) { SRID = 4326 };
-
-            var offers = await _context.Offers
-                .Include(o => o.Place)
-                .Where(o => o.Place != null && o.Place.Location != null && o.Place.Location.Distance(userLocation) <= radiusMeters)
-                .OrderBy(o => o.Place!.Location!.Distance(userLocation))
-                .Select(o => new {
-                    o.Id,
-                    o.Title,
-                    Price = o.NewPrice,
-                    StoreName = o.Place!.Name,
-                    Distance = Math.Round(o.Place.Location!.Distance(userLocation))
-                })
-                .ToListAsync();
-
-            return Ok(offers);
-        }
-
-
-            /// <summary>
-            ///  Uploads an image for an existing discount.
-            /// </summary>
-        [HttpPost("{id:int}/upload-image")]
-        [Consumes("multipart/form-data")]
-        public async Task<IActionResult> UploadImage([FromRoute] int id, [FromForm] IEnumerable<IFormFile> files)
-            {
-                if (files == null || !files.Any()) return BadRequest("No files selected.");
-
-                var offerExists = await _discountService.GetByIdAsync(id);
-                if (offerExists == null) return NotFound("Discount not found");
-
-                try
-                {
-                    var urls = await _discountService.UploadImagesAsync(id, files);
-                    return Ok(new { urls });
-                }
-                catch (Exception ex)
-                {
-                    return BadRequest(new { message = "File upload failed", error = ex.Message });
-                }
-            }
 
             /// <summary>
             /// Admin Only: Deletes a discount from the system.
