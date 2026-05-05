@@ -5,7 +5,7 @@ using SalesHub.DTOs;
 using SalesHub.Models;
 using System.Linq.Expressions;
 using static System.Net.Mime.MediaTypeNames;
-
+using SalesHub.Enums;
 namespace SalesHub.Services
 {
     public class DiscountService : IDiscountService
@@ -32,7 +32,7 @@ namespace SalesHub.Services
                 query = query.Where(o => o.CategoryId == categoryId.Value);
             }
 
-            var total = await query.CountAsync();
+             var total = await query.CountAsync();
 
             query = sortOption switch
             {

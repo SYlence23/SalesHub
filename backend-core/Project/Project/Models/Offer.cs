@@ -1,10 +1,8 @@
-﻿namespace SalesHub.Models
+﻿using SalesHub.Enums;
+
+namespace SalesHub.Models
 {
-    public enum OfferCreator
-    {
-        User = 1,   
-        Parser = 2  
-    }
+    
     public class Offer : BaseEntity
     {
         public string Title { get; set; }
