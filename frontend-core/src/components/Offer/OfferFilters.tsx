@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Search, X } from 'lucide-react';
 
 export interface Category {
@@ -8,11 +9,9 @@ export interface Category {
 interface OfferFiltersProps {
   categories: Category[];
   searchTerm: string;
-  setSearchTerm: (term: string) => void;
   selectedCategory: number | null;
-  setSelectedCategory: (id: number | null) => void;
   sortOption: string;
-  setSortOption: (option: string) => void;
+  onApplyFilters: (filters: { searchTerm: string; selectedCategory: number | null; sortOption: string }) => void;
   isMobileDrawerOpen?: boolean;
   onCloseMobileDrawer?: () => void;
 }
@@ -20,20 +19,47 @@ interface OfferFiltersProps {
 export default function OfferFilters({
   categories,
   searchTerm,
-  setSearchTerm,
   selectedCategory,
-  setSelectedCategory,
   sortOption,
-  setSortOption,
+  onApplyFilters,
   isMobileDrawerOpen = false,
   onCloseMobileDrawer
 }: OfferFiltersProps) {
+
+  const [localSearchTerm, setLocalSearchTerm] = useState(searchTerm);
+  const [localSelectedCategory, setLocalSelectedCategory] = useState<number | null>(selectedCategory);
+  const [localSortOption, setLocalSortOption] = useState(sortOption);
+
+  const [prevProps, setPrevProps] = useState({ searchTerm, selectedCategory, sortOption });
+
+
+  if (searchTerm !== prevProps.searchTerm || selectedCategory !== prevProps.selectedCategory || sortOption !== prevProps.sortOption) {
+    setPrevProps({ searchTerm, selectedCategory, sortOption });
+    setLocalSearchTerm(searchTerm);
+    setLocalSelectedCategory(selectedCategory);
+    setLocalSortOption(sortOption);
+  }
+
+  const handleApply = () => {
+    onApplyFilters({
+      searchTerm: localSearchTerm,
+      selectedCategory: localSelectedCategory,
+      sortOption: localSortOption
+    });
+    if (onCloseMobileDrawer) onCloseMobileDrawer();
+  };
+
+  const handleApplyKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleApply();
+    }
+  };
 
   const FilterContent = (
     <div className="flex flex-col gap-6">
       {/* Search */}
       <div>
-        <h4 className="font-bold text-zinc-900 dark:text-white mb-3">Search</h4>
+        <h4 className="font-bold text-zinc-900 dark:text-white mb-3">Шукати</h4>
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Search className="h-4 w-4 text-zinc-400" />
@@ -41,27 +67,29 @@ export default function OfferFilters({
           <input
             type="text"
             className="w-full pl-10 pr-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
-            placeholder="Search offers..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Шукати знижки..."
+            value={localSearchTerm}
+            onChange={(e) => setLocalSearchTerm(e.target.value)}
+            onKeyDown={handleApplyKeyPress}
+
           />
         </div>
       </div>
 
       {/* Categories */}
       <div>
-        <h4 className="font-bold text-zinc-900 dark:text-white mb-3">Categories</h4>
+        <h4 className="font-bold text-zinc-900 dark:text-white mb-3">Категорії</h4>
         <div className="flex flex-col gap-2">
           <label className="flex items-center gap-3 cursor-pointer group">
             <input
               type="radio"
               name="category"
               className="w-4 h-4 text-primary-500 focus:ring-primary-500 border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800"
-              checked={selectedCategory === null}
-              onChange={() => setSelectedCategory(null)}
+              checked={localSelectedCategory === null}
+              onChange={() => setLocalSelectedCategory(null)}
             />
             <span className="text-zinc-700 dark:text-zinc-300 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors">
-              All Categories
+              Усі категорії
             </span>
           </label>
           {categories.map((cat) => (
@@ -70,8 +98,8 @@ export default function OfferFilters({
                 type="radio"
                 name="category"
                 className="w-4 h-4 text-primary-500 focus:ring-primary-500 border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800"
-                checked={selectedCategory === cat.id}
-                onChange={() => setSelectedCategory(cat.id)}
+                checked={localSelectedCategory === cat.id}
+                onChange={() => setLocalSelectedCategory(cat.id)}
               />
               <span className="text-zinc-700 dark:text-zinc-300 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors">
                 {cat.name}
@@ -83,26 +111,29 @@ export default function OfferFilters({
 
       {/* Sort Options */}
       <div>
-        <h4 className="font-bold text-zinc-900 dark:text-white mb-3">Sort By</h4>
+        <h4 className="font-bold text-zinc-900 dark:text-white mb-3">Сортувати за</h4>
         <select
           className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none cursor-pointer"
-          value={sortOption}
-          onChange={(e) => setSortOption(e.target.value)}
+          value={localSortOption}
+          onChange={(e) => setLocalSortOption(e.target.value)}
         >
-          <option value="newest">Newest Adds</option>
-          <option value="price_asc">Price: Low to High</option>
-          <option value="price_desc">Price: High to Low</option>
-          <option value="discount_desc">Biggest Discount</option>
+          <option value="newest">Найновіші</option>
+          <option value="price_asc">Ціна: від меншого до більшого</option>
+          <option value="price_desc">Ціна: від більшого до меншого</option>
+          <option value="discount_desc">Найвигідніша знижка</option>
         </select>
       </div>
 
-      {/* Apply Button (Mobile only) */}
-      <div className="mt-4 lg:hidden">
+      {/* Apply Button */}
+      <div className="mt-4 flex flex-col gap-2">
+        <button className="btn-secondary py-2" onClick={() => { onApplyFilters({ searchTerm: '', selectedCategory: null, sortOption: 'newest' }) }}>
+          Очистити фільтри
+        </button>
         <button
-          onClick={onCloseMobileDrawer}
+          onClick={handleApply}
           className="w-full btn-primary"
         >
-          Show Results
+          Застосувати фільтри
         </button>
       </div>
     </div>

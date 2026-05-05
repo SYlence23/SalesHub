@@ -2,12 +2,29 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar/Navbar';
 import HomePage from './pages/HomePage';
 import OfferPage from './pages/OfferPage';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import OfferCreatePage from './pages/OfferCreatePage';
 import Map from './pages/Map';
 
+
+
 function App() {
-    const location = useLocation();
+  const location = useLocation();
     // Перевіряємо, чи ми зараз на сторінці карти
-    const isMapPage = location.pathname === '/map';
+  const isMapPage = location.pathname === '/map';
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <main className="grow pt-15">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/offers" element={<OfferPage />} />
+          <Route path="/offers/create" element={<OfferCreatePage />} />
+          <Route path="/register" element={<Register />} />
+        </Routes>
+      </main>
 
     return (
         <div className="min-h-screen flex flex-col">

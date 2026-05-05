@@ -5,6 +5,7 @@ using SalesHub.Data;
 using SalesHub.DTOs;
 using SalesHub.Models;
 using System.Linq.Expressions;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace SalesHub.Services
 {
@@ -150,7 +151,12 @@ namespace SalesHub.Services
                 CategoryId = dto.CategoryId,
                 PlaceId = finalPlaceId,
                 IsActive = true,
-                Creator = OfferCreator.User
+                Creator = OfferCreator.User,
+                Images = dto.ImageUrls?.Select((url, index) => new OfferImage
+                {
+                    ImageUrl = url,
+                    IsMain = index == 0
+                }).ToList() ?? new List<OfferImage>()
             };
 
             _context.Offers.Add(offer);

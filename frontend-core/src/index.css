@@ -28,14 +28,7 @@
 @layer base {
   body {
     /* Smooth transitions and basic typography */
-    @apply bg-white text-zinc-900 antialiased font-sans transition-colors duration-300;
-  }
-
-  /* Dark mode global overrides */
-  @media (prefers-color-scheme: dark) {
-    body {
-      @apply bg-zinc-800 text-zinc-100;
-    }
+    @apply bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 antialiased font-sans transition-colors duration-300;
   }
 
   /* Custom scrollbar for premium touch */

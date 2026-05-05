@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
  
  
 using SalesHub.Services;
+using Amazon.S3;
 
 internal class Program
 {
@@ -26,6 +27,7 @@ internal class Program
 
         builder.Services.AddOpenApi();
 
+
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("AllowAll", policy =>
@@ -34,11 +36,23 @@ internal class Program
             });
         });
  
-        builder.Services.AddScoped<IDiscountService, DiscountService>();
-        var app = builder.Build();
-
          
 
+
+        builder.Services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+            });
+        builder.Services.AddScoped<IDiscountService, DiscountService>();
+        builder.Services.AddScoped<IPlaceService, PlaceService>();
+        builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
+        builder.Services.AddAWSService<IAmazonS3>();
+        builder.Services.AddOpenApi();
+
+
+         
+        var app = builder.Build();
         app.UseStaticFiles();
 
         if (app.Environment.IsDevelopment())
