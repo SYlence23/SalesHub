@@ -73,25 +73,7 @@ namespace Project.Controllers
             }
         }
 
-        [HttpPost("{id:int}/upload-image")]
-        public async Task<IActionResult> UploadImage(int id, IFormFile file)
-        {
-            if (file == null || file.Length == 0)
-                return BadRequest("No file selected or file is empty.");
-
-            var offerExists = await _discountService.GetByIdAsync(id);
-            if (offerExists == null) return NotFound("Discount not found.");
-
-            try
-            {
-                var url = await _discountService.UploadImageAsync(id, file);
-                return Ok(new { url });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = "Upload failed", error = ex.Message });
-            }
-        }
+        
 
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
