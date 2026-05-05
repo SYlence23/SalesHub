@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Filter } from 'lucide-react';
+import { Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import OfferCard, { type Offer } from '../components/Offer/OfferCard';
 import OfferSkeletonCard from '../components/Offer/OfferSkeletonCard';
 import OfferFilters, { type Category } from '../components/Offer/OfferFilters';
@@ -19,6 +19,7 @@ export default function OfferPage() {
     const [offers, setOffers] = useState<Offer[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [totalOffers, setTotalOffers] = useState(0);
 
     // Mobile drawer state
     const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
@@ -28,6 +29,8 @@ export default function OfferPage() {
     const selectedCategoryStr = searchParams.get('categoryId');
     const selectedCategory = selectedCategoryStr ? parseInt(selectedCategoryStr, 10) : null;
     const sortOption = searchParams.get('sortOption') || 'newest';
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const totalPages = Math.ceil(totalOffers / 10);
 
     const handleApplyFilters = (filters: { searchTerm: string; selectedCategory: number | null; sortOption: string }) => {
         const newParams = new URLSearchParams(searchParams);
@@ -46,7 +49,15 @@ export default function OfferPage() {
         } else {
             newParams.delete('sortOption');
         }
+        newParams.set('page', '1');
         setSearchParams(newParams);
+    };
+
+    const handlePageChange = (newPage: number) => {
+        const newParams = new URLSearchParams(searchParams);
+        newParams.set('page', newPage.toString());
+        setSearchParams(newParams);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     // Fetch categories on mount
@@ -77,13 +88,16 @@ export default function OfferPage() {
                 if (searchTerm) params.append('searchTerm', searchTerm);
                 if (selectedCategory !== null) params.append('categoryId', selectedCategory.toString());
                 if (sortOption) params.append('sortOption', sortOption);
+                params.append('page', page.toString());
 
                 const response = await axios.get<ApiOfferResponse>(`/api/Discounts?${params.toString()}`);
                 if (Array.isArray(response.data.data)) {
                     setOffers(response.data.data);
+                    setTotalOffers(response.data.total);
                 } else {
                     console.error("Expected array of offers, got:", typeof response.data);
                     setOffers([]);
+                    setTotalOffers(0);
                 }
             } catch (error) {
                 console.error("Failed to fetch offers:", error);
@@ -92,7 +106,7 @@ export default function OfferPage() {
             }
         };
         fetchOffers();
-    }, [searchTerm, selectedCategory, sortOption]);
+    }, [searchTerm, selectedCategory, sortOption, page]);
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -148,10 +162,37 @@ export default function OfferPage() {
                         </div>
                     ) : offers.length > 0 ? (
                         // Data State
-                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                            {offers.map((offer) => (
-                                <OfferCard key={offer.id} offer={offer} />
-                            ))}
+                        <div className="flex flex-col gap-8">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                                {offers.map((offer) => (
+                                    <OfferCard key={offer.id} offer={offer} />
+                                ))}
+                            </div>
+
+                            {/* Pagination Controls */}
+                            {totalPages > 1 && (
+                                <div className="flex justify-center items-center gap-4 mt-2">
+                                    <button
+                                        onClick={() => handlePageChange(page - 1)}
+                                        disabled={page <= 1}
+                                        className="btn-secondary px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        aria-label="Previous Page"
+                                    >
+                                        <ChevronLeft className="w-5 h-5" />
+                                    </button>
+                                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                                        Page {page} of {totalPages}
+                                    </span>
+                                    <button
+                                        onClick={() => handlePageChange(page + 1)}
+                                        disabled={page >= totalPages}
+                                        className="btn-secondary px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        aria-label="Next Page"
+                                    >
+                                        <ChevronRight className="w-5 h-5" />
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     ) : (
                         // Empty State
