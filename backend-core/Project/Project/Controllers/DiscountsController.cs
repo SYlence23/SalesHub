@@ -58,8 +58,7 @@ namespace Project.Controllers
 
 
         /// <summary>
-        /// Gets full details of a specific discount.
-
+        /// Gets full details of a specific discount
         /// </summary>
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById([FromRoute] int id)
@@ -74,7 +73,7 @@ namespace Project.Controllers
         }
 
         /// <summary>
-        /// Пошук знижок за ключовим словом (назва або опис)
+        ///search discounts by title or description. Case-insensitive, partial matches allowed.
         /// </summary>
         [HttpGet("search")]
         public async Task<IActionResult> Search([FromQuery] string q)
@@ -126,7 +125,7 @@ namespace Project.Controllers
         }
 
         /// <summary>
-        /// Повне оновлення даних про знижку
+        /// updates an existing discount. 
         /// </summary>
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] Offer updatedOffer)
@@ -171,7 +170,7 @@ namespace Project.Controllers
         }
 
         /// <summary>
-        /// Отримати знижки у видимому прямокутнику карти (Bounds)
+        /// Gets discounts within the visible map rectangle (Bounds)
         /// </summary>
         [HttpGet("map-bounds")]
         public async Task<IActionResult> GetInBounds(double minLat, double minLon, double maxLat, double maxLon)
@@ -189,7 +188,7 @@ namespace Project.Controllers
         }
 
         /// <summary>
-        /// Знайти знижки в радіусі X метрів від користувача
+        /// get discounts sorted by proximity to the user's location.
         /// </summary>
         [HttpGet("nearby")]
         public async Task<IActionResult> GetNearby(double lat, double lon, double radiusMeters = 2000)

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
 using SalesHub.Data;
 using SalesHub.DTOs;
@@ -228,7 +229,60 @@ namespace SalesHub.Services
             await _context.SaveChangesAsync(cancellationToken);
             return result;
         }
+        public async Task<IEnumerable<OfferMapPinDto>> GetByRadiusAsync(LocationSearchRequest request)
+        {
+            // Створюємо точку користувача (SRID 4326 - стандарт для GPS)
+            var userLocation = new Point(request.Longitude, request.Latitude) { SRID = 4326 };
+            double radiusInMeters = request.RadiusInKm * 1000;
 
+            return await _context.Offers
+                .AsNoTracking()
+                .Where(o => o.IsActive)
+                // Фільтруємо через зв'язок Place -> PlaceLocations
+                .Where(o => o.Place.PlaceLocations.Any(pl =>
+                    pl.Location.Coordinates.Distance(userLocation) <= radiusInMeters))
+                .Select(o => new OfferMapPinDto
+                {
+                    Id = o.Id,
+                    Title = o.Title,
+                    NewPrice = o.NewPrice,
+                    Latitude = o.Place.PlaceLocations.Select(pl => pl.Location.Coordinates.Y).FirstOrDefault(),
+                    Longitude = o.Place.PlaceLocations.Select(pl => pl.Location.Coordinates.X).FirstOrDefault()
+                })
+                .ToListAsync();
+        }
+        public async Task<IEnumerable<OfferMapPinDto>> GetInBoundsAsync(double minLat, double maxLat, double minLon, double maxLon)
+        {
+            var boundary = new Envelope(minLon, maxLon, minLat, maxLat);
+            var factory = new GeometryFactory(new PrecisionModel(), 4326);
+            var polygon = factory.ToGeometry(boundary);
+
+            return await _context.Offers
+                .AsNoTracking()
+                .Where(o => o.IsActive)
+                .Where(o => o.Place.PlaceLocations.Any(pl => pl.Location.Coordinates.Within(polygon)))
+                .Select(o => new OfferMapPinDto
+                {
+                    Id = o.Id,
+                    Title = o.Title,
+                    NewPrice = o.NewPrice,
+                    // Беремо першу доступну локацію для координат піна
+                    Latitude = o.Place.PlaceLocations.Select(pl => pl.Location.Coordinates.Y).FirstOrDefault(),
+                    Longitude = o.Place.PlaceLocations.Select(pl => pl.Location.Coordinates.X).FirstOrDefault()
+                })
+                .ToListAsync();
+        }
+        
+        public async Task<IEnumerable<OfferPreviewDto>> GetByUserIdAsync(int userId)
+        {
+            // Припускаємо, що у моделі Offer є поле CreatorId або подібне, 
+            // або ви фільтруєте за якимось іншим критерієм авторства
+            return await _context.Offers
+                .AsNoTracking()
+                .Where(o => (int)o.Creator == userId) // Перевірте тип конвертації вашого Enum Creator
+                .Select(MapToPreviewDto())
+                .ToListAsync();
+        }
         private static Expression<Func<Offer, OfferPreviewDto>> MapToPreviewDto()
         {
             return o => new OfferPreviewDto
@@ -242,6 +296,7 @@ namespace SalesHub.Services
                 MainImageUrl = o.Images.OrderBy(i => i.Id).Select(i => i.ImageUrl).FirstOrDefault()
                 // Distance заповнюється окремо в методі GetNearbyAsync
             };
+            
         }
     }
 }
