@@ -19,7 +19,10 @@ namespace SalesHub.Models
         public int PlaceId { get; set; }
         public Place Place { get; set; }
         public int? CreatedById { get; set; }
-        public User CreatedBy { get; set; }
-        public List<OfferImage> Images { get; set; } = new();
+        public ApplicationUser CreatedBy { get; set; }
+        public ICollection<OfferImage> Images { get; set; }
+        public ICollection<UserSavedOffers> UserSavedOffers { get; set; }
+        public ICollection<OfferReviews> Reviews { get; set; }
+
     }
 }

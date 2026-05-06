@@ -1,10 +1,10 @@
 ﻿namespace SalesHub.Models
 {
-    public class UserSavedOffers
+    public class UserSavedOffers : BaseEntity
     {
-        public Offer offer {  get; set; }
+        public Offer Offer {  get; set; }
         public int OfferId { get; set; }
-        public User User { get; set; }
+        public ApplicationUser User { get; set; }
         public int UserId { get; set; }
     }
 }
