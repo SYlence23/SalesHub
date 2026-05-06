@@ -19,6 +19,7 @@ namespace SalesHub.Models
         public int PlaceId { get; set; }
         public Place Place { get; set; }
         public int? CreatedById { get; set; }
+        public User CreatedBy { get; set; }
         public List<OfferImage> Images { get; set; } = new();
     }
 }

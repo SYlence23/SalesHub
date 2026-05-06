@@ -10,6 +10,7 @@ namespace SalesHub.Models
         public string Email { get; set; }
         public string Password { get; set; }
         public int RoleId { get; set; }
+        public UserRoles Role { get; set; }
         public UserCategories Category { get; set; }
         public List<Offer> UserOffers { get; set; } = new();
         public List<OfferReviews> UserReviews { get; set; } = new();

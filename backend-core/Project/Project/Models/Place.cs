@@ -8,6 +8,7 @@ namespace SalesHub.Models
         public bool IsOnline { get; set; }
         public string OfferUrl { get; set; }
         public int CreatedById { get; set; }
+        public User CreatedBy { get; set; }
         public List<PlaceImage> Images { get; set; } = new();
         public List<PlaceLocation> PlaceLocations { get; set; } = new();
         public List<Offer> Offers { get; set; } = new();
