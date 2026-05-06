@@ -38,6 +38,7 @@ namespace SalesHub.Controllers
             var offer = await _discountService.GetByIdAsync(id);
             if (offer == null) return NotFound("Знижку не знайдено.");
             return Ok(offer);
+            
         }
 
         [HttpPost("share-location")]

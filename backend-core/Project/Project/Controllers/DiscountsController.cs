@@ -101,7 +101,7 @@ namespace Project.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CreateOfferAsync([FromBody] OfferCreateDto dto, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> CreateOffer([FromBody] OfferCreateDto dto, CancellationToken cancellationToken = default)
         {
             if (dto == null) return BadRequest();
             if (!ModelState.IsValid) return ValidationProblem(ModelState);

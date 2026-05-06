@@ -10,21 +10,9 @@ import Map from './pages/Map';
 
 
 function App() {
-  const location = useLocation();
+    const location = useLocation();
     // Перевіряємо, чи ми зараз на сторінці карти
-  const isMapPage = location.pathname === '/map';
-  return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      <main className="grow pt-15">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/offers" element={<OfferPage />} />
-          <Route path="/offers/create" element={<OfferCreatePage />} />
-          <Route path="/register" element={<Register />} />
-        </Routes>
-      </main>
+    const isMapPage = location.pathname === '/map';
 
     return (
         <div className="min-h-screen flex flex-col">
@@ -33,7 +21,10 @@ function App() {
             <main className="grow pt-15 flex flex-col">
                 <Routes>
                     <Route path="/" element={<HomePage />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
                     <Route path="/offers" element={<OfferPage />} />
+                    <Route path="/offers/create" element={<OfferCreatePage />} />
                     <Route path="/map" element={<Map />} />
                 </Routes>
             </main>
