@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar/Navbar';
 import HomePage from './pages/HomePage';
 import OfferPage from './pages/OfferPage';
+import SingleOfferPage from './pages/SingleOfferPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
 
@@ -14,6 +15,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/offers" element={<OfferPage />} />
+          <Route path="/offers/:id" element={<SingleOfferPage />} />
           <Route path="/register" element={<Register />} />
         </Routes>
       </main>

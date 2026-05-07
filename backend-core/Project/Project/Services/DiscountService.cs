@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
 using SalesHub.Data;
 using SalesHub.DTOs;
@@ -74,15 +74,19 @@ namespace SalesHub.Services
                 {
                     Id = o.Id,
                     Title = o.Title,
+                    Description = o.Description,
+                    IsActive = o.IsActive,
                     CategoryName = o.Category.Name,
+                    CreatedAt = o.CreatedAt,
+                    Creator = o.Creator.ToString(),
                     NewPrice = o.NewPrice,
                     OldPrice = o.OldPrice,
-                    ValidFrom = o.ValidFrom, 
+                    ValidFrom = o.ValidFrom,
                     ValidTo = o.ValidTo,
                     IsOnline = o.Place.IsOnline,
                     StoreName = o.Place.Name,
                     OfferUrl = o.Place.OfferUrl,
-                     Latitude = o.Place.PlaceLocations.Select(pl => (double?)pl.Location.Coordinates.Y).FirstOrDefault(),
+                    Latitude = o.Place.PlaceLocations.Select(pl => (double?)pl.Location.Coordinates.Y).FirstOrDefault(),
                     Longitude = o.Place.PlaceLocations.Select(pl => (double?)pl.Location.Coordinates.X).FirstOrDefault(),
                     ImageUrls = o.Images.Select(i => i.ImageUrl).ToList()
                 })
