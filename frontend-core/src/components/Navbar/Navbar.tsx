@@ -1,22 +1,27 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Tag, Map as MapIcon } from 'lucide-react';
+import { Home, Tag, Map as MapIcon, Store } from 'lucide-react';
 
 export default function Navbar() {
     const location = useLocation();
 
     const navLinks = [
         {
-            name: "Home",
+            name: "Головна",
             path: "/",
             icon: Home
         },
         {
-            name: "Offers",
+            name: "Знижки",
             path: "/offers",
             icon: Tag
         },
         {
-            name: "Map",
+            name: "Заклади",
+            path: "/places",
+            icon: Store
+        },
+        {
+            name: "Карта",
             path: "/map",
             icon: MapIcon
         }
@@ -56,10 +61,10 @@ export default function Navbar() {
                         {/* Right actions */}
                         <div className="flex items-center gap-3">
                             <Link to="/login" className="flex btn-primary text-sm px-4 py-2">
-                                Log In
+                                Увійти
                             </Link>
                             <Link to="/register" className="hidden sm:flex btn-secondary text-sm px-4 py-2">
-                                Sign Up
+                                Реєстрація
                             </Link>
                         </div>
 
