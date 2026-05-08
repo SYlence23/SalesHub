@@ -8,12 +8,11 @@ interface MapMarker {
     newPrice: number;
     latitude: number;
     longitude: number;
+    markerColor?: string;
+    categoryId: number;
 }
 
-interface Suggestion {
-    place_id: string;
-    description: string;
-}
+
 const StreetSearch: React.FC<{
     onSelect: (coords: { lat: number, lng: number }) => void,
     mapRef: React.MutableRefObject<google.maps.Map | null>
@@ -26,7 +25,8 @@ const StreetSearch: React.FC<{
         clearSuggestions,
     } = usePlacesAutocomplete({
         requestOptions: {
-            locationBias: { lat: 49.8397, lng: 24.0297, radius: 10000 },
+            locationBias: { lat: 49.8397, lng: 24.0297, radius: 50000 },
+            componentRestrictions: { country: 'ua' },
         },
         debounce: 300,
     });
@@ -68,11 +68,11 @@ const StreetSearch: React.FC<{
                 mapRef.current.setCenter({ lat, lng });
                 mapRef.current.setZoom(17);
                 mapRef.current.panTo({ lat, lng });
-                console.log("Фокус переміщено на:", address);
+                console.log("Map focus moved to:", address);
             }
         } catch (error) {
-            console.error("Помилка при отриманні координат:", error);
-            alert("Не вдалося знайти розташування. Спробуйте вибрати адресу зі списку.");
+            console.error("Error getting coordinates:", error);
+            alert("Could not find location. Please try selecting an address from the list.");
         }
     };
 
@@ -93,13 +93,13 @@ const StreetSearch: React.FC<{
                         value={value}
                         onChange={(e) => setValue(e.target.value)}
                         disabled={!ready}
-                        placeholder={ready ? "Введіть вулицю або адресу..." : "Завантаження..."}
+                        placeholder={ready ? "Enter street or address..." : "Loading..."}
                         className="w-full p-2.5 px-4 rounded-xl shadow-2xl border border-zinc-200 bg-white dark:bg-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all text-black"
                     />
 
                     {status === "OK" && (
                         <ul className="absolute left-0 w-full bg-white dark:bg-zinc-800 mt-2 rounded-xl shadow-2xl border border-zinc-200 overflow-hidden z-[9999] list-none p-0 m-0">
-                            {data.map(({ place_id, description }: Suggestion) => (
+                            {data.map(({ place_id, description }) => (
                                 <li
                                     key={place_id}
                                     onClick={() => goToAddress(description, place_id)}
@@ -255,6 +255,15 @@ const MapPage: React.FC = () => {
                         key={marker.id}
                         position={{ lat: marker.latitude, lng: marker.longitude }}
                         onClick={() => setSelectedMarker(marker)}
+                        icon={marker.markerColor ? {
+                            path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z",
+                            fillColor: marker.markerColor,
+                            fillOpacity: 1,
+                            strokeWeight: 1,
+                            strokeColor: '#FFFFFF',
+                            scale: 1.5,
+                            anchor: new google.maps.Point(12, 22),
+                        } : undefined}
                     />
                 ))}
 
