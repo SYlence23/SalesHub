@@ -5,6 +5,6 @@ namespace SalesHub.Services
     public interface IPlaceService
     {
         Task<IEnumerable<PlaceDto>> GetAllAsync();
-        Task<int> CreateAsync(PlaceCreateDto dto);
+        Task<int> CreateAsync(PlaceCreateDto dto, int userId);
     }
 }
