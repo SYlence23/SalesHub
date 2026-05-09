@@ -77,6 +77,15 @@ namespace SalesHub.Data
                 .HasOne(c => c.Parent).WithMany(c => c.SubCategories).HasForeignKey(c => c.ParentId);
 
 
+            modelBuilder.Entity<OfferCategory>()
+                .HasData(
+                    new OfferCategory { Id = 1, Name = "Розваги" },
+                    new OfferCategory { Id = 2, Name = "Заклади" },
+                    new OfferCategory { Id = 3, Name = "Культура" },
+                    new OfferCategory { Id = 4, Name = "Книги" },
+                    new OfferCategory { Id = 5, Name = "Спорт" }
+                );
+
         }
     }
 }

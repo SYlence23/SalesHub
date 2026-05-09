@@ -8,8 +8,6 @@ namespace SalesHub.Models
 
         public string Name { get; set; }
         public string Surname { get; set; }
-        public string? RefreshToken { get; set; }
-        public DateTime RefreshTokenExpiryTime { get; set; }
         public UserCategories Category { get; set; }
         public ICollection<Offer> UserOffers { get; set; }
         public ICollection<OfferReviews> UserReviews { get; set; } 
