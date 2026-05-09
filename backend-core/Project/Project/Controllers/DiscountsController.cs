@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using SalesHub.DTOs;
 using SalesHub.Services;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace Project.Controllers
 {
@@ -52,6 +54,7 @@ namespace Project.Controllers
 
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Create([FromBody] OfferCreateDto dto)
         {
              if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -62,9 +65,13 @@ namespace Project.Controllers
                 return UnprocessableEntity(new { message = "The new price must be lower than the old price." });
             }
 
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdString, out int userId)) 
+                return Unauthorized(new { message = "Invalid token or user ID" });
+
             try
             {
-                var id = await _discountService.CreateOfferAsync(dto);
+                var id = await _discountService.CreateOfferAsync(dto, userId);
                 return CreatedAtAction(nameof(GetById), new { id = id }, new { id });
             }
             catch (Exception ex)
@@ -76,6 +83,7 @@ namespace Project.Controllers
         
 
         [HttpDelete("{id:int}")]
+        [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
             var deleted = await _discountService.DeleteAsync(id);
@@ -84,6 +92,7 @@ namespace Project.Controllers
             return NoContent();
         }
         [HttpPatch("{id:int}/status")]
+        [Authorize]
         public async Task<IActionResult> UpdateStatus(int id, [FromQuery] bool isActive)
         {
             var result = await _discountService.UpdateStatusAsync(id, isActive);

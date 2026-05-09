@@ -91,7 +91,7 @@ namespace SalesHub.Services
         }
         
 
-        public async Task<int> CreateOfferAsync(OfferCreateDto dto)
+        public async Task<int> CreateOfferAsync(OfferCreateDto dto, int userId)
         {
             var offer = new Offer
             {
@@ -105,6 +105,7 @@ namespace SalesHub.Services
                 PlaceId = dto.PlaceId,
                 IsActive = true,
                 Creator = OfferCreator.User,
+                CreatedById = userId,
                 Images = dto.ImageUrls?.Select((url, index) => new OfferImage
                 {
                     ImageUrl = url,

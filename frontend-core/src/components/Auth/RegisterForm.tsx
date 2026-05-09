@@ -1,41 +1,100 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import api from '../../api/axios';
 
 interface RegisterFormProps {
     onSwitchMode?: () => void;
     onClose?: () => void;
 }
 
+interface RegisterDto {
+    name: string;
+    surname: string;
+    email: string;
+    password: string;
+    isStudent: boolean;
+}
+
 const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchMode, onClose }) => {
     const [name, setName] = useState('');
+    const [surname, setSurname] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [isStudent, setIsStudent] = useState(false);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState(false);
     const navigate = useNavigate();
 
-    return (
-        <form 
-            className="glass-card flex flex-col gap-6 p-8 w-full max-w-xl shadow-glass dark:shadow-glass-dark"
-            onSubmit={(e) => {
-                e.preventDefault();
-                console.log('Registration logic here', { name, email, password });
-                if (onClose) {
-                    onClose();
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+        setSuccess(false);
+        const registerData: RegisterDto = {
+            name,
+            surname,
+            email,
+            password,
+            isStudent
+        };
+        try {
+            await api.post('/Auth/register', registerData);
+            setSuccess(true);
+            setTimeout(() => {
+                if (onSwitchMode) {
+                    onSwitchMode();
                 } else {
-                    navigate('/');
+                    navigate('/login');
                 }
-            }}
+            }, 2000);
+        } catch (err: any) {
+            if (err.response?.data?.errors) {
+                const firstError = Object.values(err.response.data.errors)[0] as string[];
+                setError(firstError[0] || 'Помилка валідації');
+            } else if (typeof err.response?.data === 'string') {
+                setError(err.response.data);
+            } else {
+                setError('Під час реєстрації сталася помилка');
+            }
+        }
+    };
+
+    return (
+        <form
+            className="glass-card flex flex-col gap-6 p-8 w-full max-w-xl shadow-glass dark:shadow-glass-dark"
+            onSubmit={handleSubmit}
         >
             <h2 className="text-2xl font-bold text-center animated-gradient">
                 Створити аккаунт
             </h2>
-            
+
+            {error && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <span className="block sm:inline">{error}</span>
+                </div>
+            )}
+            {success && (
+                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                    <span className="block sm:inline">Registration successful! Redirecting...</span>
+                </div>
+            )}
+
             <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium ml-1 text-zinc-700 dark:text-zinc-300">Ім'я</label>
                 <input type="text"
-                    placeholder="Іван Іванов"
+                    placeholder="Іван"
                     className="p-3 rounded-xl border border-zinc-200 dark:border-white/10 bg-white/50 dark:bg-zinc-800/50 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                />
+            </div>
+
+            <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium ml-1 text-zinc-700 dark:text-zinc-300">Прізвище</label>
+                <input type="text"
+                    placeholder="Іванов"
+                    className="p-3 rounded-xl border border-zinc-200 dark:border-white/10 bg-white/50 dark:bg-zinc-800/50 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                    value={surname}
+                    onChange={(e) => setSurname(e.target.value)}
                 />
             </div>
 
@@ -58,6 +117,18 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchMode, onClose }) =>
                     onChange={(e) => setPassword(e.target.value)}
                 />
             </div>
+
+            <label className="flex items-center gap-3 p-4 border border-zinc-200 dark:border-white/10 bg-white/50 dark:bg-zinc-800/50 rounded-xl cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+                <input type="checkbox"
+                    className="w-5 h-5 rounded border-zinc-300 text-primary-500 focus:ring-primary-500 cursor-pointer"
+                    checked={isStudent}
+                    onChange={() => setIsStudent(!isStudent)}
+                />
+                <div className="flex flex-col">
+                    <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Ви є студентом?</span>
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400">Спеціальні пропозиції для студентів</span>
+                </div>
+            </label>
 
             <button type="submit" className="btn-primary w-full text-base py-3 mt-2">Зареєструватися</button>
 

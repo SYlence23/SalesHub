@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/axios';
 import { ImagePlus, MapPin, Loader2, Plus, ChevronLeft, X } from 'lucide-react';
 import { type Category } from '../components/Offer/OfferFilters';
 import localforage from 'localforage';
@@ -126,8 +126,8 @@ export default function OfferCreatePage() {
         const fetchDependencies = async () => {
             try {
                 const [catsResponse, placesResponse] = await Promise.all([
-                    axios.get<Category[]>('/api/Discounts/categories'),
-                    axios.get<PlaceDTO[]>('/api/Places')
+                    api.get<Category[]>('/Discounts/categories'),
+                    api.get<PlaceDTO[]>('/Places')
                 ]);
                 setCategories(catsResponse.data);
                 setPlaces(placesResponse.data);
@@ -255,7 +255,7 @@ export default function OfferCreatePage() {
                     longitude: placeForm.longitude,
                 };
 
-                const placeRes = await axios.post<{ id: number }>('/api/Places', placeData);
+                const placeRes = await api.post<{ id: number }>('/Places', placeData);
                 finalPlaceId = placeRes.data.id.toString();
             }
 
@@ -273,7 +273,7 @@ export default function OfferCreatePage() {
                 const objectUrls = Promise.all(imageFiles.map(async (file) => {
                     const formData = new FormData();
                     formData.append('file', file);
-                    const response = await axios.post<{ message: string, url: string, fileName: string, prefix: string }>('/api/File/uploadImage', formData);
+                    const response = await api.post<{ message: string, url: string, fileName: string, prefix: string }>('/File/uploadImage', formData);
                     return response.data.url;
                 }))
                 imageUrls = await objectUrls;
@@ -291,7 +291,7 @@ export default function OfferCreatePage() {
                 imageUrls: imageUrls
             };
 
-            await axios.post('/api/Discounts', offerData);
+            await api.post('/Discounts', offerData);
 
             localStorage.removeItem('offerData');
             localStorage.removeItem('placeData');

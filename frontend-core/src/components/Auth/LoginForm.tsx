@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import api from '../../api/axios';
+import { useAuth } from '../../context/AuthContext';
 
 interface LoginFormProps {
     onSwitchMode?: () => void;
@@ -9,24 +11,44 @@ interface LoginFormProps {
 const LoginForm: React.FC<LoginFormProps> = ({ onSwitchMode, onClose }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
     const navigate = useNavigate();
+    const { login } = useAuth();
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+        try {
+            const response = await api.post('/Auth/login', { email, password });
+            if (response.data?.accessToken) {
+                login(response.data.accessToken);
+            }
+
+            if (onClose) {
+                onClose();
+            } else {
+                navigate('/');
+            }
+        } catch (err: any) {
+            setError(err.response?.data || 'An error occurred during login');
+        }
+    };
 
     return (
-        <form 
+        <form
             className="glass-card flex flex-col gap-6 p-8 w-full max-w-xl shadow-glass dark:shadow-glass-dark"
-            onSubmit={(e) => {
-                e.preventDefault();
-                console.log('Login logic here', { email, password });
-                if (onClose) {
-                    onClose();
-                } else {
-                    navigate('/');
-                }
-            }}
+            onSubmit={handleSubmit}
         >
             <h2 className="text-2xl font-bold text-center animated-gradient">
                 Вітаємо знову!
             </h2>
+
+            {error && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <span className="block sm:inline">{error}</span>
+                </div>
+            )}
+
             <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium ml-1 text-zinc-700 dark:text-zinc-300">Email</label>
                 <input type="email"
