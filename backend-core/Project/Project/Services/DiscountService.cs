@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using System;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
 using SalesHub.Data;
@@ -57,7 +58,7 @@ namespace SalesHub.Services
         {
             return await _context.OfferCategories
                 .AsNoTracking()
-                .Select(c => new CategoryPreviewDto { Id = c.Id, Name = c.Name })
+                .Select(c => new CategoryPreviewDto { Id = c.Id, Name = c.Name, MarkerColor = c.MarkerColor })
                 .ToListAsync();
         }
 
@@ -96,6 +97,14 @@ namespace SalesHub.Services
             return await CreateOfferAsync(dto, CancellationToken.None);
         }
 
+        private bool IsWithinLvivRegion(double? lat, double? lon)
+        {
+            if (!lat.HasValue || !lon.HasValue) return false; // Offline offers MUST have location
+            
+            // Approximate bounding box for Lviv Oblast
+            return lat >= 48.70 && lat <= 50.60 && lon >= 22.70 && lon <= 25.50;
+        }
+
         public async Task<int> CreateOfferAsync(OfferCreateDto dto, CancellationToken cancellationToken = default)
         {
             int finalPlaceId;
@@ -103,6 +112,14 @@ namespace SalesHub.Services
             if (dto.PlaceId.HasValue
                 && dto.PlaceId.Value > 0)
             {
+                var existingPlace = await _context.Places.FindAsync(dto.PlaceId.Value);
+                if (existingPlace != null && !existingPlace.IsOnline && existingPlace.Location != null)
+                {
+                    if (!IsWithinLvivRegion(existingPlace.Location.Y, existingPlace.Location.X))
+                    {
+                        throw new ArgumentException("The selected store is outside of the Lviv region boundaries.");
+                    }
+                }
                 finalPlaceId = dto.PlaceId.Value;
             }
             else if (!string.IsNullOrWhiteSpace(dto.NewPlaceName))
@@ -119,7 +136,8 @@ namespace SalesHub.Services
                     Name = dto.NewPlaceName,
                     Description = dto.Description ?? "New place added by user",
                     IsOnline = false,
-                    OfferUrl = ""
+                    OfferUrl = "",
+                    Location = newLocation.Coordinates   
                 };
 
                 var placeLocation = new PlaceLocation
@@ -138,6 +156,21 @@ namespace SalesHub.Services
             else
             {
                 throw new ArgumentException("You must provide either an existing PlaceId or a NewPlaceName.");
+            }
+            var place = await _context.Places.FindAsync(finalPlaceId);
+            if (place != null && !place.IsOnline && !IsWithinLvivRegion(dto.Latitude, dto.Longitude))
+            {
+                if (dto.Latitude == null && place.Location != null)
+                {
+                    if (!IsWithinLvivRegion(place.Location.Y, place.Location.X))
+                    {
+                        throw new ArgumentException("The selected store is located outside of the Lviv region.");
+                    }
+                }
+                else
+                {
+                    throw new ArgumentException("Offers can only be created for locations within Lviv and the Lviv region.");
+                }
             }
 
             var offer = new Offer
@@ -210,7 +243,7 @@ namespace SalesHub.Services
             return urls.FirstOrDefault() ?? string.Empty;
         }
 
-        public async Task<IEnumerable<string>> UploadImagesAsync(int id, IEnumerable<IFormFile> files, CancellationToken cancellationToken = default)
+         public async Task<IEnumerable<string>> UploadImagesAsync(int id, IEnumerable<IFormFile> files, CancellationToken cancellationToken = default)
         {
             var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
             if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
@@ -253,7 +286,9 @@ namespace SalesHub.Services
                     Title = o.Title,
                     NewPrice = o.NewPrice,
                     Latitude = o.Place.PlaceLocations.Select(pl => pl.Location.Coordinates.Y).FirstOrDefault(),
-                    Longitude = o.Place.PlaceLocations.Select(pl => pl.Location.Coordinates.X).FirstOrDefault()
+                    Longitude = o.Place.PlaceLocations.Select(pl => pl.Location.Coordinates.X).FirstOrDefault(),
+                    CategoryId = o.CategoryId,
+                    MarkerColor = o.Category.MarkerColor
                 })
                 .ToListAsync();
         }
@@ -274,7 +309,9 @@ namespace SalesHub.Services
                     NewPrice = o.NewPrice,
                     // Беремо першу доступну локацію для координат піна
                     Latitude = o.Place.PlaceLocations.Select(pl => pl.Location.Coordinates.Y).FirstOrDefault(),
-                    Longitude = o.Place.PlaceLocations.Select(pl => pl.Location.Coordinates.X).FirstOrDefault()
+                    Longitude = o.Place.PlaceLocations.Select(pl => pl.Location.Coordinates.X).FirstOrDefault(),
+                    CategoryId = o.CategoryId,
+                    MarkerColor = o.Category.MarkerColor
                 })
                 .ToListAsync();
         }

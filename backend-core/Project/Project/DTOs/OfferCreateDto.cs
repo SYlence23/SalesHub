@@ -1,4 +1,4 @@
-﻿namespace SalesHub.DTOs
+namespace SalesHub.DTOs
 {
     using System.ComponentModel.DataAnnotations;
 
@@ -19,7 +19,7 @@
         public int? PlaceId { get; set; }
         [Required]
         public int CategoryId { get; set; }
-        public List<string> ImageUrls { get; set; }
+        public List<string>? ImageUrls { get; set; }
 
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }

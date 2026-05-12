@@ -1,9 +1,10 @@
-﻿namespace SalesHub.DTOs
+namespace SalesHub.DTOs
 {
     public class CategoryPreviewDto
     {
         public int Id { get; set; }
 
         public string Name { get; set; }
+        public string? MarkerColor { get; set; }
     }
 }

@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ImagePlus, MapPin, Loader2, Plus, ChevronLeft, X } from 'lucide-react';
+import { ImagePlus, MapPin, Loader2, Plus, ChevronLeft, X, Search } from 'lucide-react';
+import usePlacesAutocomplete, { getGeocode, getLatLng } from 'use-places-autocomplete';
+import { useJsApiLoader } from '@react-google-maps/api';
 import { type Category } from '../components/Offer/OfferFilters';
 import localforage from 'localforage';
 
@@ -29,6 +31,7 @@ interface PlaceForm {
     offerUrl: string;
     latitude: number;
     longitude: number;
+    address: string;
 }
 
 
@@ -36,12 +39,12 @@ interface PlaceForm {
 interface OfferDataForm {
     title: string;
     description: string;
-    newPrice: number;
-    oldPrice: number;
+    newPrice: number | string;
+    oldPrice: number | string;
     validFrom: string;
     validTo: string;
-    placeId: number;
-    categoryId: number;
+    placeId: number | string;
+    categoryId: number | string;
 }
 
 interface OfferDataDTO {
@@ -50,14 +53,132 @@ interface OfferDataDTO {
     newPrice: number;
     oldPrice: number;
     validFrom: string | null;
-    validTo: string;
+    validTo: string | null;
     placeId: number;
     categoryId: number;
     imageUrls: string[] | null;
 }
 
+const libraries: ("places" | "drawing" | "geometry" | "visualization")[] = ['places'];
+
+const AddressAutocomplete: React.FC<{
+    onSelect: (coords: { lat: number, lng: number }, address: string) => void;
+    onChange: (address: string) => void;
+    isLoaded: boolean;
+    onError?: (msg: string | null) => void;
+}> = ({ onSelect, onChange, isLoaded, onError }) => {
+    const {
+        ready,
+        value,
+        suggestions: { status, data },
+        setValue,
+        clearSuggestions,
+    } = usePlacesAutocomplete({
+        requestOptions: {
+            locationBias: { lat: 49.8397, lng: 24.0297, radius: 50000 },
+            componentRestrictions: { country: 'ua' },
+        },
+        debounce: 300,
+    });
+
+    const handleSelect = async (address: string, placeId?: string) => {
+        setValue(address, false);
+        clearSuggestions();
+
+        try {
+            let lat: number, lng: number;
+
+            if (placeId) {
+                // Use PlacesService as it's more likely to be enabled than Geocoding API
+                const mapDiv = document.createElement('div');
+                const service = new google.maps.places.PlacesService(mapDiv);
+                
+                const result = await new Promise<google.maps.places.PlaceResult | null>((resolve) => {
+                    service.getDetails({ placeId, fields: ['geometry'] }, (place, status) => {
+                        if (status === google.maps.places.PlacesServiceStatus.OK) resolve(place);
+                        else resolve(null);
+                    });
+                });
+
+                if (result?.geometry?.location) {
+                    lat = result.geometry.location.lat();
+                    lng = result.geometry.location.lng();
+                } else {
+                    // Fallback to geocode if PlacesService fails
+                    const results = await getGeocode({ placeId });
+                    const coords = await getLatLng(results[0]);
+                    lat = coords.lat;
+                    lng = coords.lng;
+                }
+            } else {
+                const results = await getGeocode({ address });
+                const coords = await getLatLng(results[0]);
+                lat = coords.lat;
+                lng = coords.lng;
+            }
+
+            // Expanded Lviv Region validation
+            if (lat < 47.50 || lat > 51.50 || lng < 21.50 || lng > 26.50) {
+                if (onError) onError("Unfortunately, offers can only be created within the Lviv region.");
+                return;
+            }
+
+            if (onError) onError(null);
+            onSelect({ lat, lng }, address);
+        } catch (error) {
+            console.error("Error geocoding address:", error);
+            if (onError) onError("Your API key might need 'Geocoding API' enabled. Please select an address from the dropdown.");
+        }
+    };
+
+    return (
+        <div className="relative w-full">
+            <div className="relative">
+                <input
+                    value={value}
+                    onChange={(e) => {
+                        setValue(e.target.value);
+                        onChange(e.target.value);
+                    }}
+                    disabled={!ready}
+                    placeholder={ready ? "Enter address (street, house...)" : "Loading..."}
+                    className="w-full px-4 py-2 pl-10 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
+                />
+                <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-400" />
+            </div>
+
+            {status === "OK" && (
+                <ul className="absolute left-0 w-full bg-white dark:bg-zinc-800 mt-2 rounded-xl shadow-2xl border border-zinc-200 dark:border-zinc-700 overflow-hidden z-[100] list-none p-0 m-0">
+                    {data.map(({ place_id, description }) => (
+                        <li
+                            key={place_id}
+                            onClick={() => handleSelect(description, place_id)}
+                            className="p-3 px-4 hover:bg-zinc-100 dark:hover:bg-zinc-700 cursor-pointer text-sm border-b last:border-0 border-zinc-100 dark:border-zinc-700 text-zinc-900 dark:text-white"
+                        >
+                            {description}
+                        </li>
+                    ))}
+                </ul>
+            )}
+            {status === "ZERO_RESULTS" && (
+                <div className="absolute left-0 w-full bg-white dark:bg-zinc-800 mt-2 p-4 rounded-xl shadow-2xl border border-zinc-200 dark:border-zinc-700 z-[100] text-sm text-zinc-500">
+                    No addresses found. Try being more specific (e.g., add 'Lviv').
+                </div>
+            )}
+        </div>
+    );
+};
+
 export default function OfferCreatePage() {
     const navigate = useNavigate();
+
+    const { isLoaded } = useJsApiLoader({
+        id: 'google-map-script',
+        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string,
+        libraries,
+        language: 'uk',
+        region: 'UA'
+    });
 
     const localOfferData = JSON.parse(localStorage.getItem('offerData') || '{}');
     const localPlaceData = JSON.parse(localStorage.getItem('placeData') || '{}');
@@ -90,6 +211,7 @@ export default function OfferCreatePage() {
         offerUrl: localPlaceData.offerUrl || '',
         latitude: localPlaceData.latitude || 0,
         longitude: localPlaceData.longitude || 0,
+        address: localPlaceData.address || '',
     })
 
     const handlePlaceFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -130,7 +252,18 @@ export default function OfferCreatePage() {
                     axios.get<PlaceDTO[]>('/api/Places')
                 ]);
                 setCategories(catsResponse.data);
-                setPlaces(placesResponse.data);
+
+                // Filter unique places by name
+                const uniquePlaces = placesResponse.data.reduce((acc: PlaceDTO[], current) => {
+                    const x = acc.find(item => item.name === current.name);
+                    if (!x) {
+                        return acc.concat([current]);
+                    } else {
+                        return acc;
+                    }
+                }, []);
+
+                setPlaces(uniquePlaces);
             } catch (err) {
                 console.error("Failed to load initial data", err);
                 setError("Could not load categories or places. Please try refreshing.");
@@ -244,15 +377,57 @@ export default function OfferCreatePage() {
         try {
             let finalPlaceId = selectedPlaceId;
 
-            // 1. Create Place if needed
+            // 1. Validate Place creation
             if (isNewPlace) {
+                let currentLat = placeForm.latitude;
+                let currentLng = placeForm.longitude;
+
+                // Try manual geocoding if coordinates are missing but address is present
+                if (!placeForm.isOnline && (currentLat === 0 || currentLng === 0)) {
+                    if (!placeForm.address) {
+                        throw new Error("Please enter an address for the store.");
+                    }
+                    
+                    try {
+                        if (typeof google === 'undefined') {
+                            throw new Error("Google Maps API not loaded yet.");
+                        }
+                        
+                        const results = await getGeocode({ 
+                            address: placeForm.address,
+                            componentRestrictions: { country: 'UA' }
+                        });
+                        
+                        if (!results || results.length === 0) {
+                            throw new Error("No results found");
+                        }
+
+                        const { lat, lng } = await getLatLng(results[0]);
+                        
+                        // Validation
+                        if (lat < 47.50 || lat > 51.50 || lng < 21.50 || lng > 26.50) {
+                            throw new Error("Unfortunately, the entered address is outside the Lviv region.");
+                        }
+                        
+                        currentLat = lat;
+                        currentLng = lng;
+                    } catch (e: any) {
+                        console.error("Geocoding failed:", e);
+                        throw new Error(`Could not find coordinates for "${placeForm.address}". Please select an address from the dropdown suggestions to be sure.`);
+                    }
+                }
+
+                if (!placeForm.isOnline && (currentLat === 0 || currentLng === 0)) {
+                    throw new Error("Please select a valid address from the dropdown to get location coordinates.");
+                }
+
                 const placeData: PlaceCreateDTO = {
                     name: placeForm.name,
                     description: placeForm.description,
                     isOnline: placeForm.isOnline,
                     offerUrl: placeForm.offerUrl,
-                    latitude: placeForm.latitude,
-                    longitude: placeForm.longitude,
+                    latitude: currentLat,
+                    longitude: currentLng,
                 };
 
                 const placeRes = await axios.post<{ id: number }>('/api/Places', placeData);
@@ -282,12 +457,12 @@ export default function OfferCreatePage() {
             // 2. Create Offer
             const offerData: OfferDataDTO = {
                 ...offerForm,
-                newPrice: offerForm.newPrice,
-                oldPrice: offerForm.oldPrice,
+                newPrice: parseFloat(offerForm.newPrice.toString()),
+                oldPrice: offerForm.oldPrice ? parseFloat(offerForm.oldPrice.toString()) : 0,
                 validFrom: offerForm.validFrom ? new Date(offerForm.validFrom).toISOString() : null,
-                validTo: new Date(offerForm.validTo).toISOString(),
+                validTo: offerForm.validTo ? new Date(offerForm.validTo).toISOString() : null,
                 placeId: parseInt(finalPlaceId),
-                categoryId: offerForm.categoryId,
+                categoryId: parseInt(offerForm.categoryId.toString()),
                 imageUrls: imageUrls
             };
 
@@ -300,7 +475,20 @@ export default function OfferCreatePage() {
             navigate('/offers');
         } catch (err: any) {
             console.error("Error creating offer:", err);
-            setError(err.response?.data?.message || err.message || "An unexpected error occurred.");
+            const backendError = err.response?.data;
+            let errorMessage = "An unexpected error occurred.";
+
+            if (typeof backendError === 'string') {
+                errorMessage = backendError;
+            } else if (backendError?.message) {
+                errorMessage = backendError.message;
+            } else if (backendError?.detail) {
+                errorMessage = backendError.detail;
+            } else if (err.message) {
+                errorMessage = err.message;
+            }
+
+            setError(errorMessage);
         } finally {
             setIsSubmitting(false);
         }
@@ -575,35 +763,35 @@ export default function OfferCreatePage() {
                                     />
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-zinc-50 dark:bg-zinc-900/30 rounded-xl border border-zinc-200 dark:border-zinc-800/50">
-                                    <div className="col-span-full flex items-center gap-2 text-zinc-600 dark:text-zinc-400 mb-2">
+                                <div className="grid grid-cols-1 gap-6 p-4 bg-zinc-50 dark:bg-zinc-900/30 rounded-xl border border-zinc-200 dark:border-zinc-800/50">
+                                    <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400 mb-2">
                                         <MapPin className="w-4 h-4" />
-                                        <span className="text-sm font-medium">Physical Location Coordinates</span>
+                                        <span className="text-sm font-medium">Store Location</span>
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-medium mb-2">Latitude</label>
-                                        <input
-                                            type="number"
-                                            step="any"
-                                            name="latitude"
-                                            value={placeForm.latitude}
-                                            onChange={handlePlaceFormChange}
-                                            className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
-                                            placeholder="48.8566"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium mb-2">Longitude</label>
-                                        <input
-                                            type="number"
-                                            step="any"
-                                            name="longitude"
-                                            value={placeForm.longitude}
-                                            onChange={handlePlaceFormChange}
-                                            className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
-                                            placeholder="2.3522"
-                                        />
-                                    </div>
+
+                                    <AddressAutocomplete
+                                        isLoaded={isLoaded}
+                                        onError={setError}
+                                        onChange={(address) => {
+                                            setPlaceForm(prev => ({
+                                                ...prev,
+                                                address: address,
+                                                // Reset coordinates if address changes manually
+                                                latitude: 0,
+                                                longitude: 0
+                                            }));
+                                        }}
+                                        onSelect={(coords, address) => {
+                                            setPlaceForm(prev => ({
+                                                ...prev,
+                                                address: address,
+                                                latitude: coords.lat,
+                                                longitude: coords.lng
+                                            }));
+                                        }}
+                                    />
+
+
                                 </div>
                             )}
                         </div>

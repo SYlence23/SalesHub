@@ -19,7 +19,7 @@ namespace SalesHub.Controllers
         public async Task<IActionResult> GetNearby([FromQuery] LocationSearchRequest request)
         {
             if (request.Latitude == 0 || request.Longitude == 0)
-                return BadRequest("Необхідні координати користувача.");
+                return BadRequest("User coordinates are required.");
 
             var offers = await _discountService.GetByRadiusAsync(request);
             return Ok(offers);
@@ -36,15 +36,16 @@ namespace SalesHub.Controllers
         public async Task<IActionResult> GetOffer(int id)
         {
             var offer = await _discountService.GetByIdAsync(id);
-            if (offer == null) return NotFound("Знижку не знайдено.");
+            if (offer == null) return NotFound("Offer not found.");
             return Ok(offer);
+            
         }
 
         [HttpPost("share-location")]
         public IActionResult ShareLocation([FromBody] LocationSearchRequest request)
         {
             if (request.Latitude == 0 || request.Longitude == 0)
-                return BadRequest("Необхідні координати користувача.");
+                return BadRequest("User coordinates are required.");
 
             var latStr = request.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture);
             var lngStr = request.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -52,7 +53,7 @@ namespace SalesHub.Controllers
             var shareableLink = $"{Request.Scheme}://{Request.Host}/map?lat={latStr}&lng={lngStr}";
             
             return Ok(new { 
-                Message = "Локацію успішно поширено.", 
+                Message = "Location shared successfully.", 
                 Link = shareableLink,
                 Latitude = request.Latitude,
                 Longitude = request.Longitude

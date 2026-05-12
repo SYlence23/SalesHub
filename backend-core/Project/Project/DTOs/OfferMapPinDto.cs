@@ -1,4 +1,4 @@
-﻿namespace SalesHub.DTOs
+namespace SalesHub.DTOs
 {
     public class OfferMapPinDto
     {
@@ -12,5 +12,6 @@
         public double Longitude { get; set; }
 
          public int CategoryId { get; set; }
+         public string? MarkerColor { get; set; }
     }
 }

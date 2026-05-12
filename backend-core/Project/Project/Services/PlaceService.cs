@@ -1,3 +1,4 @@
+using System;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
 using SalesHub.Data;
@@ -17,8 +18,14 @@ namespace SalesHub.Services
 
         public async Task<IEnumerable<PlaceDto>> GetAllAsync()
         {
-            return await _context.Places
+            var places = await _context.Places
                 .AsNoTracking()
+                .ToListAsync();
+
+            return places
+                .Where(p => p.IsOnline || (p.Location != null && IsWithinLvivRegion(p.Location.Y, p.Location.X)))
+                .GroupBy(p => p.Name.Trim().ToLower())
+                .Select(g => g.First())
                 .Select(p => new PlaceDto
                 {
                     Id = p.Id,
@@ -26,18 +33,39 @@ namespace SalesHub.Services
                     Description = p.Description,
                     IsOnline = p.IsOnline,
                     OfferUrl = p.OfferUrl
-                })
-                .ToListAsync();
+                });
+        }
+
+        private bool IsWithinLvivRegion(double lat, double lon)
+        {
+            // Permissive bounding box for Lviv Oblast and surroundings
+            // Lviv city is roughly 49.8, 24.0
+            return lat >= 47.50 && lat <= 51.50 && lon >= 21.50 && lon <= 26.50;
         }
 
         public async Task<int> CreateAsync(PlaceCreateDto dto)
         {
+            if (!dto.IsOnline)
+            {
+                if (!dto.Latitude.HasValue || !dto.Longitude.HasValue)
+                {
+                    throw new ArgumentException("Coordinates (latitude and longitude) are required for physical stores.");
+                }
+
+                if (!IsWithinLvivRegion(dto.Latitude.Value, dto.Longitude.Value))
+                {
+                    throw new ArgumentException("Unfortunately, stores can only be created within the Lviv region.");
+                }
+            }
+
             var place = new Place
             {
                 Name = dto.Name,
                 Description = dto.Description ?? "",
                 IsOnline = dto.IsOnline,
-                OfferUrl = dto.OfferUrl ?? ""
+                OfferUrl = dto.OfferUrl ?? "",
+                Location = (!dto.IsOnline && dto.Latitude.HasValue && dto.Longitude.HasValue)
+                    ? new Point(dto.Longitude.Value, dto.Latitude.Value) { SRID = 4326 } : null
             };
 
             _context.Places.Add(place);
@@ -49,7 +77,7 @@ namespace SalesHub.Services
                     Name = dto.Name,
                     Address = "Manually entered",
                     City = "Unknown",
-                    Coordinates = new Point(dto.Longitude.Value, dto.Latitude.Value) { SRID = 4326 }
+                    Coordinates = place.Location
                 };
                 
                 _context.Locations.Add(location);

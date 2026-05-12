@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNetCore.Mvc;
 using SalesHub.DTOs;
 using SalesHub.Services;
@@ -33,9 +34,13 @@ namespace Project.Controllers
                 // Return just the created ID or an object containing it
                 return Ok(new { id });
             }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Error saving place", details = ex.Message });
+                return StatusCode(500, ex.Message);
             }
         }
     }

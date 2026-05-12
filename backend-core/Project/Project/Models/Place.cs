@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations.Schema;
 using NetTopologySuite.Geometries;
 
 namespace SalesHub.Models
@@ -14,6 +14,6 @@ namespace SalesHub.Models
         public List<PlaceLocation> PlaceLocations { get; set; } = new();
         public List<Offer> Offers { get; set; } = new();
         [Column(TypeName = "geography")]
-        public NetTopologySuite.Geometries.Point Location { get; set; }
+        public NetTopologySuite.Geometries.Point? Location { get; set; }
     }
 }
