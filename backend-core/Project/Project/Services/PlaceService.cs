@@ -16,83 +16,51 @@ namespace SalesHub.Services
             _context = context;
         }
 
-        public async Task<IEnumerable<PlaceDto>> GetAllAsync()
+        public async Task<IEnumerable<PlacePreviewDto>> GetAllPlacesAsync()
         {
-            var places = await _context.Places
+            return await _context.Places
                 .AsNoTracking()
-                .ToListAsync();
-
-            return places
-                .Where(p => p.IsOnline || (p.Location != null && IsWithinLvivRegion(p.Location.Y, p.Location.X)))
-                .GroupBy(p => p.Name.Trim().ToLower())
-                .Select(g => g.First())
-                .Select(p => new PlaceDto
+                .Select(p => new PlacePreviewDto
                 {
                     Id = p.Id,
                     Name = p.Name,
-                    Description = p.Description,
-                    IsOnline = p.IsOnline,
-                    OfferUrl = p.OfferUrl
-                });
+                    Addresses = p.PlaceLocations.Select(pl => pl.Location.Address).ToList(),
+                    MainImageUrl = p.ImageUrl.FirstOrDefault() != null ? p.Images.FirstOrDefault()!.ImageUrl : null
+                })
+                .ToListAsync();
         }
 
-        private bool IsWithinLvivRegion(double lat, double lon)
+        public async Task<PlaceFullDto?> GetPlaceDetailsAsync(int id)
         {
-            // Permissive bounding box for Lviv Oblast and surroundings
-            // Lviv city is roughly 49.8, 24.0
-            return lat >= 47.50 && lat <= 51.50 && lon >= 21.50 && lon <= 26.50;
-        }
+            var place = await _context.Places
+                .AsNoTracking()
+                .Include(p => p.Images)
+                .Include(p => p.PlaceLocations)
+                    .ThenInclude(pl => pl.Location)
+                .Include(p => p.Offers)
+                    .ThenInclude(o => o.Images)
+                .FirstOrDefaultAsync(p => p.Id == id);
 
-        public async Task<int> CreateAsync(PlaceCreateDto dto)
-        {
-            if (!dto.IsOnline)
+            if (place == null) return null;
+
+            return new PlaceFullDto
             {
-                if (!dto.Latitude.HasValue || !dto.Longitude.HasValue)
+                Id = place.Id,
+                Name = place.Name,
+                Description = place.Description,
+                Addresses = place.PlaceLocations.Select(pl => pl.Location.Address).ToList(),
+                MainImageUrl = place.Images.FirstOrDefault()?.ImageUrl,
+                Offers = place.Offers.Select(o => new OfferPreviewDto
                 {
-                    throw new ArgumentException("Coordinates (latitude and longitude) are required for physical stores.");
-                }
-
-                if (!IsWithinLvivRegion(dto.Latitude.Value, dto.Longitude.Value))
-                {
-                    throw new ArgumentException("Unfortunately, stores can only be created within the Lviv region.");
-                }
-            }
-
-            var place = new Place
-            {
-                Name = dto.Name,
-                Description = dto.Description ?? "",
-                IsOnline = dto.IsOnline,
-                OfferUrl = dto.OfferUrl ?? "",
-                Location = (!dto.IsOnline && dto.Latitude.HasValue && dto.Longitude.HasValue)
-                    ? new Point(dto.Longitude.Value, dto.Latitude.Value) { SRID = 4326 } : null
+                    Id = o.Id,
+                    Title = o.Title,
+                    NewPrice = o.NewPrice,
+                    OldPrice = o.OldPrice,
+                    MainImageUrl = o.Images.FirstOrDefault()?.ImageUrl,
+                    StoreName = place.Name,
+                    CreatedAt = o.CreatedAt
+                }).ToList()
             };
-
-            _context.Places.Add(place);
-
-            if (!dto.IsOnline && dto.Latitude.HasValue && dto.Longitude.HasValue)
-            {
-                var location = new SalesHub.Models.Location
-                {
-                    Name = dto.Name,
-                    Address = "Manually entered",
-                    City = "Unknown",
-                    Coordinates = place.Location
-                };
-                
-                _context.Locations.Add(location);
-
-                var placeLocation = new PlaceLocation
-                {
-                    Place = place,
-                    Location = location
-                };
-                
-                _context.PlaceLocations.Add(placeLocation);
-            }
-
-            await _context.SaveChangesAsync();
-            return place.Id;
         }
     }
 }

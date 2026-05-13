@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Tag, Map as MapIcon } from 'lucide-react';
+import { Home, Tag, Map as MapIcon, Store } from 'lucide-react';
 import UserProfile from './UserProfile';
 
 export default function Navbar() {
@@ -15,6 +15,11 @@ export default function Navbar() {
             name: "Пропозиції",
             path: "/offers",
             icon: Tag
+        },
+        {
+            name: "Заклади",
+            path: "/places",
+            icon: Store
         },
         {
             name: "Карта",

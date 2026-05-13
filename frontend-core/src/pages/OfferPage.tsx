@@ -197,9 +197,9 @@ export default function OfferPage() {
                     ) : (
                         // Empty State
                         <div className="glass-card p-12 text-center">
-                            <h3 className="text-2xl font-bold mb-2">No offers found</h3>
+                            <h3 className="text-2xl font-bold mb-2">Знижок не знайдено</h3>
                             <p className="text-zinc-500 dark:text-zinc-400">
-                                Try adjusting your filters or search terms to find what you're looking for.
+                                Спробуйте змінити фільтри або пошуковий запит, щоб знайти те, що ви шукаєте.
                             </p>
                             <button
                                 onClick={() => {
@@ -207,7 +207,7 @@ export default function OfferPage() {
                                 }}
                                 className="mt-6 btn-primary"
                             >
-                                Clear all filters
+                                Очистити фільтри
                             </button>
                         </div>
                     )}

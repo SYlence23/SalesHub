@@ -19,6 +19,20 @@ namespace Project.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
+            var places = await _placeService.GetAllPlacesAsync();
+            return Ok(places);
+        }
+
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            if (id <= 0) return BadRequest("Invalid ID.");
+
+            var place = await _placeService.GetPlaceDetailsAsync(id);
+            if (place == null)
+                return NotFound(new { message = $"Place with ID {id} not found." });
+
+            return Ok(place);
             var places = await _placeService.GetAllAsync();
             return Ok(places);
         }
