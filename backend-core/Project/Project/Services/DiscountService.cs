@@ -38,7 +38,7 @@ namespace SalesHub.Services
 
             query = sortOption switch
             {
-                "newest" => query.OrderBy(o => o.CreatedAt),
+                "newest" => query.OrderByDescending(o => o.CreatedAt),
                 "price_asc" => query.OrderBy(o => o.NewPrice),
                 "price_desc" => query.OrderByDescending(o => o.NewPrice),
                 "discount_desc" => query.OrderByDescending(query => (query.OldPrice - query.NewPrice) * 100 / query.OldPrice),
@@ -52,7 +52,7 @@ namespace SalesHub.Services
                 .Select(MapToPreviewDto())
                 .ToListAsync();
 
-            return (data, total: await query.CountAsync());
+            return (data, total);
         }
 
         public async Task<IEnumerable<CategoryPreviewDto>> GetCategoriesAsync()
@@ -95,7 +95,7 @@ namespace SalesHub.Services
 
         public async Task<int> CreateOfferAsync(OfferCreateDto dto, int userId)
         {
-            return await CreateOfferAsync(dto, CancellationToken.None);
+            return await CreateOfferAsync(dto, userId, CancellationToken.None);
         }
 
         private bool IsWithinLvivRegion(double? lat, double? lon)
@@ -106,17 +106,21 @@ namespace SalesHub.Services
             return lat >= 48.70 && lat <= 50.60 && lon >= 22.70 && lon <= 25.50;
         }
 
-        public async Task<int> CreateOfferAsync(OfferCreateDto dto, CancellationToken cancellationToken = default)
+        private async Task<int> CreateOfferAsync(OfferCreateDto dto, int userId, CancellationToken cancellationToken = default)
         {
             int finalPlaceId;
 
-            if (dto.PlaceId.HasValue
-                && dto.PlaceId.Value > 0)
+            if (dto.PlaceId.HasValue && dto.PlaceId.Value > 0)
             {
-                var existingPlace = await _context.Places.FindAsync(dto.PlaceId.Value);
-                if (existingPlace != null && !existingPlace.IsOnline && existingPlace.Location != null)
+                var existingPlace = await _context.Places
+                    .Include(p => p.PlaceLocations)
+                        .ThenInclude(pl => pl.Location)
+                    .FirstOrDefaultAsync(p => p.Id == dto.PlaceId.Value, cancellationToken);
+
+                if (existingPlace != null && !existingPlace.IsOnline)
                 {
-                    if (!IsWithinLvivRegion(existingPlace.Location.Y, existingPlace.Location.X))
+                    var coords = existingPlace.PlaceLocations.FirstOrDefault()?.Location?.Coordinates;
+                    if (coords != null && !IsWithinLvivRegion(coords.Y, coords.X))
                     {
                         throw new ArgumentException("The selected store is outside of the Lviv region boundaries.");
                     }
@@ -137,8 +141,7 @@ namespace SalesHub.Services
                     Name = dto.NewPlaceName,
                     Description = dto.Description ?? "New place added by user",
                     IsOnline = false,
-                    OfferUrl = "",
-                    Location = newLocation.Coordinates   
+                    OfferUrl = ""
                 };
 
                 var placeLocation = new PlaceLocation
@@ -158,20 +161,10 @@ namespace SalesHub.Services
             {
                 throw new ArgumentException("You must provide either an existing PlaceId or a NewPlaceName.");
             }
-            var place = await _context.Places.FindAsync(finalPlaceId);
-            if (place != null && !place.IsOnline && !IsWithinLvivRegion(dto.Latitude, dto.Longitude))
+            // Validate DTO coordinates against Lviv region for offline offers with coordinates provided
+            if (!string.IsNullOrWhiteSpace(dto.NewPlaceName) && !IsWithinLvivRegion(dto.Latitude, dto.Longitude))
             {
-                if (dto.Latitude == null && place.Location != null)
-                {
-                    if (!IsWithinLvivRegion(place.Location.Y, place.Location.X))
-                    {
-                        throw new ArgumentException("The selected store is located outside of the Lviv region.");
-                    }
-                }
-                else
-                {
-                    throw new ArgumentException("Offers can only be created for locations within Lviv and the Lviv region.");
-                }
+                throw new ArgumentException("Offers can only be created for locations within Lviv and the Lviv region.");
             }
 
             var offer = new Offer
@@ -324,7 +317,7 @@ namespace SalesHub.Services
             // або ви фільтруєте за якимось іншим критерієм авторства
             return await _context.Offers
                 .AsNoTracking()
-                .Where(o => (int)o.Creator == userId) // Перевірте тип конвертації вашого Enum Creator
+                .Where(o => o.CreatedById == userId)
                 .Select(MapToPreviewDto())
                 .ToListAsync();
         }
@@ -337,7 +330,7 @@ namespace SalesHub.Services
                 NewPrice = o.NewPrice,
                 OldPrice = o.OldPrice,
                 StoreName = o.Place.Name,
-                CreatedAt = o.Id > 0 ? DateTime.UtcNow : o.Id == 0 ? DateTime.UtcNow : DateTime.MinValue, // Або просто o.CreatedAt, якщо воно є в BaseEntity
+                CreatedAt = o.CreatedAt,
                 MainImageUrl = o.Images.OrderBy(i => i.Id).Select(i => i.ImageUrl).FirstOrDefault()
                 // Distance заповнюється окремо в методі GetNearbyAsync
             };

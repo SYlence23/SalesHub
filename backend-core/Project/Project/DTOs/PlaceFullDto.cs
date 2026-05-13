@@ -6,7 +6,7 @@ namespace SalesHub.DTOs
         public string Name { get; set; }
         public string Description { get; set; }
         public List<string> Addresses { get; set; } = new();
-        public string MainImageUrl { get; set; }
+        public string? MainImageUrl { get; set; }
         public List<OfferPreviewDto> Offers { get; set; } = new();
     }
 }

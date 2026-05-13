@@ -118,35 +118,32 @@ namespace Project.Controllers
 
        
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> Update(int id, [FromBody] Offer updatedOffer)
+        public async Task<IActionResult> Update(int id, [FromBody] OfferUpdateDto dto)
         {
-            if (id != updatedOffer.Id) return BadRequest("ID doesn't match");
-
             var existingOffer = await _context.Offers.FindAsync(id);
             if (existingOffer == null) return NotFound("Discount not found");
 
-            existingOffer.Title = updatedOffer.Title;
-            existingOffer.Description = updatedOffer.Description;
-            existingOffer.NewPrice = updatedOffer.NewPrice;
-            existingOffer.OldPrice = updatedOffer.OldPrice;
-            existingOffer.ValidTo = updatedOffer.ValidTo;
-            existingOffer.IsActive = updatedOffer.IsActive;
-            existingOffer.CategoryId = updatedOffer.CategoryId;
-            existingOffer.PlaceId = updatedOffer.PlaceId;
+            existingOffer.Title = dto.Title;
+            existingOffer.Description = dto.Description;
+            existingOffer.NewPrice = dto.NewPrice;
+            existingOffer.OldPrice = dto.OldPrice;
+            existingOffer.ValidTo = dto.ValidTo;
+            existingOffer.IsActive = dto.IsActive;
 
             if (existingOffer.NewPrice >= existingOffer.OldPrice)
-                return BadRequest("New price must be less than the old one .");
+                return BadRequest("New price must be less than the old one.");
             try
             {
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
-                return StatusCode(409, "Update conflict. The data has been changed by someone else ");
+                return StatusCode(409, "Update conflict. The data has been changed by someone else.");
             }
 
-            return Ok(existingOffer);
+            return NoContent();
         }
+
         [HttpPatch("{id:int}/status")]
         [Authorize]
         public async Task<IActionResult> UpdateStatus(int id, [FromQuery] bool isActive)

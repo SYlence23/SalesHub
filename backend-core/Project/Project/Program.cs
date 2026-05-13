@@ -1,10 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SalesHub.Data;
 using Scalar.AspNetCore;
- 
-using System.Text.Json.Serialization;
- 
- 
 using SalesHub.Services;
 using Amazon.S3;
 using SalesHub.Models;
@@ -13,30 +9,21 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
-internal class Program
-{
-    private static void Main(string[] args)
-    {
-        var builder = WebApplication.CreateBuilder(args);
-            builder.Services.AddControllers()
-                .AddJsonOptions(options =>
-                {
-                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-                });
 
-        builder.Services.AddDbContext<ApplicationDbContext>(options =>
-           options.UseNpgsql(
-               builder.Configuration.GetConnectionString("DefaultConnection"),
-               o => o.UseNetTopologySuite()
-           ));
+var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services.AddOpenApi();
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        o => o.UseNetTopologySuite()
+    ));
 
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.MaxDepth = 128;
     });
 builder.Services.AddScoped<IDiscountService, DiscountService>();
 builder.Services.AddScoped<IPlaceService, PlaceService>();
@@ -95,18 +82,10 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
-            app.MapScalarApiReference(options =>
-            {
-                options.WithTitle("SalesHub API")
-                       .WithTheme(ScalarTheme.Moon)
+app.UseHttpsRedirection();
 
-                       .WithOpenApiRoutePattern("/openapi/v1.json");
-            });
-        }
 
-        app.UseHttpsRedirection();
-        app.UseCors("AllowAll");
-        app.UseAuthorization();
+app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -123,10 +102,6 @@ using (var scope = app.Services.CreateScope())
 
 }
 
-    app.MapControllers();
+app.MapControllers();
 
-        //app.UseAuthorization();
-        app.MapControllers();
-        app.Run();
-    }
-}
+app.Run();

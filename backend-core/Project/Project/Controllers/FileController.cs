@@ -24,59 +24,39 @@ namespace SalesHub.Controllers
         }
 
         [HttpPost("uploadImage")]
-        public async Task<IActionResult> UploadFileAsync(IFormFile file, string? prefix)
+        public async Task<IActionResult> UploadFileAsync(IFormFile file, string? prefix, string bucketName = "saleshub-bucket-132831331335-eu-central-1-an")
         {
-            if (file == null || file.Length == 0)
-                return BadRequest("File is empty");
-
             try
             {
-                var bucketExist = await Amazon.S3.Util.AmazonS3Util.DoesS3BucketExistV2Async(_s3Client, _bucketName);
-                if (!bucketExist) 
-                {
-                    _logger.LogError("S3 Bucket {BucketName} does not exist", _bucketName);
-                    return NotFound($"Bucket {_bucketName} does not exist");
-                }
+                var bucketExist = await Amazon.S3.Util.AmazonS3Util.DoesS3BucketExistV2Async(_s3Client, bucketName);
+                if (!bucketExist) return NotFound($"Bucket {bucketName} does not exist");
                 
                 var uniqueFileName = $"{Guid.NewGuid()}_{file.FileName}";
-                var cleanPrefix = prefix?.Trim('/') ?? "";
-                var fileKey = string.IsNullOrEmpty(cleanPrefix) ? uniqueFileName : $"{cleanPrefix}/{uniqueFileName}";
+                var fileKey = string.IsNullOrEmpty(prefix) ? uniqueFileName : $"{prefix.TrimEnd('/')}/{uniqueFileName}";
                 
-                using var stream = file.OpenReadStream();
                 var request = new PutObjectRequest()
                 {
-                    BucketName = _bucketName,
+                    BucketName = bucketName,
                     Key = fileKey,
-                    InputStream = stream,
-                    ContentType = file.ContentType,
-                    CannedACL = S3CannedACL.PublicRead
+                    InputStream = file.OpenReadStream()
                 };
-                
+                request.Metadata.Add("Content-Type", file.ContentType);
                 await _s3Client.PutObjectAsync(request);
-                
-                var region = _configuration["AWS:Region"] ?? "eu-central-1";
-                var url = $"https://{_bucketName}.s3.{region}.amazonaws.com/{fileKey}";
-                
-                _logger.LogInformation("File uploaded successfully to S3: {Url}", url);
                 
                 return Ok(new 
                 { 
-                    Message = "File successfully uploaded", 
-                    Url = url,
+                    Message = "File successfuly uploaded", 
+                    Url = $"https://{bucketName}.s3.{_configuration["AWS:Region"]}.amazonaws.com/{fileKey}",
                     FileName = uniqueFileName,
-                    Prefix = cleanPrefix
+                    Prefix = prefix ?? string.Empty
                 });
-            }
-            catch (AmazonS3Exception e)
-            {
-                _logger.LogError(e, "Amazon S3 error during upload");
-                return StatusCode((int)e.StatusCode, $"S3 Error: {e.Message}");
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Unexpected error during file upload");
-                return StatusCode(500, $"Internal error: {e.Message}");
+                Console.WriteLine(e);
+                return NoContent();
             }
+            
         }
 
         [HttpGet]

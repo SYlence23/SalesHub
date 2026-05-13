@@ -4,6 +4,7 @@ using NetTopologySuite.Geometries;
 using SalesHub.Data;
 using SalesHub.DTOs;
 using SalesHub.Models;
+using Location = SalesHub.Models.Location;
 
 namespace SalesHub.Services
 {
@@ -25,7 +26,7 @@ namespace SalesHub.Services
                     Id = p.Id,
                     Name = p.Name,
                     Addresses = p.PlaceLocations.Select(pl => pl.Location.Address).ToList(),
-                    MainImageUrl = p.ImageUrl.FirstOrDefault() != null ? p.Images.FirstOrDefault()!.ImageUrl : null
+                    MainImageUrl = p.Images.Select(i => i.ImageUrl).FirstOrDefault()
                 })
                 .ToListAsync();
         }
@@ -40,7 +41,35 @@ namespace SalesHub.Services
                 IsOnline = dto.IsOnline,
                 OfferUrl = dto.OfferUrl ?? ""
             };
-            
+
+            _context.Places.Add(place);
+            await _context.SaveChangesAsync();
+
+            // If it's an offline place with coordinates, create a Location and link it
+            if (!dto.IsOnline && dto.Latitude.HasValue && dto.Longitude.HasValue)
+            {
+                var location = new Location
+                {
+                    Name = dto.Name,
+                    Address = "",
+                    City = "",
+                    Coordinates = new NetTopologySuite.Geometries.Point(dto.Longitude.Value, dto.Latitude.Value) { SRID = 4326 }
+                };
+
+                _context.Locations.Add(location);
+                await _context.SaveChangesAsync();
+
+                var placeLocation = new PlaceLocation
+                {
+                    PlaceId = place.Id,
+                    LocationId = location.Id
+                };
+
+                _context.PlaceLocations.Add(placeLocation);
+                await _context.SaveChangesAsync();
+            }
+
+            return place.Id;
         }
         public async Task<PlaceFullDto?> GetPlaceDetailsAsync(int id)
         {

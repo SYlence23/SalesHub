@@ -34,9 +34,8 @@ namespace Project.Controllers
             if (place == null)
                 return NotFound(new { message = $"Place with ID {id} not found." });
 
+            
             return Ok(place);
-            var places = await _placeService.GetAllAsync();
-            return Ok(places);
         }
 
         [HttpPost]

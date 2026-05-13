@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SalesHub.DTOs;
@@ -23,7 +23,7 @@ namespace SalesHub.Controllers
         {
             var (succeeded, message) = await _authService.RegisterAsync(model);
             if (!succeeded)
-                return StatusCode(StatusCodes.Status500InternalServerError, message);
+                return Conflict(new { message });
 
             return Ok(message);
         }
