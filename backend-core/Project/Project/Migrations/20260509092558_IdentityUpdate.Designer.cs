@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -12,9 +13,11 @@ using SalesHub.Data;
 namespace SalesHub.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260509092558_IdentityUpdate")]
+    partial class IdentityUpdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -361,9 +364,11 @@ namespace SalesHub.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("IconUrl")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("MarkerColor")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Name")
@@ -378,38 +383,6 @@ namespace SalesHub.Migrations
                     b.HasIndex("ParentId");
 
                     b.ToTable("OfferCategories");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Name = "Розваги"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CreatedAt = new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Name = "Заклади"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CreatedAt = new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Name = "Культура"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            CreatedAt = new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Name = "Книги"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            CreatedAt = new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Name = "Спорт"
-                        });
                 });
 
             modelBuilder.Entity("SalesHub.Models.OfferImage", b =>
@@ -490,9 +463,6 @@ namespace SalesHub.Migrations
 
                     b.Property<bool>("IsOnline")
                         .HasColumnType("boolean");
-
-                    b.Property<Point>("Location")
-                        .HasColumnType("geography");
 
                     b.Property<string>("Name")
                         .IsRequired()

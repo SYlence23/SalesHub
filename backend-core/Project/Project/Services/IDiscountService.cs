@@ -1,4 +1,4 @@
-﻿using SalesHub.DTOs;
+using SalesHub.DTOs;
 using Microsoft.AspNetCore.Http;
 using System.Threading;
 using System.Collections.Generic;
@@ -13,9 +13,7 @@ namespace SalesHub.Services
         Task<IEnumerable<CategoryPreviewDto>> GetCategoriesAsync();
 
         Task<OfferResponseDto?> GetByIdAsync(int id);
-
-        Task<int> CreateOfferAsync(OfferCreateDto dto, CancellationToken cancellationToken = default);
-
+        Task<int> CreateOfferAsync(OfferCreateDto dto, int userId);
         Task<bool> UpdateStatusAsync(int id, bool isActive);
 
         Task<bool> DeleteAsync(int id);

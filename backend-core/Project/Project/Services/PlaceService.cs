@@ -30,6 +30,18 @@ namespace SalesHub.Services
                 .ToListAsync();
         }
 
+        public async Task<int> CreateAsync(PlaceCreateDto dto, int userId)
+        {
+            var place = new Place
+            {
+                Name = dto.Name,
+                Description = dto.Description ?? "",
+                CreatedById = userId,
+                IsOnline = dto.IsOnline,
+                OfferUrl = dto.OfferUrl ?? ""
+            };
+            
+        }
         public async Task<PlaceFullDto?> GetPlaceDetailsAsync(int id)
         {
             var place = await _context.Places

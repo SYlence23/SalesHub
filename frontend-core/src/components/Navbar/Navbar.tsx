@@ -1,9 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Tag, Map as MapIcon, Store } from 'lucide-react';
+import { Home, Tag, Map as MapIcon, LogOut, Store  } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import UserProfile from './UserProfile';
 
 export default function Navbar() {
     const location = useLocation();
+    const { isAuthenticated, logout } = useAuth();
 
     const navLinks = [
         {
@@ -61,10 +63,20 @@ export default function Navbar() {
 
                         {/* Right actions */}
                         <div className="flex items-center gap-3">
-                            <UserProfile />
-                            <Link to="/login" className="hidden sm:flex btn-primary text-sm px-4 py-2">
-                                Увійти
-                            </Link>
+                            {isAuthenticated ? (
+                                <button onClick={logout} className="flex btn-secondary text-sm px-4 py-2 gap-2 items-center">
+                                    <LogOut size={16} /> Вийти
+                                </button>
+                            ) : (
+                                <>
+                                    <Link to="/login" className="flex btn-primary text-sm px-4 py-2">
+                                        Увійти
+                                    </Link>
+                                    <Link to="/register" className="hidden sm:flex btn-secondary text-sm px-4 py-2">
+                                        Зареєструватися
+                                    </Link>
+                                </>
+                            )}
                         </div>
 
                     </div>

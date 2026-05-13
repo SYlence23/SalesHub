@@ -6,6 +6,8 @@ using SalesHub.Data;
 using SalesHub.Models;
 using SalesHub.DTOs;
 using SalesHub.Services;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 
 namespace Project.Controllers
@@ -81,13 +83,8 @@ namespace Project.Controllers
         /// </summary>
         // [Authorize]
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CreateOffer([FromBody] OfferCreateDto dto, CancellationToken cancellationToken = default)
+        [Authorize]
+        public async Task<IActionResult> Create([FromBody] OfferCreateDto dto)
         {
             if (!ModelState.IsValid) 
             {
@@ -98,15 +95,13 @@ namespace Project.Controllers
                 return ValidationProblem(ModelState);
             }
 
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdString, out int userId)) 
+                return Unauthorized(new { message = "Invalid token or user ID" });
+
             try
             {
-                if (dto.OldPrice.HasValue && dto.NewPrice >= dto.OldPrice.Value)
-                {
-                    return UnprocessableEntity(new { message = "The new price must be lower than the old price." });
-                }
-
-                var id = await _discountService.CreateOfferAsync(dto, cancellationToken);
-                _logger.LogInformation("Created offer {OfferId} by user {User}", id, User?.Identity?.Name ?? "anonymous");
+                var id = await _discountService.CreateOfferAsync(dto, userId);
                 return CreatedAtAction(nameof(GetById), new { id = id }, new { id });
             }
             catch (ArgumentException ex)
@@ -121,9 +116,7 @@ namespace Project.Controllers
             }
         }
 
-        /// <summary>
-        /// updates an existing discount. 
-        /// </summary>
+       
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] Offer updatedOffer)
         {
@@ -155,7 +148,8 @@ namespace Project.Controllers
             return Ok(existingOffer);
         }
         [HttpPatch("{id:int}/status")]
-        public async Task<IActionResult> UpdateStatus(int id, bool isActive)
+        [Authorize]
+        public async Task<IActionResult> UpdateStatus(int id, [FromQuery] bool isActive)
         {
             // Тільки валідація запиту
             if (id <= 0) return BadRequest("Invalid ID");

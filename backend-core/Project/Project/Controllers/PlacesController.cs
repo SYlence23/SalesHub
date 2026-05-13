@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using System;
 using Microsoft.AspNetCore.Mvc;
 using SalesHub.DTOs;
 using SalesHub.Services;
+using System.Security.Claims;
 
 namespace Project.Controllers
 {
@@ -38,13 +40,18 @@ namespace Project.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Create([FromBody] PlaceCreateDto dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdString, out int userId)) 
+                return Unauthorized(new { message = "Invalid token or user ID" });
+
             try
             {
-                var id = await _placeService.CreateAsync(dto);
+                var id = await _placeService.CreateAsync(dto, userId);
                 // Return just the created ID or an object containing it
                 return Ok(new { id });
             }

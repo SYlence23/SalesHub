@@ -7,7 +7,7 @@ using SalesHub.DTOs;
 using SalesHub.Models;
 using System.Linq.Expressions;
 using static System.Net.Mime.MediaTypeNames;
-
+using SalesHub.Enums;
 namespace SalesHub.Services
 {
     public class DiscountService : IDiscountService
@@ -34,6 +34,7 @@ namespace SalesHub.Services
                 query = query.Where(o => o.CategoryId == categoryId.Value);
             }
 
+             var total = await query.CountAsync();
 
             query = sortOption switch
             {
@@ -92,7 +93,7 @@ namespace SalesHub.Services
         }
 
 
-        public async Task<int> CreateOfferAsync(OfferCreateDto dto)
+        public async Task<int> CreateOfferAsync(OfferCreateDto dto, int userId)
         {
             return await CreateOfferAsync(dto, CancellationToken.None);
         }
@@ -185,6 +186,7 @@ namespace SalesHub.Services
                 PlaceId = finalPlaceId,
                 IsActive = true,
                 Creator = OfferCreator.User,
+                CreatedById = userId,
                 Images = dto.ImageUrls?.Select((url, index) => new OfferImage
                 {
                     ImageUrl = url,
