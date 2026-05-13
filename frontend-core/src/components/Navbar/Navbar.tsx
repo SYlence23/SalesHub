@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Tag, Map as MapIcon } from 'lucide-react';
+import UserProfile from './UserProfile';
 
 export default function Navbar() {
     const location = useLocation();
@@ -55,11 +56,9 @@ export default function Navbar() {
 
                         {/* Right actions */}
                         <div className="flex items-center gap-3">
-                            <Link to="/login" className="flex btn-primary text-sm px-4 py-2">
+                            <UserProfile />
+                            <Link to="/login" className="hidden sm:flex btn-primary text-sm px-4 py-2">
                                 Увійти
-                            </Link>
-                            <Link to="/register" className="hidden sm:flex btn-secondary text-sm px-4 py-2">
-                                Зареєструватися
                             </Link>
                         </div>
 
