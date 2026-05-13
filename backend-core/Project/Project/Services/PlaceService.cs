@@ -1,6 +1,9 @@
+using System;
 using Microsoft.EntityFrameworkCore;
+using NetTopologySuite.Geometries;
 using SalesHub.Data;
 using SalesHub.DTOs;
+using SalesHub.Models;
 
 namespace SalesHub.Services
 {

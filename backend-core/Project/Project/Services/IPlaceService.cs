@@ -6,5 +6,6 @@ namespace SalesHub.Services
     {
         Task<IEnumerable<PlacePreviewDto>> GetAllPlacesAsync();
         Task<PlaceFullDto?> GetPlaceDetailsAsync(int id);
+        Task<int> CreateAsync(PlaceCreateDto dto);
     }
 }

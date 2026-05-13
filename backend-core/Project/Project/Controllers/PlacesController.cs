@@ -1,4 +1,6 @@
+using System;
 using Microsoft.AspNetCore.Mvc;
+using SalesHub.DTOs;
 using SalesHub.Services;
 
 namespace Project.Controllers
@@ -31,6 +33,29 @@ namespace Project.Controllers
                 return NotFound(new { message = $"Place with ID {id} not found." });
 
             return Ok(place);
+            var places = await _placeService.GetAllAsync();
+            return Ok(places);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] PlaceCreateDto dto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            try
+            {
+                var id = await _placeService.CreateAsync(dto);
+                // Return just the created ID or an object containing it
+                return Ok(new { id });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
     }
 }
