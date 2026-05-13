@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Tag, Map as MapIcon, LogOut } from 'lucide-react';
+import { Home, Tag, Map as MapIcon, LogOut, Store  } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import UserProfile from './UserProfile';
 
 export default function Navbar() {
     const location = useLocation();
@@ -16,6 +17,11 @@ export default function Navbar() {
             name: "Пропозиції",
             path: "/offers",
             icon: Tag
+        },
+        {
+            name: "Заклади",
+            path: "/places",
+            icon: Store
         },
         {
             name: "Карта",

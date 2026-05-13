@@ -1,3 +1,4 @@
+using System;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
 using SalesHub.Data;
@@ -15,17 +16,16 @@ namespace SalesHub.Services
             _context = context;
         }
 
-        public async Task<IEnumerable<PlaceDto>> GetAllAsync()
+        public async Task<IEnumerable<PlacePreviewDto>> GetAllPlacesAsync()
         {
             return await _context.Places
                 .AsNoTracking()
-                .Select(p => new PlaceDto
+                .Select(p => new PlacePreviewDto
                 {
                     Id = p.Id,
                     Name = p.Name,
-                    Description = p.Description,
-                    IsOnline = p.IsOnline,
-                    OfferUrl = p.OfferUrl
+                    Addresses = p.PlaceLocations.Select(pl => pl.Location.Address).ToList(),
+                    MainImageUrl = p.ImageUrl.FirstOrDefault() != null ? p.Images.FirstOrDefault()!.ImageUrl : null
                 })
                 .ToListAsync();
         }
@@ -40,32 +40,39 @@ namespace SalesHub.Services
                 IsOnline = dto.IsOnline,
                 OfferUrl = dto.OfferUrl ?? ""
             };
+            
+        }
+        public async Task<PlaceFullDto?> GetPlaceDetailsAsync(int id)
+        {
+            var place = await _context.Places
+                .AsNoTracking()
+                .Include(p => p.Images)
+                .Include(p => p.PlaceLocations)
+                    .ThenInclude(pl => pl.Location)
+                .Include(p => p.Offers)
+                    .ThenInclude(o => o.Images)
+                .FirstOrDefaultAsync(p => p.Id == id);
 
-            _context.Places.Add(place);
+            if (place == null) return null;
 
-            if (!dto.IsOnline && dto.Latitude.HasValue && dto.Longitude.HasValue)
+            return new PlaceFullDto
             {
-                var location = new SalesHub.Models.Location
+                Id = place.Id,
+                Name = place.Name,
+                Description = place.Description,
+                Addresses = place.PlaceLocations.Select(pl => pl.Location.Address).ToList(),
+                MainImageUrl = place.Images.FirstOrDefault()?.ImageUrl,
+                Offers = place.Offers.Select(o => new OfferPreviewDto
                 {
-                    Name = dto.Name,
-                    Address = "Manually entered",
-                    City = "Unknown",
-                    Coordinates = new Point(dto.Longitude.Value, dto.Latitude.Value) { SRID = 4326 }
-                };
-                
-                _context.Locations.Add(location);
-
-                var placeLocation = new PlaceLocation
-                {
-                    Place = place,
-                    Location = location
-                };
-                
-                _context.PlaceLocations.Add(placeLocation);
-            }
-
-            await _context.SaveChangesAsync();
-            return place.Id;
+                    Id = o.Id,
+                    Title = o.Title,
+                    NewPrice = o.NewPrice,
+                    OldPrice = o.OldPrice,
+                    MainImageUrl = o.Images.FirstOrDefault()?.ImageUrl,
+                    StoreName = place.Name,
+                    CreatedAt = o.CreatedAt
+                }).ToList()
+            };
         }
     }
 }

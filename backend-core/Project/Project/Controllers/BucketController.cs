@@ -1,4 +1,4 @@
-﻿using Amazon.S3;
+using Amazon.S3;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,7 +15,7 @@ namespace SalesHub.Controllers
             _s3Client = s3Client;
         }
 
-        [HttpPost("uploadimage")]
+        [HttpPost("create-bucket")]
         public async Task<IActionResult> CreateBucketAsync([FromQuery] string bucketName)
         {
             var bucketExists = await Amazon.S3.Util.AmazonS3Util.DoesS3BucketExistV2Async(_s3Client, bucketName);

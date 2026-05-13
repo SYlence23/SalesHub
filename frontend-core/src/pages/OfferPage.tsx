@@ -114,10 +114,10 @@ export default function OfferPage() {
             <div className="flex items-center justify-between mb-8">
                 <div>
                     <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
-                        Знайдіть <span className="text-primary-500">пропозиції</span>
+                        Find <span className="text-primary-500">Offers</span>
                     </h1>
                     <p className="text-zinc-500 dark:text-zinc-400">
-                        Знайдіть найкращі пропозиції та знижки.
+                        Discover the best deals and discounts.
                     </p>
                 </div>
 
@@ -199,7 +199,7 @@ export default function OfferPage() {
                         <div className="glass-card p-12 text-center">
                             <h3 className="text-2xl font-bold mb-2">Знижок не знайдено</h3>
                             <p className="text-zinc-500 dark:text-zinc-400">
-                                Спробуйте змінити фільтри або пошукові запити, щоб знайти те, що ви шукаєте.
+                                Спробуйте змінити фільтри або пошуковий запит, щоб знайти те, що ви шукаєте.
                             </p>
                             <button
                                 onClick={() => {

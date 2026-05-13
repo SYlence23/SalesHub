@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using System;
 using Microsoft.AspNetCore.Mvc;
 using SalesHub.DTOs;
 using SalesHub.Services;
@@ -20,6 +21,20 @@ namespace Project.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
+            var places = await _placeService.GetAllPlacesAsync();
+            return Ok(places);
+        }
+
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            if (id <= 0) return BadRequest("Invalid ID.");
+
+            var place = await _placeService.GetPlaceDetailsAsync(id);
+            if (place == null)
+                return NotFound(new { message = $"Place with ID {id} not found." });
+
+            return Ok(place);
             var places = await _placeService.GetAllAsync();
             return Ok(places);
         }
@@ -40,9 +55,13 @@ namespace Project.Controllers
                 // Return just the created ID or an object containing it
                 return Ok(new { id });
             }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Error saving place", details = ex.Message });
+                return StatusCode(500, ex.Message);
             }
         }
     }

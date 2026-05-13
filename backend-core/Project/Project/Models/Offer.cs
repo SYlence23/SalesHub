@@ -15,9 +15,9 @@ namespace SalesHub.Models
 
         public OfferCreator Creator { get; set; }
         public int CategoryId { get; set; }
-        public OfferCategory Category { get; set; }
+        public OfferCategory? Category { get; set; }
         public int PlaceId { get; set; }
-        public Place Place { get; set; }
+        public Place? Place { get; set; }
         public int? CreatedById { get; set; }
         public ApplicationUser CreatedBy { get; set; }
         public ICollection<OfferImage> Images { get; set; }
