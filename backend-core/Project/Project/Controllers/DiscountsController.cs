@@ -1,6 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using System;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using NetTopologySuite.Geometries;
+using SalesHub.Data;
+using SalesHub.Models;
 using SalesHub.DTOs;
 using SalesHub.Services;
+
 
 namespace Project.Controllers
 {
@@ -8,13 +14,23 @@ namespace Project.Controllers
     [ApiController]
     public class DiscountsController : ControllerBase
     {
+        private readonly ApplicationDbContext _context;
         private readonly IDiscountService _discountService;
+        private readonly ILogger<DiscountsController> _logger;
 
-        public DiscountsController(IDiscountService discountService)
+     public DiscountsController(
+            ApplicationDbContext context,
+            IDiscountService discountService,
+            ILogger<DiscountsController> logger)
         {
+            _context = context;
             _discountService = discountService;
+            _logger = logger;
         }
 
+        /// <summary>
+        /// Retrieves all active discounts with pagination and search.
+        /// </summary>
         [HttpGet]
         public async Task<IActionResult> GetAll(
             [FromQuery] int page = 1,
@@ -30,6 +46,10 @@ namespace Project.Controllers
             return Ok(new { Total = result.Total, Page = page, Data = result.Data });
         }
 
+
+        /// <summary>
+        /// Отримати повну інформацію про одну знижку за її ID
+        /// <summary>
         [HttpGet("categories")]
         public async Task<IActionResult> GetCategories()
         {
@@ -38,6 +58,9 @@ namespace Project.Controllers
         }
 
 
+        /// <summary>
+        /// Gets full details of a specific discount
+        /// </summary>
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -50,64 +73,111 @@ namespace Project.Controllers
             return Ok(offer);
         }
 
+        
 
+
+        /// <summary>
+        /// Creates a new discount. Only for registered users/admins.
+        /// </summary>
+        // [Authorize]
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] OfferCreateDto dto)
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> CreateOffer([FromBody] OfferCreateDto dto, CancellationToken cancellationToken = default)
         {
-             if (!ModelState.IsValid) return BadRequest(ModelState);
-
-            //   бізнес-валідація цін
-            if (dto.OldPrice.HasValue && dto.NewPrice >= dto.OldPrice.Value)
+            if (!ModelState.IsValid) 
             {
-                return UnprocessableEntity(new { message = "The new price must be lower than the old price." });
+                var errors = string.Join(" | ", ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage));
+                _logger.LogWarning("Validation failed: {Errors}", errors);
+                return ValidationProblem(ModelState);
             }
 
             try
             {
-                var id = await _discountService.CreateOfferAsync(dto);
+                if (dto.OldPrice.HasValue && dto.NewPrice >= dto.OldPrice.Value)
+                {
+                    return UnprocessableEntity(new { message = "The new price must be lower than the old price." });
+                }
+
+                var id = await _discountService.CreateOfferAsync(dto, cancellationToken);
+                _logger.LogInformation("Created offer {OfferId} by user {User}", id, User?.Identity?.Name ?? "anonymous");
                 return CreatedAtAction(nameof(GetById), new { id = id }, new { id });
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogWarning(ex, "Validation error while creating offer");
+                return BadRequest(new ProblemDetails { Title = "Invalid input", Detail = ex.Message, Status = StatusCodes.Status400BadRequest });
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Unexpected error while creating offer");
                 return StatusCode(500, new { message = "Error saving offer", details = ex.Message });
             }
         }
 
-        [HttpPost("{id:int}/upload-image")]
-        public async Task<IActionResult> UploadImage(int id, IFormFile file)
+        /// <summary>
+        /// updates an existing discount. 
+        /// </summary>
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Update(int id, [FromBody] Offer updatedOffer)
         {
-            if (file == null || file.Length == 0)
-                return BadRequest("No file selected or file is empty.");
+            if (id != updatedOffer.Id) return BadRequest("ID doesn't match");
 
-            var offerExists = await _discountService.GetByIdAsync(id);
-            if (offerExists == null) return NotFound("Discount not found.");
+            var existingOffer = await _context.Offers.FindAsync(id);
+            if (existingOffer == null) return NotFound("Discount not found");
 
+            existingOffer.Title = updatedOffer.Title;
+            existingOffer.Description = updatedOffer.Description;
+            existingOffer.NewPrice = updatedOffer.NewPrice;
+            existingOffer.OldPrice = updatedOffer.OldPrice;
+            existingOffer.ValidTo = updatedOffer.ValidTo;
+            existingOffer.IsActive = updatedOffer.IsActive;
+            existingOffer.CategoryId = updatedOffer.CategoryId;
+            existingOffer.PlaceId = updatedOffer.PlaceId;
+
+            if (existingOffer.NewPrice >= existingOffer.OldPrice)
+                return BadRequest("New price must be less than the old one .");
             try
             {
-                var url = await _discountService.UploadImageAsync(id, file);
-                return Ok(new { url });
+                await _context.SaveChangesAsync();
             }
-            catch (Exception ex)
+            catch (DbUpdateConcurrencyException)
             {
-                return BadRequest(new { message = "Upload failed", error = ex.Message });
+                return StatusCode(409, "Update conflict. The data has been changed by someone else ");
             }
-        }
 
-        [HttpDelete("{id:int}")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var deleted = await _discountService.DeleteAsync(id);
-            if (!deleted) return NotFound(new { message = "Discount not found" });
-
-            return NoContent();
+            return Ok(existingOffer);
         }
         [HttpPatch("{id:int}/status")]
-        public async Task<IActionResult> UpdateStatus(int id, [FromQuery] bool isActive)
+        public async Task<IActionResult> UpdateStatus(int id, bool isActive)
         {
-            var result = await _discountService.UpdateStatusAsync(id, isActive);
-            if (!result) return NotFound("Offer not found");
+            // Тільки валідація запиту
+            if (id <= 0) return BadRequest("Invalid ID");
 
-            return Ok(new { message = $"Status updated to {isActive}" });
+            // Виклик сервісу (вся робота там)
+            var result = await _discountService.UpdateStatusAsync(id, isActive);
+
+            return result ? Ok() : NotFound();
+        }
+
+            /// <summary>
+            /// Admin Only: Deletes a discount from the system.
+            /// </summary>
+            // [Authorize(Roles = "Admin")]
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Delete(int id)
+            {
+                var deleted = await _discountService.DeleteAsync(id);
+                if (!deleted) return NotFound(new { message = "Discount not found" });
+
+                return NoContent();
+            }
+        
         }
     }
-}

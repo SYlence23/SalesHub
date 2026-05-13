@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Filter } from 'lucide-react';
+import { Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import OfferCard, { type Offer } from '../components/Offer/OfferCard';
 import OfferSkeletonCard from '../components/Offer/OfferSkeletonCard';
 import OfferFilters, { type Category } from '../components/Offer/OfferFilters';
@@ -14,10 +14,12 @@ interface ApiOfferResponse {
 
 export default function OfferPage() {
     const [searchParams, setSearchParams] = useSearchParams();
+    const navigate = useNavigate();
 
     const [offers, setOffers] = useState<Offer[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [totalOffers, setTotalOffers] = useState(0);
 
     // Mobile drawer state
     const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
@@ -27,6 +29,8 @@ export default function OfferPage() {
     const selectedCategoryStr = searchParams.get('categoryId');
     const selectedCategory = selectedCategoryStr ? parseInt(selectedCategoryStr, 10) : null;
     const sortOption = searchParams.get('sortOption') || 'newest';
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const totalPages = Math.ceil(totalOffers / 10);
 
     const handleApplyFilters = (filters: { searchTerm: string; selectedCategory: number | null; sortOption: string }) => {
         const newParams = new URLSearchParams(searchParams);
@@ -45,7 +49,15 @@ export default function OfferPage() {
         } else {
             newParams.delete('sortOption');
         }
+        newParams.set('page', '1');
         setSearchParams(newParams);
+    };
+
+    const handlePageChange = (newPage: number) => {
+        const newParams = new URLSearchParams(searchParams);
+        newParams.set('page', newPage.toString());
+        setSearchParams(newParams);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     // Fetch categories on mount
@@ -76,13 +88,16 @@ export default function OfferPage() {
                 if (searchTerm) params.append('searchTerm', searchTerm);
                 if (selectedCategory !== null) params.append('categoryId', selectedCategory.toString());
                 if (sortOption) params.append('sortOption', sortOption);
+                params.append('page', page.toString());
 
                 const response = await axios.get<ApiOfferResponse>(`/api/Discounts?${params.toString()}`);
                 if (Array.isArray(response.data.data)) {
                     setOffers(response.data.data);
+                    setTotalOffers(response.data.total);
                 } else {
                     console.error("Expected array of offers, got:", typeof response.data);
                     setOffers([]);
+                    setTotalOffers(0);
                 }
             } catch (error) {
                 console.error("Failed to fetch offers:", error);
@@ -91,7 +106,7 @@ export default function OfferPage() {
             }
         };
         fetchOffers();
-    }, [searchTerm, selectedCategory, sortOption]);
+    }, [searchTerm, selectedCategory, sortOption, page]);
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -99,21 +114,29 @@ export default function OfferPage() {
             <div className="flex items-center justify-between mb-8">
                 <div>
                     <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
-                        Знайдіть <span className="text-primary-500">пропозиції</span>
+                        Find <span className="text-primary-500">Offers</span>
                     </h1>
                     <p className="text-zinc-500 dark:text-zinc-400">
-                        Знайдіть найкращі пропозиції та знижки.
+                        Discover the best deals and discounts.
                     </p>
                 </div>
 
-                {/* Mobile Filter Toggle Button */}
-                <button
-                    onClick={() => setIsMobileDrawerOpen(true)}
-                    className="lg:hidden btn-secondary gap-2"
-                >
-                    <Filter className="w-5 h-5" />
-                    <span>Фільтри</span>
-                </button>
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={() => navigate('/offers/create')}
+                        className="btn-primary"
+                    >
+                        Create Offer
+                    </button>
+                    {/* Mobile Filter Toggle Button */}
+                    <button
+                        onClick={() => setIsMobileDrawerOpen(true)}
+                        className="lg:hidden btn-secondary gap-2"
+                    >
+                        <Filter className="w-5 h-5" />
+                        <span>Filters</span>
+                    </button>
+                </div>
             </div>
 
             <div className="flex flex-col lg:flex-row gap-8">
@@ -139,17 +162,44 @@ export default function OfferPage() {
                         </div>
                     ) : offers.length > 0 ? (
                         // Data State
-                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                            {offers.map((offer) => (
-                                <OfferCard key={offer.id} offer={offer} />
-                            ))}
+                        <div className="flex flex-col gap-8">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                                {offers.map((offer) => (
+                                    <OfferCard key={offer.id} offer={offer} />
+                                ))}
+                            </div>
+
+                            {/* Pagination Controls */}
+                            {totalPages > 1 && (
+                                <div className="flex justify-center items-center gap-4 mt-2">
+                                    <button
+                                        onClick={() => handlePageChange(page - 1)}
+                                        disabled={page <= 1}
+                                        className="btn-secondary px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        aria-label="Previous Page"
+                                    >
+                                        <ChevronLeft className="w-5 h-5" />
+                                    </button>
+                                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                                        Page {page} of {totalPages}
+                                    </span>
+                                    <button
+                                        onClick={() => handlePageChange(page + 1)}
+                                        disabled={page >= totalPages}
+                                        className="btn-secondary px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        aria-label="Next Page"
+                                    >
+                                        <ChevronRight className="w-5 h-5" />
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     ) : (
                         // Empty State
                         <div className="glass-card p-12 text-center">
-                            <h3 className="text-2xl font-bold mb-2">Знижок не знайдено</h3>
+                            <h3 className="text-2xl font-bold mb-2">No offers found</h3>
                             <p className="text-zinc-500 dark:text-zinc-400">
-                                Спробуйте змінити фільтри або пошукові запити, щоб знайти те, що ви шукаєте.
+                                Try adjusting your filters or search terms to find what you're looking for.
                             </p>
                             <button
                                 onClick={() => {
@@ -157,7 +207,7 @@ export default function OfferPage() {
                                 }}
                                 className="mt-6 btn-primary"
                             >
-                                Очистити фільтри
+                                Clear all filters
                             </button>
                         </div>
                     )}
