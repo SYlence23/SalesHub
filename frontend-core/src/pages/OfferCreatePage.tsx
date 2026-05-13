@@ -93,7 +93,7 @@ const AddressAutocomplete: React.FC<{
                 // Use PlacesService as it's more likely to be enabled than Geocoding API
                 const mapDiv = document.createElement('div');
                 const service = new google.maps.places.PlacesService(mapDiv);
-                
+
                 const result = await new Promise<google.maps.places.PlaceResult | null>((resolve) => {
                     service.getDetails({ placeId, fields: ['geometry'] }, (place, status) => {
                         if (status === google.maps.places.PlacesServiceStatus.OK) resolve(place);
@@ -388,28 +388,28 @@ export default function OfferCreatePage() {
                     if (!placeForm.address) {
                         throw new Error("Please enter an address for the store.");
                     }
-                    
+
                     try {
                         if (typeof google === 'undefined') {
                             throw new Error("Google Maps API not loaded yet.");
                         }
-                        
-                        const results = await getGeocode({ 
+
+                        const results = await getGeocode({
                             address: placeForm.address,
                             componentRestrictions: { country: 'UA' }
                         });
-                        
+
                         if (!results || results.length === 0) {
                             throw new Error("No results found");
                         }
 
                         const { lat, lng } = await getLatLng(results[0]);
-                        
+
                         // Validation
                         if (lat < 47.50 || lat > 51.50 || lng < 21.50 || lng > 26.50) {
                             throw new Error("Unfortunately, the entered address is outside the Lviv region.");
                         }
-                        
+
                         currentLat = lat;
                         currentLng = lng;
                     } catch (e: any) {
@@ -449,7 +449,7 @@ export default function OfferCreatePage() {
                 const objectUrls = Promise.all(imageFiles.map(async (file) => {
                     const formData = new FormData();
                     formData.append('file', file);
-                    const response = await api.post<{ message: string, url: string, fileName: string, prefix: string }>('/File/uploadImage', formData);
+                    const response = await api.post<{ message: string, url: string, fileName: string, prefix: string }>('/File/uploadImage?prefix=offer-images', formData);
                     return response.data.url;
                 }))
                 imageUrls = await objectUrls;
