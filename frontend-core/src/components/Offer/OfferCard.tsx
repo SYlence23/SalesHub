@@ -1,4 +1,5 @@
-
+import { Link } from 'react-router-dom';
+import { User } from 'lucide-react';
 
 export interface Offer {
   id: number;
@@ -7,6 +8,7 @@ export interface Offer {
   oldPrice: number;
   storeName: string;
   mainImageUrl: string;
+  creatorUserName?: string;
 }
 
 interface OfferCardProps {
@@ -14,7 +16,9 @@ interface OfferCardProps {
 }
 
 export default function OfferCard({ offer }: OfferCardProps) {
-  const discount = Math.round(((offer.oldPrice - offer.newPrice) / offer.oldPrice) * 100);
+  const discount = offer.oldPrice && offer.oldPrice > 0
+    ? Math.round(((offer.oldPrice - offer.newPrice) / offer.oldPrice) * 100)
+    : 0;
 
   return (
     <div className="glass-card overflow-hidden group flex flex-col h-full hover:-translate-y-1 transition-transform duration-300">
@@ -24,7 +28,6 @@ export default function OfferCard({ offer }: OfferCardProps) {
           alt={offer.title}
           className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
           onError={(e) => {
-            // Fallback for missing mocked images
             e.currentTarget.src = "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=400&q=80";
           }}
         />
@@ -43,13 +46,21 @@ export default function OfferCard({ offer }: OfferCardProps) {
         </h3>
         <div className="mt-auto flex items-end justify-between">
           <div>
-            <div className="text-sm text-zinc-500 dark:text-zinc-400 line-through mb-0.5">
-              {offer.oldPrice.toFixed(2)} ₴
-            </div>
+            {offer.oldPrice > 0 && (
+              <div className="text-sm text-zinc-500 dark:text-zinc-400 line-through mb-0.5">
+                {offer.oldPrice.toFixed(2)} ₴
+              </div>
+            )}
             <div className="font-bold text-2xl text-zinc-900 dark:text-white">
               {offer.newPrice.toFixed(2)} ₴
             </div>
           </div>
+          {offer.creatorUserName && (
+            <div className="flex items-center gap-1 text-xs text-zinc-400 dark:text-zinc-500">
+              <User className="w-3 h-3" />
+              <span>{offer.creatorUserName}</span>
+            </div>
+          )}
         </div>
       </div>
     </div>

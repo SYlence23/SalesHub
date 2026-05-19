@@ -10,5 +10,6 @@ namespace SalesHub.DTOs
         public string StoreName { get; set; }
         public double? Distance { get; set; }
         public DateTime CreatedAt { get; set; }
+        public string? CreatorUserName { get; set; }
     }
 }
