@@ -47,6 +47,7 @@ namespace SalesHub.Services
 
             var data = await query
                 .Include(o => o.Place)
+                .Include(o => o.CreatedBy)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .Select(MapToPreviewDto())
@@ -313,11 +314,12 @@ namespace SalesHub.Services
         
         public async Task<IEnumerable<OfferPreviewDto>> GetByUserIdAsync(int userId)
         {
-            // Припускаємо, що у моделі Offer є поле CreatorId або подібне, 
-            // або ви фільтруєте за якимось іншим критерієм авторства
             return await _context.Offers
                 .AsNoTracking()
                 .Where(o => o.CreatedById == userId)
+                .Include(o => o.Place)
+                .Include(o => o.Images)
+                .Include(o => o.CreatedBy)
                 .Select(MapToPreviewDto())
                 .ToListAsync();
         }
@@ -331,10 +333,9 @@ namespace SalesHub.Services
                 OldPrice = o.OldPrice,
                 StoreName = o.Place.Name,
                 CreatedAt = o.CreatedAt,
-                MainImageUrl = o.Images.OrderBy(i => i.Id).Select(i => i.ImageUrl).FirstOrDefault()
-                // Distance заповнюється окремо в методі GetNearbyAsync
+                MainImageUrl = o.Images.OrderBy(i => i.Id).Select(i => i.ImageUrl).FirstOrDefault(),
+                CreatorUserName = o.CreatedBy != null ? o.CreatedBy.Name : null
             };
-            
         }
     }
 }

@@ -1,34 +1,23 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Tag, Map as MapIcon, LogOut, Store  } from 'lucide-react';
+import { Home, Tag, Map as MapIcon, Store } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import UserProfile from './UserProfile';
 
 export default function Navbar() {
     const location = useLocation();
-    const { isAuthenticated, logout } = useAuth();
+    const { isAuthenticated, firstName, lastName } = useAuth();
 
     const navLinks = [
-        {
-            name: "Головна",
-            path: "/",
-            icon: Home
-        },
-        {
-            name: "Пропозиції",
-            path: "/offers",
-            icon: Tag
-        },
-        {
-            name: "Заклади",
-            path: "/places",
-            icon: Store
-        },
-        {
-            name: "Карта",
-            path: "/map",
-            icon: MapIcon
-        }
+        { name: "Головна", path: "/", icon: Home },
+        { name: "Пропозиції", path: "/offers", icon: Tag },
+        { name: "Заклади", path: "/places", icon: Store },
+        { name: "Карта", path: "/map", icon: MapIcon },
     ];
+
+    // Build initials from first + last name; fall back to "?"
+    const initials = [firstName, lastName]
+        .filter(Boolean)
+        .map(s => s![0].toUpperCase())
+        .join('') || '?';
 
     return (
         <>
@@ -36,7 +25,7 @@ export default function Navbar() {
                 <div className="mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="justify-between flex grow h-15">
 
-                        {/* Logo */}
+                        {/* Логотип */}
                         <div className="shrink-0 flex items-center">
                             <Link to="/" className="flex items-center gap-2 group">
                                 <span className="font-bold text-3xl tracking-tight animated-gradient">
@@ -47,12 +36,16 @@ export default function Navbar() {
 
                         <div className="flex items-center gap-6">
                             <nav className="flex items-center">
-                                {/* Center Navigation - Desktop */}
+                                {/* Навігація — десктоп */}
                                 <div className="hidden sm:flex items-center gap-4">
                                     {navLinks.map((link) => {
                                         const isActive = location.pathname === link.path;
                                         return (
-                                            <Link key={link.name} to={link.path} className={`nav-button ${isActive ? 'text-primary-500 dark:text-primary-400' : ''}`}>
+                                            <Link
+                                                key={link.name}
+                                                to={link.path}
+                                                className={`nav-button ${isActive ? 'text-primary-500 dark:text-primary-400' : ''}`}
+                                            >
                                                 {link.name}
                                             </Link>
                                         );
@@ -61,12 +54,16 @@ export default function Navbar() {
                             </nav>
                         </div>
 
-                        {/* Right actions */}
+                        {/* Праві кнопки */}
                         <div className="flex items-center gap-3">
                             {isAuthenticated ? (
-                                <button onClick={logout} className="flex btn-secondary text-sm px-4 py-2 gap-2 items-center">
-                                    <LogOut size={16} /> Вийти
-                                </button>
+                                <Link
+                                    to="/profile"
+                                    title="Мій профіль"
+                                    className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-tr from-primary-500 to-orange-400 text-white font-bold text-sm hover:shadow-lg hover:scale-105 transition-all active:scale-95"
+                                >
+                                    {initials}
+                                </Link>
                             ) : (
                                 <>
                                     <Link to="/login" className="flex btn-primary text-sm px-4 py-2">
@@ -83,15 +80,19 @@ export default function Navbar() {
                 </div>
             </header>
 
-            {/* Bottom Navigation - Mobile */}
+            {/* Нижня навігація — мобільна */}
             <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-50 glass border-t border-zinc-200 dark:border-white/10 pb-[env(safe-area-inset-bottom)]">
                 <div className="flex justify-around items-center h-16">
                     {navLinks.map((link) => {
                         const Icon = link.icon;
                         const isActive = location.pathname === link.path;
                         return (
-                            <Link key={link.name} to={link.path} className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${isActive ? 'text-primary-500' : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'}`}>
-                                <Icon size={22} strokeWidth={isActive ? 2.5 : 2} className={isActive ? 'drop-shadow-sm' : ''} /> {/*if needed will be replaced with svg icons */}
+                            <Link
+                                key={link.name}
+                                to={link.path}
+                                className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${isActive ? 'text-primary-500' : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'}`}
+                            >
+                                <Icon size={22} strokeWidth={isActive ? 2.5 : 2} className={isActive ? 'drop-shadow-sm' : ''} />
                                 <span className={`text-[10px] font-medium ${isActive ? 'font-bold' : ''}`}>{link.name}</span>
                             </Link>
                         );

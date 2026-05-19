@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using SalesHub.Models;
 using SalesHub.DTOs;
 using SalesHub.Enums;
@@ -57,6 +57,8 @@ namespace SalesHub.Services
                 {
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                     new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim("firstName", user.Name ?? string.Empty),
+                    new Claim("lastName", user.Surname ?? string.Empty),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
                 };
                 foreach (var userRole in userRoles)
