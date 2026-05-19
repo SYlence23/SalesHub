@@ -163,12 +163,33 @@ namespace Project.Controllers
             // [Authorize(Roles = "Admin")]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
-            {
-                var deleted = await _discountService.DeleteAsync(id);
-                if (!deleted) return NotFound(new { message = "Discount not found" });
+        {
+            var deleted = await _discountService.DeleteAsync(id);
+            if (!deleted) return NotFound(new { message = "Discount not found" });
 
-                return NoContent();
-            }
+            return NoContent();
+        }
+
+        [HttpGet("{id:int}/reviews")]
+        public async Task<IActionResult> GetReviews(int id)
+        {
+            var reviews = await _discountService.GetReviewsAsync(id);
+            return Ok(reviews);
+        }
+
+        [HttpPost("{id:int}/reviews")]
+        [Authorize]
+        public async Task<IActionResult> PostReview(int id, [FromBody] OfferReviewCreateDto dto)
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdString, out int userId)) 
+                return Unauthorized();
+
+            var review = await _discountService.AddOrUpdateReviewAsync(id, userId, dto);
+            if (review == null) return NotFound(new { message = "Discount not found" });
+
+            return Ok(review);
+        }
         
         }
     }

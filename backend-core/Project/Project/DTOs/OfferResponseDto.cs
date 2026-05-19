@@ -1,4 +1,4 @@
-﻿public class OfferResponseDto
+public class OfferResponseDto
 {
     public int Id { get; set; }
     public string Title { get; set; }
@@ -12,6 +12,16 @@
     public string OfferUrl { get; set; }
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }
+    public string Description { get; set; }
+    public bool IsActive { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public string StoreDescription { get; set; }
+    public string Address { get; set; }
+    public string Creator { get; set; }
+    public int? CreatedById { get; set; }
+    public int SaveCount { get; set; }
+    public int LikeCount { get; set; }
+    public int DislikeCount { get; set; }
     public List<string> ImageUrls { get; set; } = new();
 
 

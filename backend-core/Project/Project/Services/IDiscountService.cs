@@ -17,6 +17,9 @@ namespace SalesHub.Services
         Task<bool> UpdateStatusAsync(int id, bool isActive);
 
         Task<bool> DeleteAsync(int id);
+        
+        Task<IEnumerable<OfferReviewDto>> GetReviewsAsync(int offerId);
+        Task<OfferReviewDto?> AddOrUpdateReviewAsync(int offerId, int userId, OfferReviewCreateDto dto);
 
         Task<IEnumerable<OfferMapPinDto>> GetByRadiusAsync(LocationSearchRequest request);
 
