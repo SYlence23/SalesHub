@@ -18,20 +18,20 @@ export default function UserProfile() {
 
   // Mock data for the sections
   const savedDiscounts = [
-    { id: 1, title: "Weekend Cinema Combo", store: "Multiplex", discount: "-30%" },
-    { id: 2, title: "Big Mac Menu", store: "McDonald's", discount: "-20%" },
-    { id: 3, title: "Fresh Salmon", store: "Silpo", discount: "-15%" },
+    { id: 1, title: "Комбо у кіно на вихідні", store: "Multiplex", discount: "-30%" },
+    { id: 2, title: "Меню Біг Мак", store: "McDonald's", discount: "-20%" },
+    { id: 3, title: "Свіжий лосось", store: "Сільпо", discount: "-15%" },
   ];
 
   const addedDiscounts = [
-    { id: 101, title: "Coffee & Croissant", store: "Lviv Croissants", status: "Active" },
-    { id: 102, title: "Gym Membership", store: "SportLife", status: "Pending" },
+    { id: 101, title: "Кава та круасан", store: "Lviv Croissants", status: "Активна" },
+    { id: 102, title: "Абонемент у спортзал", store: "SportLife", status: "Очікує" },
   ];
 
   const achievements = [
-    { id: 1, name: "Deal Hunter", icon: "🎯", level: "Gold" },
-    { id: 2, name: "Early Bird", icon: "🌅", level: "Silver" },
-    { id: 3, name: "City Legend", icon: "🏙️", level: "Bronze" },
+    { id: 1, name: "Мисливець за знижками", icon: "🎯", level: "Золото" },
+    { id: 2, name: "Рання пташка", icon: "🌅", level: "Срібло" },
+    { id: 3, name: "Легенда міста", icon: "🏙️", level: "Бронза" },
   ];
 
   return (
@@ -51,11 +51,11 @@ export default function UserProfile() {
           {/* Header */}
           <div className="p-4 border-b border-zinc-100 dark:border-white/10 flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-primary-500 to-orange-400 flex items-center justify-center text-white font-bold text-xl">
-              JD
+              ІІ
             </div>
             <div>
-              <h3 className="font-bold text-zinc-900 dark:text-white">John Doe</h3>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">Premium Member</p>
+              <h3 className="font-bold text-zinc-900 dark:text-white">Іван Іванов</h3>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">Преміум-користувач</p>
             </div>
           </div>
 

@@ -128,7 +128,7 @@ const AddressAutocomplete: React.FC<{
             onSelect({ lat, lng }, address);
         } catch (error) {
             console.error("Error geocoding address:", error);
-            if (onError) onError("Your API key might need 'Geocoding API' enabled. Please select an address from the dropdown.");
+            if (onError) onError("Your API key might need 'Geocoding API' enabled. Please select the address from the dropdown.");
         }
     };
 
@@ -142,7 +142,7 @@ const AddressAutocomplete: React.FC<{
                         onChange(e.target.value);
                     }}
                     disabled={!ready}
-                    placeholder={ready ? "Enter address (street, house...)" : "Loading..."}
+                    placeholder={ready ? "Введіть адресу (вулиця, будинок...)" : "Завантаження..."}
                     className="w-full px-4 py-2 pl-10 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
                 />
                 <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-400" />
@@ -163,7 +163,7 @@ const AddressAutocomplete: React.FC<{
             )}
             {status === "ZERO_RESULTS" && (
                 <div className="absolute left-0 w-full bg-white dark:bg-zinc-800 mt-2 p-4 rounded-xl shadow-2xl border border-zinc-200 dark:border-zinc-700 z-[100] text-sm text-zinc-500">
-                    No addresses found. Try being more specific (e.g., add 'Lviv').
+                    No address found. Try to refine (e.g., add 'Lviv').
                 </div>
             )}
         </div>
@@ -267,7 +267,7 @@ export default function OfferCreatePage() {
                 setPlaces(uniquePlaces);
             } catch (err) {
                 console.error("Failed to load initial data", err);
-                setError("Could not load categories or places. Please try refreshing.");
+                setError("Could not load categories or places. Please try refreshing the page.");
             }
         };
 
@@ -414,7 +414,7 @@ export default function OfferCreatePage() {
                         currentLng = lng;
                     } catch (e: any) {
                         console.error("Geocoding failed:", e);
-                        throw new Error(`Could not find coordinates for "${placeForm.address}". Please select an address from the dropdown suggestions to be sure.`);
+                        throw new Error(`Could not find coordinates for "${placeForm.address}". Please select a valid address from the dropdown to get location coordinates.`);
                     }
                 }
 
@@ -502,7 +502,7 @@ export default function OfferCreatePage() {
                 className="flex items-center text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 mb-6 transition-colors"
             >
                 <ChevronLeft className="w-5 h-5 mr-1" />
-                Back to Offers
+                Назад до знижок
             </button>
 
             <div className="mb-8">
@@ -528,7 +528,7 @@ export default function OfferCreatePage() {
                     </button>
                 </div>
                 <p className="text-zinc-500 dark:text-zinc-400 text-sm">
-                    Fill in the details to publish a new discount or deal.
+                    Заповніть деталі, щоб опублікувати нову знижку або пропозицію.
                 </p>
             </div>
 
@@ -541,7 +541,7 @@ export default function OfferCreatePage() {
             <form onSubmit={handleSubmit} className="space-y-8">
                 {/* --- IMAGE UPLOAD (UI ONLY) --- */}
                 <div className="glass-card p-6 rounded-2xl">
-                    <h2 className="text-xl font-semibold mb-4">Offer Images</h2>
+                    <h2 className="text-xl font-semibold mb-4">Зображення пропозиції</h2>
 
                     {(imagePreviews.length > 0 || isImageLoading) && (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-4">
@@ -565,7 +565,7 @@ export default function OfferCreatePage() {
                                     </button>
                                     {index === 0 && (
                                         <div className="absolute bottom-2 left-2 px-2 py-1 bg-primary-500/90 text-white text-xs font-bold rounded shadow-sm backdrop-blur-md">
-                                            Main
+                                            Головне
                                         </div>
                                     )}
                                 </div>
@@ -574,7 +574,7 @@ export default function OfferCreatePage() {
                             {isImageLoading && Array.from({ length: imageQuantity }).map((_, i) => (
                                 <div key={`loading-${i}`} className="relative aspect-square rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 flex flex-col items-center justify-center">
                                     <Loader2 className="w-8 h-8 text-primary-500 animate-spin mb-2" />
-                                    <span className="text-xs text-zinc-500 font-medium">Uploading...</span>
+                                    <span className="text-xs text-zinc-500 font-medium">Завантаження...</span>
                                 </div>
                             ))}
                         </div>
@@ -585,9 +585,9 @@ export default function OfferCreatePage() {
                             <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                 <ImagePlus className={`${imagePreviews.length > 0 ? 'w-6 h-6 mb-2' : 'w-10 h-10 mb-3'} text-zinc-400`} />
                                 <p className={`mb-2 text-zinc-500 dark:text-zinc-400 ${imagePreviews.length > 0 ? 'text-sm' : ''}`}>
-                                    <span className="font-semibold">Click to upload</span> or drag and drop
+                                    <span className="font-semibold">Натисніть для завантаження</span> або перетягніть файли
                                 </p>
-                                {!imagePreviews.length && <p className="text-xs text-zinc-500 dark:text-zinc-400">PNG, JPG or WEBP (MAX. 800x400px)</p>}
+                                {!imagePreviews.length && <p className="text-xs text-zinc-500 dark:text-zinc-400">PNG, JPG або WEBP (МАКС. 800x400px)</p>}
                             </div>
                             <input type="file" className="hidden" accept='image/*' multiple onChange={handleImageChange} />
                         </label>)}
@@ -597,10 +597,10 @@ export default function OfferCreatePage() {
 
                 {/* --- BASIC INFO --- */}
                 <div className="glass-card p-6 rounded-2xl space-y-6">
-                    <h2 className="text-xl font-semibold mb-4">Basic Details</h2>
+                    <h2 className="text-xl font-semibold mb-4">Основна інформація</h2>
 
                     <div>
-                        <label className="block text-sm font-medium mb-2">Title *</label>
+                        <label className="block text-sm font-medium mb-2">Назва *</label>
                         <input
                             type="text"
                             required
@@ -608,24 +608,24 @@ export default function OfferCreatePage() {
                             value={offerForm.title}
                             onChange={handleOfferFormChange}
                             className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
-                            placeholder="e.g. 50% Off Summer Collection"
+                            placeholder="наприклад, Знижка 50% на літню колекцію"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium mb-2">Description</label>
+                        <label className="block text-sm font-medium mb-2">Опис</label>
                         <textarea
                             name="description"
                             value={offerForm.description}
                             onChange={handleOfferFormChange}
                             className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all min-h-[100px] resize-x"
-                            placeholder="Describe your offer..."
+                            placeholder="Опишіть вашу пропозицію..."
                         />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label className="block text-sm font-medium mb-2">Category *</label>
+                            <label className="block text-sm font-medium mb-2">Категорія *</label>
                             <select
                                 required
                                 name="categoryId"
@@ -633,7 +633,7 @@ export default function OfferCreatePage() {
                                 onChange={handleOfferFormChange}
                                 className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all appearance-none"
                             >
-                                <option value="" disabled>Select a category</option>
+                                <option value="" disabled>Виберіть категорію</option>
                                 {categories.map(c => (
                                     <option key={c.id} value={c.id}>{c.name}</option>
                                 ))}
@@ -644,11 +644,11 @@ export default function OfferCreatePage() {
 
                 {/* --- PRICING & DATES --- */}
                 <div className="glass-card p-6 rounded-2xl space-y-6">
-                    <h2 className="text-xl font-semibold mb-4">Pricing & Dates</h2>
+                    <h2 className="text-xl font-semibold mb-4">Ціни та дати</h2>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label className="block text-sm font-medium mb-2">New Price *</label>
+                            <label className="block text-sm font-medium mb-2">Нова ціна *</label>
                             <input
                                 type="number"
                                 required
@@ -662,7 +662,7 @@ export default function OfferCreatePage() {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-2">Old Price (Optional)</label>
+                            <label className="block text-sm font-medium mb-2">Стара ціна (опціонально)</label>
                             <input
                                 type="number"
                                 min="0"
@@ -675,7 +675,7 @@ export default function OfferCreatePage() {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-2">Valid From</label>
+                            <label className="block text-sm font-medium mb-2">Дійсна з</label>
                             <input
                                 type="datetime-local"
                                 name="validFrom"
@@ -685,7 +685,7 @@ export default function OfferCreatePage() {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-2">Valid To</label>
+                            <label className="block text-sm font-medium mb-2">Дійсна до</label>
                             <input
                                 type="datetime-local"
                                 name="validTo"
@@ -700,30 +700,30 @@ export default function OfferCreatePage() {
                 {/* --- PLACE DETAILS --- */}
                 <div className="glass-card p-6 rounded-2xl space-y-6 border-2 border-primary-500">
                     <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-semibold">Store / Place</h2>
+                        <h2 className="text-xl font-semibold">Магазин / Заклад</h2>
                         <button
                             type="button"
                             onClick={() => setIsNewPlace(!isNewPlace)}
                             className="text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 flex items-center gap-1"
                         >
                             {isNewPlace ? (
-                                <>Select Existing Place</>
+                                <>Вибрати існуючий заклад</>
                             ) : (
-                                <><Plus className="w-4 h-4" /> Add New Place</>
+                                <><Plus className="w-4 h-4" /> Додати новий заклад</>
                             )}
                         </button>
                     </div>
 
                     {!isNewPlace ? (
                         <div>
-                            <label className="block text-sm font-medium mb-2">Select Place *</label>
+                            <label className="block text-sm font-medium mb-2">Вибрати заклад *</label>
                             <select
                                 required={!isNewPlace}
                                 value={selectedPlaceId}
                                 onChange={(e) => setSelectedPlaceId(e.target.value)}
                                 className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all appearance-none"
                             >
-                                <option value="" disabled>Select an existing store</option>
+                                <option value="" disabled>Виберіть існуючий магазин</option>
                                 {places.map(p => (
                                     <option key={p.id} value={p.id}>{p.name}</option>
                                 ))}
@@ -732,7 +732,7 @@ export default function OfferCreatePage() {
                     ) : (
                         <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
                             <div>
-                                <label className="block text-sm font-medium mb-2">Store Name *</label>
+                                <label className="block text-sm font-medium mb-2">Назва магазину *</label>
                                 <input
                                     type="text"
                                     required={isNewPlace}
@@ -740,18 +740,18 @@ export default function OfferCreatePage() {
                                     value={placeForm.name}
                                     onChange={handlePlaceFormChange}
                                     className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
-                                    placeholder="e.g. Mega Store Downtown"
+                                    placeholder="наприклад, Мега Магазин у центрі"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-2">Store Description</label>
+                                <label className="block text-sm font-medium mb-2">Опис магазину</label>
                                 <input
                                     type="text"
                                     name="description"
                                     value={placeForm.description}
                                     onChange={handlePlaceFormChange}
                                     className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
-                                    placeholder="Brief description..."
+                                    placeholder="Короткий опис..."
                                 />
                             </div>
 
@@ -764,14 +764,14 @@ export default function OfferCreatePage() {
                                     className="w-5 h-5 rounded border-zinc-300 text-primary-500 focus:ring-primary-500"
                                 />
                                 <div>
-                                    <p className="font-medium">Online Store</p>
-                                    <p className="text-sm text-zinc-500">This offer is valid online only.</p>
+                                    <p className="font-medium">Інтернет-магазин</p>
+                                    <p className="text-sm text-zinc-500">Ця пропозиція дійсна лише в інтернеті.</p>
                                 </div>
                             </label>
 
                             {placeForm.isOnline ? (
                                 <div>
-                                    <label className="block text-sm font-medium mb-2">Offer URL</label>
+                                    <label className="block text-sm font-medium mb-2">URL пропозиції</label>
                                     <input
                                         type="url"
                                         name="offerUrl"
@@ -785,7 +785,7 @@ export default function OfferCreatePage() {
                                 <div className="grid grid-cols-1 gap-6 p-4 bg-zinc-50 dark:bg-zinc-900/30 rounded-xl border border-zinc-200 dark:border-zinc-800/50">
                                     <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400 mb-2">
                                         <MapPin className="w-4 h-4" />
-                                        <span className="text-sm font-medium">Store Location</span>
+                                        <span className="text-sm font-medium">Розташування магазину</span>
                                     </div>
 
                                     <AddressAutocomplete
@@ -826,10 +826,10 @@ export default function OfferCreatePage() {
                         {isSubmitting ? (
                             <span className="flex items-center gap-2">
                                 <Loader2 className="w-5 h-5 animate-spin" />
-                                Publishing...
+                                Публікація...
                             </span>
                         ) : (
-                            "Publish Offer"
+                            "Опублікувати пропозицію"
                         )}
                     </button>
                 </div>

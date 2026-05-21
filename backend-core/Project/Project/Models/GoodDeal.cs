@@ -24,6 +24,7 @@ namespace SalesHub.Models
         public ApplicationUser? CreatedBy { get; set; }
 
         public ICollection<GoodDealImage> Images { get; set; } = new List<GoodDealImage>();
+        public ICollection<UserSavedGoodDeals> UserSavedGoodDeals { get; set; } = new List<UserSavedGoodDeals>();
     }
 }
 

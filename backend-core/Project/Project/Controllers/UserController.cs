@@ -170,5 +170,59 @@ namespace SalesHub.Controllers
             var isSaved = await _userService.IsOfferSavedAsync(userId.Value, offerId);
             return Ok(new { isSaved });
         }
+
+        // ─── Збережені хороші пропозиції ──────────────────────────────────────────
+
+        /// <summary>Список збережених хороших пропозицій</summary>
+        [HttpGet("saved-good-deals")]
+        [Authorize]
+        public async Task<IActionResult> GetSavedGoodDeals()
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return Unauthorized();
+
+            var deals = await _userService.GetSavedGoodDealsAsync(userId.Value);
+            return Ok(deals);
+        }
+
+        /// <summary>Зберегти хорошу пропозицію</summary>
+        [HttpPost("saved-good-deals/{goodDealId:int}")]
+        [Authorize]
+        public async Task<IActionResult> SaveGoodDeal(int goodDealId)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return Unauthorized();
+
+            var (succeeded, message) = await _userService.SaveGoodDealAsync(userId.Value, goodDealId);
+            if (!succeeded) return BadRequest(new { message });
+
+            return Ok(new { message });
+        }
+
+        /// <summary>Видалити зі збережених (хороші пропозиції)</summary>
+        [HttpDelete("saved-good-deals/{goodDealId:int}")]
+        [Authorize]
+        public async Task<IActionResult> UnsaveGoodDeal(int goodDealId)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return Unauthorized();
+
+            var (succeeded, message) = await _userService.UnsaveGoodDealAsync(userId.Value, goodDealId);
+            if (!succeeded) return BadRequest(new { message });
+
+            return NoContent();
+        }
+
+        /// <summary>Перевірити, чи збережена хороша пропозиція</summary>
+        [HttpGet("saved-good-deals/{goodDealId:int}/check")]
+        [Authorize]
+        public async Task<IActionResult> IsGoodDealSaved(int goodDealId)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return Unauthorized();
+
+            var isSaved = await _userService.IsGoodDealSavedAsync(userId.Value, goodDealId);
+            return Ok(new { isSaved });
+        }
     }
 }

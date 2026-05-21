@@ -90,14 +90,14 @@ const AddressAutocomplete: React.FC<{
                 lng = coords.lng;
             }
             if (lat < 47.50 || lat > 51.50 || lng < 21.50 || lng > 26.50) {
-                if (onError) onError('На жаль, пропозиції можна створювати лише для Львівської області.');
+                if (onError) onError('Unfortunately, offers can only be created within the Lviv region.');
                 return;
             }
             if (onError) onError(null);
             onSelect({ lat, lng }, address);
         } catch (error) {
             console.error('Error geocoding address:', error);
-            if (onError) onError('Будь ласка, оберіть адресу зі списку підказок.');
+            if (onError) onError("Your API key might need 'Geocoding API' enabled. Please select the address from the dropdown.");
         }
     };
 
@@ -233,7 +233,7 @@ export default function GoodDealCreatePage() {
 
     const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && imagePreviews.length + e.target.files.length > 8) {
-            setError('Можна завантажити максимум 8 зображень');
+            setError('You can only upload up to 8 images');
             return;
         }
         if (e.target.files && e.target.files.length > 0) {
@@ -246,7 +246,7 @@ export default function GoodDealCreatePage() {
                 await localforage.setItem('gdImages', newImages);
                 setImagePreviews(newImages.map(f => URL.createObjectURL(f)));
             } catch {
-                setError('Не вдалося завантажити зображення.');
+                setError('Could not upload images. Please try refreshing.');
             } finally {
                 setIsImageLoading(false);
                 setImageQuantity(0);
@@ -274,18 +274,18 @@ export default function GoodDealCreatePage() {
                 let currentLng = placeForm.longitude;
 
                 if (!placeForm.isOnline && (currentLat === 0 || currentLng === 0)) {
-                    if (!placeForm.address) throw new Error('Будь ласка, введіть адресу закладу.');
+                    if (!placeForm.address) throw new Error('Please enter an address for the store.');
                     try {
-                        if (typeof google === 'undefined') throw new Error('Google Maps API не завантажено.');
+                        if (typeof google === 'undefined') throw new Error('Google Maps API not loaded yet.');
                         const results = await getGeocode({ address: placeForm.address, componentRestrictions: { country: 'UA' } });
-                        if (!results || results.length === 0) throw new Error('Адресу не знайдено');
+                        if (!results || results.length === 0) throw new Error('No address found');
                         const { lat, lng } = await getLatLng(results[0]);
                         if (lat < 47.50 || lat > 51.50 || lng < 21.50 || lng > 26.50)
-                            throw new Error('Адреса знаходиться поза Львівською областю.');
+                            throw new Error('Unfortunately, the entered address is outside the Lviv region.');
                         currentLat = lat;
                         currentLng = lng;
                     } catch (geocodeErr: any) {
-                        throw new Error(`Не вдалося знайти координати: оберіть адресу зі списку підказок.`);
+                        throw new Error(`Could not find coordinates for "${placeForm.address}". Please select a valid address from the dropdown to get location coordinates.`);
                     }
                 }
 
@@ -301,8 +301,8 @@ export default function GoodDealCreatePage() {
                 finalPlaceId = placeRes.data.id.toString();
             }
 
-            if (!finalPlaceId) throw new Error('Будь ласка, оберіть або створіть заклад.');
-            if (!gdForm.categoryId) throw new Error('Будь ласка, оберіть категорію.');
+            if (!finalPlaceId) throw new Error('Please select or create a place.');
+            if (!gdForm.categoryId) throw new Error('Please select a category.');
 
             // Upload images
             const imageFiles = (await localforage.getItem<File[]>('gdImages')) || [];
@@ -331,7 +331,7 @@ export default function GoodDealCreatePage() {
             navigate('/good-deals');
         } catch (err: any) {
             const backendError = err.response?.data;
-            let msg = 'Сталася несподівана помилка.';
+            let msg = 'An unexpected error occurred.';
             if (typeof backendError === 'string') msg = backendError;
             else if (backendError?.message) msg = backendError.message;
             else if (backendError?.detail) msg = backendError.detail;

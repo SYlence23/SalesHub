@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { User, Sparkles, Calendar, MapPin } from 'lucide-react';
+import { User, Sparkles, Calendar, Tag } from 'lucide-react';
 
 export interface GoodDeal {
   id: number;
@@ -49,103 +49,114 @@ export default function GoodDealCard({ deal }: GoodDealCardProps) {
   const audiences = deal.targetAudiences ?? [];
 
   return (
-    <Link to={`/good-deals/${deal.id}`} className="block w-full group">
-      <div className="glass-card overflow-hidden flex flex-row hover:-translate-y-0.5 hover:shadow-xl transition-all duration-300 h-44">
+    <Link to={`/good-deals/${deal.id}`} className="block w-full group h-full">
+      <div className="glass-card overflow-hidden flex flex-col hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300 h-full">
 
-        {/* Left — Image */}
-        <div className="relative w-44 shrink-0 overflow-hidden bg-zinc-100 dark:bg-zinc-800">
-          <img
-            src={deal.mainImageUrl || ''}
-            alt={deal.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            onError={(e) => {
-              e.currentTarget.src = "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=300&q=80";
-            }}
-          />
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/10" />
+        {/* Top — Image container */}
+        <div className="relative p-3 pb-0 w-full shrink-0">
+          <div className="relative rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 aspect-[16/10]">
+            <img
+              src={deal.mainImageUrl || ''}
+              alt={deal.title}
+              className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
+              onError={(e) => {
+                e.currentTarget.src = "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=600&q=80";
+              }}
+            />
+            {/* Gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+          </div>
 
-          {/* Expiring badge on image */}
-          {isExpiringSoon && (
-            <div className="absolute bottom-2 left-2 bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-md flex items-center gap-1">
-              <Calendar className="w-2.5 h-2.5" />
-              Скоро
-            </div>
-          )}
-          {isExpired && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-              <span className="text-white text-xs font-bold bg-black/60 px-2 py-1 rounded">Завершено</span>
-            </div>
-          )}
+          {/* Badges on image */}
+          <div className="absolute top-5 left-5 flex flex-wrap gap-1.5">
+            {/* Good deal pill */}
+            <span className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-md uppercase tracking-wider flex items-center gap-1">
+              <Sparkles className="w-2.5 h-2.5" />
+              Хороша
+            </span>
+
+            {/* Status pill */}
+            {isExpired ? (
+              <span className="bg-zinc-950/70 text-zinc-300 text-[10px] font-bold px-2 py-0.5 rounded shadow-md flex items-center gap-1 backdrop-blur-xs">
+                <span className="w-1 h-1 rounded-full bg-zinc-400" />
+                Завершено
+              </span>
+            ) : isExpiringSoon ? (
+              <span className="bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-md flex items-center gap-1 animate-pulse">
+                <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                Скоро
+              </span>
+            ) : (
+              <span className="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-md flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                Активна
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* Right — Content */}
-        <div className="flex flex-col flex-1 min-w-0 p-4">
-
-          {/* Top row: store + category */}
-          <div className="flex items-center justify-between gap-2 mb-1">
-            <div className="flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400 truncate">
-              <MapPin className="w-3 h-3 shrink-0" />
-              <span className="truncate">{deal.storeName}</span>
-            </div>
-            <div className="flex items-center gap-1.5 shrink-0">
-              {/* Good deal sparkle */}
-              <span className="inline-flex items-center gap-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                <Sparkles className="w-2.5 h-2.5" />
-                Хороша
-              </span>
-              {deal.categoryName && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400">
-                  {deal.categoryName}
-                </span>
-              )}
-            </div>
+        {/* Bottom — Content */}
+        <div className="flex flex-col flex-grow p-4">
+          {/* Category & Store */}
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-1.5">
+            <Tag className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+            <span className="uppercase tracking-wider">{deal.categoryName || 'Пропозиція'}</span>
+            {deal.storeName && (
+              <>
+                <span className="text-zinc-300 dark:text-zinc-700">•</span>
+                <span className="truncate text-zinc-600 dark:text-zinc-300 font-medium">{deal.storeName}</span>
+              </>
+            )}
           </div>
 
           {/* Title */}
-          <h3 className="font-bold text-base sm:text-lg text-zinc-900 dark:text-white leading-snug mb-1.5 line-clamp-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+          <h3 className="font-bold text-lg text-zinc-900 dark:text-white leading-snug mb-1.5 line-clamp-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
             {deal.title}
           </h3>
 
           {/* Description */}
           {deal.description && (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 line-clamp-1 mb-2">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 line-clamp-2 mb-3.5 leading-relaxed">
               {deal.description}
             </p>
           )}
 
           {/* Audience badges */}
           {audiences.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-auto">
-              {audiences.slice(0, 4).map(a => (
+            <div className="flex flex-wrap gap-1 mb-4">
+              {audiences.slice(0, 3).map(a => (
                 <AudienceBadge key={a} label={a} small />
               ))}
-              {audiences.length > 4 && (
+              {audiences.length > 3 && (
                 <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500">
-                  +{audiences.length - 4}
+                  +{audiences.length - 3}
                 </span>
               )}
             </div>
           )}
 
-          {/* Bottom row: date + creator */}
-          <div className="flex items-center justify-between mt-auto pt-2 border-t border-zinc-100 dark:border-zinc-800">
+          {/* Bottom Row */}
+          <div className="flex items-center justify-between mt-auto pt-3 border-t border-zinc-100 dark:border-zinc-800/80 text-xs text-zinc-400 dark:text-zinc-500">
             {deal.validTo ? (
-              <span className="text-xs text-zinc-400 dark:text-zinc-500 flex items-center gap-1">
-                <Calendar className="w-3 h-3" />
+              <span className="flex items-center gap-1">
+                <Calendar className="w-3.5 h-3.5" />
                 До {new Date(deal.validTo).toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' })}
               </span>
             ) : (
-              <span />
+              <span className="flex items-center gap-1">
+                <Calendar className="w-3.5 h-3.5" />
+                Безстроково
+              </span>
             )}
             {deal.creatorUserName && (
-              <div className="flex items-center gap-1 text-xs text-zinc-400 dark:text-zinc-500">
-                <User className="w-3 h-3" />
-                <span>{deal.creatorUserName}</span>
+              <div className="flex items-center gap-1">
+                <User className="w-3.5 h-3.5" />
+                <span className="truncate max-w-[120px]">{deal.creatorUserName}</span>
               </div>
             )}
           </div>
         </div>
+
       </div>
     </Link>
   );

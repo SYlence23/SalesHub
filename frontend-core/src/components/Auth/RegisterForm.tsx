@@ -49,11 +49,11 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchMode, onClose }) =>
         } catch (err: any) {
             if (err.response?.data?.errors) {
                 const firstError = Object.values(err.response.data.errors)[0] as string[];
-                setError(firstError[0] || 'Помилка валідації');
+                setError(firstError[0] || 'Validation error');
             } else if (typeof err.response?.data === 'string') {
                 setError(err.response.data);
             } else {
-                setError('Під час реєстрації сталася помилка');
+                setError('An error occurred during registration');
             }
         }
     };
@@ -74,7 +74,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchMode, onClose }) =>
             )}
             {success && (
                 <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-                    <span className="block sm:inline">Registration successful! Redirecting...</span>
+                    <span className="block sm:inline">Реєстрація успішна! Перенаправлення...</span>
                 </div>
             )}
 

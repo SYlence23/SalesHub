@@ -255,12 +255,12 @@ export default function GoodDealsPage() {
 
             {/* Grid */}
             {isLoading ? (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                     {[...Array(6)].map((_, i) => <GoodDealSkeletonCard key={i} />)}
                 </div>
             ) : deals.length > 0 ? (
                 <div className="flex flex-col gap-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                         {deals.map(deal => <GoodDealCard key={deal.id} deal={deal} />)}
                     </div>
                     {totalPages > 1 && (
