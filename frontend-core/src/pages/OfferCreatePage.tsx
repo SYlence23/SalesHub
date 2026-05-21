@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 //import axios from 'axios';
-import { ImagePlus, MapPin, Loader2, Plus, ChevronLeft, X, Search } from 'lucide-react';
+import { ImagePlus, MapPin, Loader2, Plus, ChevronLeft, X, Search, Tag, Sparkles } from 'lucide-react';
 import usePlacesAutocomplete, { getGeocode, getLatLng } from 'use-places-autocomplete';
 import { useJsApiLoader } from '@react-google-maps/api';
 import { type Category } from '../components/Offer/OfferFilters';
@@ -506,10 +506,28 @@ export default function OfferCreatePage() {
             </button>
 
             <div className="mb-8">
-                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
-                    Create New <span className="text-primary-500">Offer</span>
+                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+                    Створити <span className="text-primary-500">пропозицію</span>
                 </h1>
-                <p className="text-zinc-500 dark:text-zinc-400">
+                {/* Type Toggle */}
+                <div className="inline-flex bg-zinc-100 dark:bg-zinc-800 rounded-2xl p-1 gap-1 mb-3">
+                    <button
+                        type="button"
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 bg-primary-500 text-white shadow-md"
+                    >
+                        <Tag className="w-4 h-4" />
+                        Знижка
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => navigate('/good-deals/create')}
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+                    >
+                        <Sparkles className="w-4 h-4" />
+                        Хороша пропозиція
+                    </button>
+                </div>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm">
                     Fill in the details to publish a new discount or deal.
                 </p>
             </div>

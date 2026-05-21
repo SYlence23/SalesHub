@@ -23,6 +23,8 @@ namespace SalesHub.Data
         public DbSet<PlaceImage> PlaceImages { get; set; }
         public DbSet<PlaceLocation> PlaceLocations { get; set; }
         public DbSet<UserSavedOffers> UserSavedOffers { get; set; }
+        public DbSet<GoodDeal> GoodDeals { get; set; }
+        public DbSet<GoodDealImage> GoodDealImages { get; set; }
         
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -75,6 +77,19 @@ namespace SalesHub.Data
         
             modelBuilder.Entity<OfferCategory>()
                 .HasOne(c => c.Parent).WithMany(c => c.SubCategories).HasForeignKey(c => c.ParentId);
+
+            // GoodDeal relationships
+            modelBuilder.Entity<GoodDeal>()
+                .HasOne(gd => gd.Category).WithMany().HasForeignKey(gd => gd.CategoryId);
+
+            modelBuilder.Entity<GoodDeal>()
+                .HasOne(gd => gd.Place).WithMany().HasForeignKey(gd => gd.PlaceId);
+
+            modelBuilder.Entity<GoodDeal>()
+                .HasOne(gd => gd.CreatedBy).WithMany().HasForeignKey(gd => gd.CreatedById);
+
+            modelBuilder.Entity<GoodDealImage>()
+                .HasOne(gdi => gdi.GoodDeal).WithMany(gd => gd.Images).HasForeignKey(gdi => gdi.GoodDealId);
 
 
             var seedDate = new DateTime(2026, 5, 9, 0, 0, 0, DateTimeKind.Utc);
