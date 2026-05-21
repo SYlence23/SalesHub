@@ -26,6 +26,7 @@ namespace SalesHub.Services
 
             var createdCount = await _context.Offers.CountAsync(o => o.CreatedById == userId);
             var savedCount = await _context.UserSavedOffers.CountAsync(u => u.UserId == userId);
+            var savedGoodDealsCount = await _context.UserSavedGoodDeals.CountAsync(u => u.UserId == userId);
 
             return new UserProfileDto
             {
@@ -35,7 +36,7 @@ namespace SalesHub.Services
                 Email = user.Email ?? string.Empty,
                 Category = user.Category == UserCategories.Student ? "Student" : "NonStudent",
                 CreatedOffersCount = createdCount,
-                SavedOffersCount = savedCount
+                SavedOffersCount = savedCount + savedGoodDealsCount
             };
         }
 
@@ -170,6 +171,72 @@ namespace SalesHub.Services
             await _context.SaveChangesAsync();
 
             return (true, "Пропозицію видалено.");
+        }
+
+        public async Task<IEnumerable<GoodDealPreviewDto>> GetSavedGoodDealsAsync(int userId)
+        {
+            return await _context.UserSavedGoodDeals
+                .AsNoTracking()
+                .Where(uso => uso.UserId == userId)
+                .Include(uso => uso.GoodDeal)
+                    .ThenInclude(o => o.Place)
+                .Include(uso => uso.GoodDeal)
+                    .ThenInclude(o => o.Images)
+                .Include(uso => uso.GoodDeal)
+                    .ThenInclude(o => o.CreatedBy)
+                .Include(uso => uso.GoodDeal)
+                    .ThenInclude(o => o.Category)
+                .OrderByDescending(uso => uso.CreatedAt)
+                .Select(uso => new GoodDealPreviewDto
+                {
+                    Id = uso.GoodDeal.Id,
+                    Title = uso.GoodDeal.Title,
+                    Description = uso.GoodDeal.Description,
+                    StoreName = uso.GoodDeal.Place.Name,
+                    CreatedAt = uso.GoodDeal.CreatedAt,
+                    MainImageUrl = uso.GoodDeal.Images.OrderBy(i => i.Id).Select(i => i.ImageUrl).FirstOrDefault(),
+                    CreatorUserName = uso.GoodDeal.CreatedBy != null ? uso.GoodDeal.CreatedBy.Name : null,
+                    CategoryName = uso.GoodDeal.Category != null ? uso.GoodDeal.Category.Name : null,
+                    ValidFrom = uso.GoodDeal.ValidFrom,
+                    ValidTo = uso.GoodDeal.ValidTo,
+                    TargetAudiences = uso.GoodDeal.TargetAudiences.ToList()
+                })
+                .ToListAsync();
+        }
+
+        public async Task<(bool Succeeded, string Message)> SaveGoodDealAsync(int userId, int goodDealId)
+        {
+            var deal = await _context.GoodDeals.FindAsync(goodDealId);
+            if (deal == null) return (false, "Хорошу пропозицію не знайдено.");
+
+            var alreadySaved = await _context.UserSavedGoodDeals
+                .AnyAsync(uso => uso.UserId == userId && uso.GoodDealId == goodDealId);
+
+            if (alreadySaved) return (false, "Хороша пропозиція вже збережена.");
+
+            _context.UserSavedGoodDeals.Add(new UserSavedGoodDeals { UserId = userId, GoodDealId = goodDealId });
+            await _context.SaveChangesAsync();
+
+            return (true, "Хорошу пропозицію збережено.");
+        }
+
+        public async Task<(bool Succeeded, string Message)> UnsaveGoodDealAsync(int userId, int goodDealId)
+        {
+            var saved = await _context.UserSavedGoodDeals
+                .FirstOrDefaultAsync(uso => uso.UserId == userId && uso.GoodDealId == goodDealId);
+
+            if (saved == null) return (false, "Хороша пропозиція не знайдена у збережених.");
+
+            _context.UserSavedGoodDeals.Remove(saved);
+            await _context.SaveChangesAsync();
+
+            return (true, "Хорошу пропозицію видалено зі збережених.");
+        }
+
+        public async Task<bool> IsGoodDealSavedAsync(int userId, int goodDealId)
+        {
+            return await _context.UserSavedGoodDeals
+                .AnyAsync(uso => uso.UserId == userId && uso.GoodDealId == goodDealId);
         }
 
         private static Expression<Func<Offer, OfferPreviewDto>> MapToPreviewDto()

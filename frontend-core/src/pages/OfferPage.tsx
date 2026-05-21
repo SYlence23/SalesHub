@@ -114,10 +114,10 @@ export default function OfferPage() {
             <div className="flex items-center justify-between mb-8">
                 <div>
                     <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
-                        Find <span className="text-primary-500">Offers</span>
+                        Пошук <span className="text-primary-500">Знижок</span>
                     </h1>
                     <p className="text-zinc-500 dark:text-zinc-400">
-                        Discover the best deals and discounts.
+                        Відкривайте найкращі пропозиції та знижки.
                     </p>
                 </div>
 
@@ -126,7 +126,7 @@ export default function OfferPage() {
                         onClick={() => navigate('/offers/create')}
                         className="btn-primary"
                     >
-                        Create Offer
+                        Створити знижку
                     </button>
                     {/* Mobile Filter Toggle Button */}
                     <button
@@ -134,7 +134,7 @@ export default function OfferPage() {
                         className="lg:hidden btn-secondary gap-2"
                     >
                         <Filter className="w-5 h-5" />
-                        <span>Filters</span>
+                        <span>Фільтри</span>
                     </button>
                 </div>
             </div>
@@ -176,18 +176,18 @@ export default function OfferPage() {
                                         onClick={() => handlePageChange(page - 1)}
                                         disabled={page <= 1}
                                         className="btn-secondary px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        aria-label="Previous Page"
+                                        aria-label="Попередня сторінка"
                                     >
                                         <ChevronLeft className="w-5 h-5" />
                                     </button>
                                     <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                                        Page {page} of {totalPages}
+                                        Сторінка {page} з {totalPages}
                                     </span>
                                     <button
                                         onClick={() => handlePageChange(page + 1)}
                                         disabled={page >= totalPages}
                                         className="btn-secondary px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        aria-label="Next Page"
+                                        aria-label="Наступна сторінка"
                                     >
                                         <ChevronRight className="w-5 h-5" />
                                     </button>

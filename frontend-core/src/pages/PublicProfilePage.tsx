@@ -58,9 +58,9 @@ export default function PublicProfilePage() {
         return (
             <div className="max-w-2xl mx-auto px-4 py-20 text-center">
                 <div className="text-6xl mb-4">😕</div>
-                <h1 className="text-3xl font-bold mb-2">Користувача не знайдено</h1>
+                <h1 className="text-3xl font-bold mb-2">User not found</h1>
                 <p className="text-zinc-500 dark:text-zinc-400 mb-8">
-                    Профіль не існує або був видалений.
+                    Profile does not exist or was deleted.
                 </p>
                 <button onClick={() => navigate('/')} className="btn-primary">
                     На головну

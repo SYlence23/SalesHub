@@ -72,7 +72,7 @@ const StreetSearch: React.FC<{
             }
         } catch (error) {
             console.error("Error getting coordinates:", error);
-            alert("Could not find location. Please try selecting an address from the list.");
+            alert("Could not find location. Try choosing the address from the list.");
         }
     };
 
@@ -93,7 +93,7 @@ const StreetSearch: React.FC<{
                         value={value}
                         onChange={(e) => setValue(e.target.value)}
                         disabled={!ready}
-                        placeholder={ready ? "Enter street or address..." : "Loading..."}
+                        placeholder={ready ? "Введіть вулицю або адресу..." : "Завантаження..."}
                         className="w-full p-2.5 px-4 rounded-xl shadow-2xl border border-zinc-200 bg-white dark:bg-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all text-black"
                     />
 
@@ -197,7 +197,7 @@ const MapPage: React.FC = () => {
 
     const shareLocation = () => {
         if (!navigator.geolocation) {
-            alert('Геолокація не підтримується вашим браузером.');
+            alert('Geolocation is not supported by your browser.');
             return;
         }
         navigator.geolocation.getCurrentPosition(async (position) => {
