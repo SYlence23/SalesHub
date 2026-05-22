@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -17,7 +17,7 @@ namespace SalesHub.Migrations
                 table: "Places",
                 type: "integer",
                 nullable: false,
-                defaultValue: 0);
+                defaultValue: 1);
 
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
@@ -62,6 +62,15 @@ namespace SalesHub.Migrations
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
                 });
+
+            migrationBuilder.Sql(@"
+                INSERT INTO ""AspNetUsers"" (""Id"", ""Name"", ""Surname"", ""Category"", ""EmailConfirmed"", ""PhoneNumberConfirmed"", ""TwoFactorEnabled"", ""LockoutEnabled"", ""AccessFailedCount"", ""UserName"", ""NormalizedUserName"", ""Email"", ""NormalizedEmail"")
+                VALUES 
+                (1, 'Admin', 'User', 0, false, false, false, false, 0, 'admin', 'ADMIN', 'admin@saleshub.com', 'ADMIN@SALESHUB.COM'),
+                (2, 'User', 'User', 0, false, false, false, false, 0, 'user', 'USER', 'user@saleshub.com', 'USER@SALESHUB.COM')
+                ON CONFLICT (""Id"") DO NOTHING;
+                ALTER SEQUENCE ""AspNetUsers_Id_seq"" RESTART WITH 3;
+            ");
 
             migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
