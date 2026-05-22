@@ -26,19 +26,17 @@ namespace SalesHub.Migrations
                 oldClrType: typeof(string),
                 oldType: "text");
 
-            migrationBuilder.Sql(@"
-                INSERT INTO ""OfferCategories"" (""Id"", ""CreatedAt"", ""Name"")
-                VALUES 
-                (1, '2026-05-09T00:00:00Z', 'Розваги'),
-                (2, '2026-05-09T00:00:00Z', 'Заклади'),
-                (3, '2026-05-09T00:00:00Z', 'Культура'),
-                (4, '2026-05-09T00:00:00Z', 'Книги'),
-                (5, '2026-05-09T00:00:00Z', 'Спорт')
-                ON CONFLICT (""Id"") DO UPDATE SET
-                    ""Name"" = EXCLUDED.""Name"",
-                    ""CreatedAt"" = EXCLUDED.""CreatedAt"";
-                SELECT setval(pg_get_serial_sequence('""OfferCategories""', 'Id'), 5);
-            ");
+            migrationBuilder.InsertData(
+                table: "OfferCategories",
+                columns: new[] { "Id", "CreatedAt", "Name" },
+                values: new object[,]
+                {
+                    { 1, new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc), "Розваги" },
+                    { 2, new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc), "Заклади" },
+                    { 3, new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc), "Культура" },
+                    { 4, new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc), "Книги" },
+                    { 5, new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc), "Спорт" }
+                });
         }
 
         /// <inheritdoc />
