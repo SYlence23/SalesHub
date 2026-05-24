@@ -26,17 +26,17 @@ namespace SalesHub.Migrations
                 oldClrType: typeof(string),
                 oldType: "text");
 
-            migrationBuilder.InsertData(
-                table: "OfferCategories",
-                columns: new[] { "Id", "CreatedAt", "Name" },
-                values: new object[,]
-                {
-                    { 1, new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc), "Розваги" },
-                    { 2, new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc), "Заклади" },
-                    { 3, new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc), "Культура" },
-                    { 4, new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc), "Книги" },
-                    { 5, new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc), "Спорт" }
-                });
+            migrationBuilder.Sql(@"
+                INSERT INTO ""OfferCategories"" (""Id"", ""CreatedAt"", ""Name"")
+                VALUES 
+                (1, '2026-05-09 00:00:00+00', 'Розваги'),
+                (2, '2026-05-09 00:00:00+00', 'Заклади'),
+                (3, '2026-05-09 00:00:00+00', 'Культура'),
+                (4, '2026-05-09 00:00:00+00', 'Книги'),
+                (5, '2026-05-09 00:00:00+00', 'Спорт')
+                ON CONFLICT (""Id"") DO UPDATE 
+                SET ""Name"" = EXCLUDED.""Name"", ""CreatedAt"" = EXCLUDED.""CreatedAt"";
+            ");
         }
 
         /// <inheritdoc />

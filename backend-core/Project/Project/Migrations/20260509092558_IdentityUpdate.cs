@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -291,6 +291,17 @@ namespace SalesHub.Migrations
                 name: "IX_UserSavedOffers_UserId",
                 table: "UserSavedOffers",
                 column: "UserId");
+
+            migrationBuilder.Sql(@"
+                INSERT INTO ""AspNetUsers"" (""Id"", ""Name"", ""Surname"", ""Category"", ""EmailConfirmed"", ""PhoneNumberConfirmed"", ""TwoFactorEnabled"", ""LockoutEnabled"", ""AccessFailedCount"")
+                VALUES 
+                (0, 'System', 'User', 0, false, false, false, false, 0),
+                (1, 'Admin', 'User', 0, false, false, false, false, 0),
+                (2, 'Regular', 'User', 0, false, false, false, false, 0)
+                ON CONFLICT (""Id"") DO NOTHING;
+                
+                SELECT setval(pg_get_serial_sequence('""AspNetUsers""', 'Id'), COALESCE(MAX(""Id""), 1)) FROM ""AspNetUsers"";
+            ");
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Offers_AspNetUsers_CreatedById",
