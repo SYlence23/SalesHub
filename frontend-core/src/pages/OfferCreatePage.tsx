@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 //import axios from 'axios';
@@ -67,7 +67,7 @@ const AddressAutocomplete: React.FC<{
     onChange: (address: string) => void;
     isLoaded: boolean;
     onError?: (msg: string | null) => void;
-}> = ({ onSelect, onChange, isLoaded, onError }) => {
+}> = ({ onSelect, onChange, onError }) => {
     const {
         ready,
         value,
@@ -235,6 +235,35 @@ export default function OfferCreatePage() {
     const [places, setPlaces] = useState<PlaceDTO[]>([]);
     const [selectedPlaceId, setSelectedPlaceId] = useState('');
     const [isNewPlace, setIsNewPlace] = useState(false);
+
+    const [placeSearchInput, setPlaceSearchInput] = useState('');
+    const [isPlaceDropdownOpen, setIsPlaceDropdownOpen] = useState(false);
+    const placeDropdownRef = useRef<HTMLDivElement>(null);
+
+    // Initial load sync of placeSearchInput
+    useEffect(() => {
+        if (selectedPlaceId && places.length > 0) {
+            const found = places.find(p => p.id.toString() === selectedPlaceId);
+            if (found) setPlaceSearchInput(found.name);
+        }
+    }, [selectedPlaceId, places]);
+
+    // Click outside handler for searchable dropdown
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (placeDropdownRef.current && !placeDropdownRef.current.contains(event.target as Node)) {
+                setIsPlaceDropdownOpen(false);
+                if (selectedPlaceId) {
+                    const found = places.find(p => p.id.toString() === selectedPlaceId);
+                    if (found) setPlaceSearchInput(found.name);
+                } else {
+                    setPlaceSearchInput('');
+                }
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [selectedPlaceId, places]);
 
 
 
@@ -524,7 +553,7 @@ export default function OfferCreatePage() {
                         className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
                     >
                         <Sparkles className="w-4 h-4" />
-                        Хороша пропозиція
+                        Студентська вигода
                     </button>
                 </div>
                 <p className="text-zinc-500 dark:text-zinc-400 text-sm">
@@ -634,7 +663,9 @@ export default function OfferCreatePage() {
                                 className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all appearance-none"
                             >
                                 <option value="" disabled>Виберіть категорію</option>
-                                {categories.map(c => (
+                                {categories
+                                    .filter(c => !['Освіта', 'Побут', 'Подорожі', 'Відпочинок', 'Транспорт'].includes(c.name))
+                                    .map(c => (
                                     <option key={c.id} value={c.id}>{c.name}</option>
                                 ))}
                             </select>
@@ -697,8 +728,11 @@ export default function OfferCreatePage() {
                     </div>
                 </div>
 
-                {/* --- PLACE DETAILS --- */}
-                <div className="glass-card p-6 rounded-2xl space-y-6 border-2 border-primary-500">
+                <div className={`glass-card p-6 rounded-2xl space-y-6 border-2 transition-all duration-300 ${
+                    isNewPlace 
+                        ? 'border-orange-400 !bg-orange-50/70 dark:!bg-orange-950/20' 
+                        : 'border-primary-500'
+                }`}>
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-xl font-semibold">Магазин / Заклад</h2>
                         <button
@@ -715,19 +749,71 @@ export default function OfferCreatePage() {
                     </div>
 
                     {!isNewPlace ? (
-                        <div>
+                        <div className="relative" ref={placeDropdownRef}>
                             <label className="block text-sm font-medium mb-2">Вибрати заклад *</label>
-                            <select
-                                required={!isNewPlace}
-                                value={selectedPlaceId}
-                                onChange={(e) => setSelectedPlaceId(e.target.value)}
-                                className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all appearance-none"
-                            >
-                                <option value="" disabled>Виберіть існуючий магазин</option>
-                                {places.map(p => (
-                                    <option key={p.id} value={p.id}>{p.name}</option>
-                                ))}
-                            </select>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="Шукати існуючий заклад..."
+                                    value={placeSearchInput}
+                                    onChange={(e) => {
+                                        setPlaceSearchInput(e.target.value);
+                                        setIsPlaceDropdownOpen(true);
+                                        const exactMatch = places.find(p => p.name.toLowerCase() === e.target.value.toLowerCase());
+                                        if (exactMatch) {
+                                            setSelectedPlaceId(exactMatch.id.toString());
+                                        } else {
+                                            setSelectedPlaceId('');
+                                        }
+                                    }}
+                                    onFocus={() => setIsPlaceDropdownOpen(true)}
+                                    className="w-full px-4 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
+                                />
+                                {selectedPlaceId && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSelectedPlaceId('');
+                                            setPlaceSearchInput('');
+                                        }}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-red-500"
+                                    >
+                                        <X className="w-4.5 h-4.5" />
+                                    </button>
+                                )}
+                            </div>
+
+                            {isPlaceDropdownOpen && (
+                                <ul className="absolute left-0 w-full bg-white dark:bg-zinc-800 mt-2 rounded-xl shadow-2xl border border-zinc-200 dark:border-zinc-700 overflow-hidden z-[100] max-h-60 overflow-y-auto list-none p-0 m-0">
+                                    {places
+                                        .filter(p => p.name.toLowerCase().includes(placeSearchInput.toLowerCase()))
+                                        .map(p => (
+                                            <li
+                                                key={p.id}
+                                                onClick={() => {
+                                                    setSelectedPlaceId(p.id.toString());
+                                                    setPlaceSearchInput(p.name);
+                                                    setIsPlaceDropdownOpen(false);
+                                                }}
+                                                className={`p-3 px-4 hover:bg-zinc-100 dark:hover:bg-zinc-700 cursor-pointer text-sm border-b last:border-0 border-zinc-100 dark:border-zinc-700 text-zinc-900 dark:text-white flex justify-between items-center ${
+                                                    selectedPlaceId === p.id.toString() ? 'bg-primary-50 dark:bg-primary-950/20 font-semibold text-primary-600 dark:text-primary-400' : ''
+                                                }`}
+                                            >
+                                                <span>{p.name}</span>
+                                                {p.isOnline && (
+                                                    <span className="text-[10px] bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                                                        Онлайн
+                                                    </span>
+                                                )}
+                                            </li>
+                                        ))}
+                                    {places.filter(p => p.name.toLowerCase().includes(placeSearchInput.toLowerCase())).length === 0 && (
+                                        <li className="p-4 text-center text-sm text-zinc-500">
+                                            Закладів не знайдено. Спробуйте додати новий.
+                                        </li>
+                                    )}
+                                </ul>
+                            )}
                         </div>
                     ) : (
                         <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">

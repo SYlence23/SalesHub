@@ -153,11 +153,13 @@ namespace SalesHub.Services
                 IsActive = true,
                 CreatedById = userId,
                 TargetAudiences = dto.TargetAudiences?.ToArray() ?? Array.Empty<string>(),
-                Images = dto.ImageUrls?.Select((url, index) => new GoodDealImage
-                {
-                    ImageUrl = url,
-                    IsMain = index == 0
-                }).ToList() ?? new List<GoodDealImage>()
+                Images = dto.ImageUrls?
+                    .Where(url => !string.IsNullOrWhiteSpace(url))
+                    .Select((url, index) => new GoodDealImage
+                    {
+                        ImageUrl = url,
+                        IsMain = index == 0
+                    }).ToList() ?? new List<GoodDealImage>()
             };
 
             _context.GoodDeals.Add(goodDeal);

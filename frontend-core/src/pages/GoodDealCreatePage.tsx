@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { ImagePlus, MapPin, Loader2, Plus, ChevronLeft, X, Search, Tag, Sparkles, Users } from 'lucide-react';
 import usePlacesAutocomplete, { getGeocode, getLatLng } from 'use-places-autocomplete';
 import { useJsApiLoader } from '@react-google-maps/api';
 import { type Category } from '../components/Offer/OfferFilters';
-import { AudienceBadge, AUDIENCE_COLORS } from '../components/Offer/GoodDealCard';
+import { AudienceBadge } from '../components/Offer/GoodDealCard';
 import localforage from 'localforage';
 
-const AUDIENCES = Object.keys(AUDIENCE_COLORS);
+const AUDIENCES = ['Молодь', 'Студенти', 'Учні'];
 
 type CreateMode = 'discount' | 'good-deal';
 
@@ -45,7 +45,7 @@ const AddressAutocomplete: React.FC<{
     onChange: (address: string) => void;
     isLoaded: boolean;
     onError?: (msg: string | null) => void;
-}> = ({ onSelect, onChange, isLoaded, onError }) => {
+}> = ({ onSelect, onChange, onError }) => {
     const {
         ready,
         value,
@@ -109,7 +109,7 @@ const AddressAutocomplete: React.FC<{
                     onChange={(e) => { setValue(e.target.value); onChange(e.target.value); }}
                     disabled={!ready}
                     placeholder={ready ? 'Введіть адресу (вулиця, будинок...)' : 'Завантаження...'}
-                    className="w-full px-4 py-2 pl-10 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+                    className="w-full px-4 py-2 pl-10 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
                 />
                 <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-400" />
             </div>
@@ -142,27 +142,62 @@ export default function GoodDealCreatePage() {
         region: 'UA',
     });
 
-    const [gdForm, setGdForm] = useState<GoodDealForm>({
-        title: '',
-        description: '',
-        validFrom: '',
-        validTo: '',
-        categoryId: '',
+    const [gdForm, setGdForm] = useState<GoodDealForm>(() => {
+        const saved = localStorage.getItem('gdData');
+        return saved ? JSON.parse(saved) : {
+            title: '',
+            description: '',
+            validFrom: '',
+            validTo: '',
+            categoryId: '',
+        };
     });
 
-    const [placeForm, setPlaceForm] = useState<PlaceForm>({
-        name: '',
-        description: '',
-        isOnline: false,
-        offerUrl: '',
-        latitude: 0,
-        longitude: 0,
-        address: '',
+    const [placeForm, setPlaceForm] = useState<PlaceForm>(() => {
+        const saved = localStorage.getItem('gdPlaceData');
+        return saved ? JSON.parse(saved) : {
+            name: '',
+            description: '',
+            isOnline: false,
+            offerUrl: '',
+            latitude: 0,
+            longitude: 0,
+            address: '',
+        };
     });
 
     const [places, setPlaces] = useState<PlaceDTO[]>([]);
     const [selectedPlaceId, setSelectedPlaceId] = useState('');
     const [isNewPlace, setIsNewPlace] = useState(false);
+
+    const [placeSearchInput, setPlaceSearchInput] = useState('');
+    const [isPlaceDropdownOpen, setIsPlaceDropdownOpen] = useState(false);
+    const placeDropdownRef = useRef<HTMLDivElement>(null);
+
+    // Initial load sync of placeSearchInput
+    useEffect(() => {
+        if (selectedPlaceId && places.length > 0) {
+            const found = places.find(p => p.id.toString() === selectedPlaceId);
+            if (found) setPlaceSearchInput(found.name);
+        }
+    }, [selectedPlaceId, places]);
+
+    // Click outside handler for searchable dropdown
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (placeDropdownRef.current && !placeDropdownRef.current.contains(event.target as Node)) {
+                setIsPlaceDropdownOpen(false);
+                if (selectedPlaceId) {
+                    const found = places.find(p => p.id.toString() === selectedPlaceId);
+                    if (found) setPlaceSearchInput(found.name);
+                } else {
+                    setPlaceSearchInput('');
+                }
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [selectedPlaceId, places]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [selectedAudiences, setSelectedAudiences] = useState<string[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -196,6 +231,25 @@ export default function GoodDealCreatePage() {
         fetchData();
         loadImages();
     }, []);
+
+    useEffect(() => {
+        localStorage.setItem('gdData', JSON.stringify(gdForm));
+        localStorage.setItem('gdPlaceData', JSON.stringify(placeForm));
+    }, [gdForm, placeForm]);
+
+    const removeAllImages = async () => {
+        await localforage.removeItem('gdImages');
+        setImagePreviews([]);
+    };
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            removeAllImages();
+            localStorage.removeItem('gdData');
+            localStorage.removeItem('gdPlaceData');
+        }, 180000);
+        return () => clearTimeout(timer);
+    }, [gdForm, placeForm]);
 
     const handleGdFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -328,6 +382,8 @@ export default function GoodDealCreatePage() {
             });
 
             await localforage.removeItem('gdImages');
+            localStorage.removeItem('gdData');
+            localStorage.removeItem('gdPlaceData');
             navigate('/good-deals');
         } catch (err: any) {
             const backendError = err.response?.data;
@@ -342,7 +398,7 @@ export default function GoodDealCreatePage() {
         }
     };
 
-    const inputClass = 'w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all';
+    const inputClass = 'w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all';
 
     return (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -357,7 +413,7 @@ export default function GoodDealCreatePage() {
             {/* Type Toggle */}
             <div className="mb-8">
                 <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-                    Створити <span className="text-emerald-500">пропозицію</span>
+                    Створити <span className="text-orange-500">пропозицію</span>
                 </h1>
                 <div className="inline-flex bg-zinc-100 dark:bg-zinc-800 rounded-2xl p-1 gap-1">
                     <button
@@ -377,16 +433,16 @@ export default function GoodDealCreatePage() {
                         onClick={() => setMode('good-deal')}
                         className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 ${
                             mode === 'good-deal'
-                                ? 'bg-emerald-500 text-white shadow-md'
+                                ? 'bg-orange-500 text-white shadow-md'
                                 : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
                         }`}
                     >
                         <Sparkles className="w-4 h-4" />
-                        Хороша пропозиція
+                        Студентська вигода
                     </button>
                 </div>
                 <p className="text-zinc-500 dark:text-zinc-400 mt-3 text-sm">
-                    Хороша пропозиція — цікава акція чи подія без вказання ціни.
+                    Студентська вигода — цікава акція чи подія без вказання ціни.
                 </p>
             </div>
 
@@ -405,7 +461,7 @@ export default function GoodDealCreatePage() {
                             {imagePreviews.map((preview, index) => (
                                 <div
                                     key={index}
-                                    className={`relative aspect-square rounded-lg overflow-hidden border ${draggedIndex === index ? 'border-emerald-500 opacity-50 scale-95' : 'border-zinc-200 dark:border-zinc-700'} cursor-move transition-all duration-200`}
+                                    className={`relative aspect-square rounded-lg overflow-hidden border ${draggedIndex === index ? 'border-orange-500 opacity-50 scale-95' : 'border-zinc-200 dark:border-zinc-700'} cursor-move transition-all duration-200`}
                                     draggable
                                     onDragStart={(e) => handleDragStart(e, index)}
                                     onDragOver={(e) => handleDragOver(e, index)}
@@ -420,7 +476,7 @@ export default function GoodDealCreatePage() {
                                         <X className="w-4 h-4" />
                                     </button>
                                     {index === 0 && (
-                                        <div className="absolute bottom-2 left-2 px-2 py-1 bg-emerald-500/90 text-white text-xs font-bold rounded shadow-sm">
+                                        <div className="absolute bottom-2 left-2 px-2 py-1 bg-orange-500/90 text-white text-xs font-bold rounded shadow-sm">
                                             Головне
                                         </div>
                                     )}
@@ -428,7 +484,7 @@ export default function GoodDealCreatePage() {
                             ))}
                             {isImageLoading && Array.from({ length: imageQuantity }).map((_, i) => (
                                 <div key={`loading-${i}`} className="relative aspect-square rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 flex flex-col items-center justify-center">
-                                    <Loader2 className="w-8 h-8 text-emerald-500 animate-spin mb-2" />
+                                    <Loader2 className="w-8 h-8 text-orange-500 animate-spin mb-2" />
                                     <span className="text-xs text-zinc-500">Завантаження...</span>
                                 </div>
                             ))}
@@ -488,9 +544,14 @@ export default function GoodDealCreatePage() {
                             className={`${inputClass} appearance-none`}
                         >
                             <option value="" disabled>Оберіть категорію</option>
-                            {categories.map(c => (
-                                <option key={c.id} value={c.id}>{c.name}</option>
-                            ))}
+                            {categories
+                                .filter(c => ['Розваги', 'Транспорт', 'Відпочинок', 'Освіта'].includes(c.name))
+                                .filter((c, index, self) => self.findIndex(t => t.name === c.name) === index)
+                                .sort((a, b) => a.name.localeCompare(b.name, 'uk'))
+                                .map(c => (
+                                    <option key={c.id} value={c.id}>{c.name}</option>
+                                ))
+                            }
                         </select>
                     </div>
                 </div>
@@ -499,7 +560,7 @@ export default function GoodDealCreatePage() {
                 <div className="glass-card p-6 rounded-2xl space-y-4">
                     <div>
                         <h2 className="text-xl font-semibold flex items-center gap-2">
-                            <Users className="w-5 h-5 text-emerald-500" />
+                            <Users className="w-5 h-5 text-orange-500" />
                             Для кого ця пропозиція
                         </h2>
                         <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Оберіть одну або кілька груп. Це допоможе знайти пропозицію потрібним людям.</p>
@@ -512,7 +573,7 @@ export default function GoodDealCreatePage() {
                                     key={a}
                                     type="button"
                                     onClick={() => toggleAudience(a)}
-                                    className={`transition-all duration-150 rounded-full border-2 ${isSelected ? 'border-emerald-500 scale-105 shadow-sm' : 'border-transparent'}`}
+                                    className={`transition-all duration-150 rounded-full border-2 ${isSelected ? 'border-orange-500 scale-105 shadow-sm' : 'border-transparent'}`}
                                 >
                                     <AudienceBadge label={a} />
                                 </button>
@@ -553,33 +614,88 @@ export default function GoodDealCreatePage() {
                     </div>
                 </div>
 
-                {/* Place */}
-                <div className="glass-card p-6 rounded-2xl space-y-6 border-2 border-emerald-500">
+                <div className={`glass-card p-6 rounded-2xl space-y-6 border-2 transition-all duration-300 ${
+                    isNewPlace 
+                        ? 'border-orange-400 !bg-orange-50/70 dark:!bg-orange-950/20' 
+                        : 'border-orange-500'
+                }`}>
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-xl font-semibold">Заклад / Місце</h2>
                         <button
                             type="button"
                             onClick={() => setIsNewPlace(!isNewPlace)}
-                            className="text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 flex items-center gap-1"
+                            className="text-sm font-medium text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 flex items-center gap-1"
                         >
                             {isNewPlace ? 'Обрати існуючий' : <><Plus className="w-4 h-4" />Додати новий</>}
                         </button>
                     </div>
 
                     {!isNewPlace ? (
-                        <div>
+                        <div className="relative" ref={placeDropdownRef}>
                             <label className="block text-sm font-medium mb-2">Оберіть заклад *</label>
-                            <select
-                                required={!isNewPlace}
-                                value={selectedPlaceId}
-                                onChange={(e) => setSelectedPlaceId(e.target.value)}
-                                className={`${inputClass} appearance-none`}
-                            >
-                                <option value="" disabled>Оберіть існуючий заклад</option>
-                                {places.map(p => (
-                                    <option key={p.id} value={p.id}>{p.name}</option>
-                                ))}
-                            </select>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="Шукати існуючий заклад..."
+                                    value={placeSearchInput}
+                                    onChange={(e) => {
+                                        setPlaceSearchInput(e.target.value);
+                                        setIsPlaceDropdownOpen(true);
+                                        const exactMatch = places.find(p => p.name.toLowerCase() === e.target.value.toLowerCase());
+                                        if (exactMatch) {
+                                            setSelectedPlaceId(exactMatch.id.toString());
+                                        } else {
+                                            setSelectedPlaceId('');
+                                        }
+                                    }}
+                                    onFocus={() => setIsPlaceDropdownOpen(true)}
+                                    className={inputClass}
+                                />
+                                {selectedPlaceId && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSelectedPlaceId('');
+                                            setPlaceSearchInput('');
+                                        }}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-red-500"
+                                    >
+                                        <X className="w-4.5 h-4.5" />
+                                    </button>
+                                )}
+                            </div>
+
+                            {isPlaceDropdownOpen && (
+                                <ul className="absolute left-0 w-full bg-white dark:bg-zinc-800 mt-2 rounded-xl shadow-2xl border border-zinc-200 dark:border-zinc-700 overflow-hidden z-[100] max-h-60 overflow-y-auto list-none p-0 m-0">
+                                    {places
+                                        .filter(p => p.name.toLowerCase().includes(placeSearchInput.toLowerCase()))
+                                        .map(p => (
+                                            <li
+                                                key={p.id}
+                                                onClick={() => {
+                                                    setSelectedPlaceId(p.id.toString());
+                                                    setPlaceSearchInput(p.name);
+                                                    setIsPlaceDropdownOpen(false);
+                                                }}
+                                                className={`p-3 px-4 hover:bg-zinc-100 dark:hover:bg-zinc-700 cursor-pointer text-sm border-b last:border-0 border-zinc-100 dark:border-zinc-700 text-zinc-900 dark:text-white flex justify-between items-center ${
+                                                    selectedPlaceId === p.id.toString() ? 'bg-orange-50 dark:bg-orange-950/20 font-semibold text-orange-600 dark:text-orange-400' : ''
+                                                }`}
+                                            >
+                                                <span>{p.name}</span>
+                                                {p.isOnline && (
+                                                    <span className="text-[10px] bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                                                        Онлайн
+                                                    </span>
+                                                )}
+                                            </li>
+                                        ))}
+                                    {places.filter(p => p.name.toLowerCase().includes(placeSearchInput.toLowerCase())).length === 0 && (
+                                        <li className="p-4 text-center text-sm text-zinc-500">
+                                            Закладів не знайдено. Спробуйте додати новий.
+                                        </li>
+                                    )}
+                                </ul>
+                            )}
                         </div>
                     ) : (
                         <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
@@ -613,7 +729,7 @@ export default function GoodDealCreatePage() {
                                     name="isOnline"
                                     checked={placeForm.isOnline}
                                     onChange={handlePlaceFormChange}
-                                    className="w-5 h-5 rounded border-zinc-300 text-emerald-500 focus:ring-emerald-500"
+                                    className="w-5 h-5 rounded border-zinc-300 text-orange-500 focus:ring-orange-500"
                                 />
                                 <div>
                                     <p className="font-medium">Онлайн заклад</p>
@@ -656,7 +772,7 @@ export default function GoodDealCreatePage() {
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="inline-flex items-center justify-center px-10 py-3 rounded-xl font-medium text-lg text-white bg-emerald-500 hover:bg-emerald-600 transition-all shadow-md hover:shadow-lg active:scale-95 disabled:opacity-70 w-full sm:w-auto"
+                        className="inline-flex items-center justify-center px-10 py-3 rounded-xl font-medium text-lg text-white bg-orange-500 hover:bg-orange-600 transition-all shadow-md hover:shadow-lg active:scale-95 disabled:opacity-70 w-full sm:w-auto"
                     >
                         {isSubmitting ? (
                             <span className="flex items-center gap-2">

@@ -1,24 +1,21 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Tag, Map as MapIcon, Store, Sparkles } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import UserProfile from './UserProfile';
 
 export default function Navbar() {
     const location = useLocation();
-    const { isAuthenticated, firstName, lastName } = useAuth();
+    const { isAuthenticated } = useAuth();
 
     const navLinks = [
         { name: "Головна", path: "/", icon: Home },
         { name: "Пропозиції", path: "/offers", icon: Tag },
-        { name: "Хороші пропозиції", path: "/good-deals", icon: Sparkles },
+        { name: "Студентська вигода", path: "/good-deals", icon: Sparkles },
         { name: "Заклади", path: "/places", icon: Store },
         { name: "Карта", path: "/map", icon: MapIcon },
     ];
 
-    // Build initials from first + last name; fall back to "?"
-    const initials = [firstName, lastName]
-        .filter(Boolean)
-        .map(s => s![0].toUpperCase())
-        .join('') || '?';
+
 
     return (
         <>
@@ -58,13 +55,7 @@ export default function Navbar() {
                         {/* Праві кнопки */}
                         <div className="flex items-center gap-3">
                             {isAuthenticated ? (
-                                <Link
-                                    to="/profile"
-                                    title="Мій профіль"
-                                    className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-tr from-primary-500 to-orange-400 text-white font-bold text-sm hover:shadow-lg hover:scale-105 transition-all active:scale-95"
-                                >
-                                    {initials}
-                                </Link>
+                                <UserProfile />
                             ) : (
                                 <>
                                     <Link to="/login" className="flex btn-primary text-sm px-4 py-2">

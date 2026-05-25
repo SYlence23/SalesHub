@@ -23,7 +23,7 @@ export const AUDIENCE_COLORS: Record<string, string> = {
   'IT-спеціалісти':  'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',
   'Пенсіонери':      'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300',
   'Молодь':          'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300',
-  'Усі':             'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
+  'Усі':             'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
 };
 
 export const DEFAULT_AUDIENCE_COLOR = 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300';
@@ -70,9 +70,9 @@ export default function GoodDealCard({ deal }: GoodDealCardProps) {
           {/* Badges on image */}
           <div className="absolute top-5 left-5 flex flex-wrap gap-1.5">
             {/* Good deal pill */}
-            <span className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-md uppercase tracking-wider flex items-center gap-1">
+            <span className="bg-gradient-to-r from-orange-600 to-orange-400 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-md uppercase tracking-wider flex items-center gap-1">
               <Sparkles className="w-2.5 h-2.5" />
-              Хороша
+              Вигідна
             </span>
 
             {/* Status pill */}
@@ -87,7 +87,7 @@ export default function GoodDealCard({ deal }: GoodDealCardProps) {
                 Скоро
               </span>
             ) : (
-              <span className="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-md flex items-center gap-1">
+              <span className="bg-orange-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-md flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                 Активна
               </span>
@@ -98,8 +98,8 @@ export default function GoodDealCard({ deal }: GoodDealCardProps) {
         {/* Bottom — Content */}
         <div className="flex flex-col flex-grow p-4">
           {/* Category & Store */}
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-1.5">
-            <Tag className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-orange-600 dark:text-orange-400 mb-1.5">
+            <Tag className="w-3.5 h-3.5 text-orange-500 shrink-0" />
             <span className="uppercase tracking-wider">{deal.categoryName || 'Пропозиція'}</span>
             {deal.storeName && (
               <>
@@ -110,7 +110,7 @@ export default function GoodDealCard({ deal }: GoodDealCardProps) {
           </div>
 
           {/* Title */}
-          <h3 className="font-bold text-lg text-zinc-900 dark:text-white leading-snug mb-1.5 line-clamp-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+          <h3 className="font-bold text-lg text-zinc-900 dark:text-white leading-snug mb-1.5 line-clamp-2 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
             {deal.title}
           </h3>
 

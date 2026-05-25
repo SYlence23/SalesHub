@@ -13,6 +13,12 @@ namespace SalesHub.Data
         {
         }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.ConfigureWarnings(w =>
+                w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+        }
+
 
         public DbSet<SalesHub.Models.Location> Locations { get; set; }
         public DbSet<Offer> Offers { get; set; }
@@ -26,6 +32,8 @@ namespace SalesHub.Data
         public DbSet<GoodDeal> GoodDeals { get; set; }
         public DbSet<GoodDealImage> GoodDealImages { get; set; }
         public DbSet<UserSavedGoodDeals> UserSavedGoodDeals { get; set; }
+        public DbSet<GoodDealComment> GoodDealComments { get; set; }
+        public DbSet<GoodDealLike> GoodDealLikes { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -98,6 +106,23 @@ namespace SalesHub.Data
             modelBuilder.Entity<UserSavedGoodDeals>()
                 .HasOne(usgd => usgd.User).WithMany(u => u.UserSavedGoodDeals).HasForeignKey(usgd => usgd.UserId);
 
+            // GoodDealComment
+            modelBuilder.Entity<GoodDealComment>()
+                .HasOne(c => c.GoodDeal).WithMany(gd => gd.Comments).HasForeignKey(c => c.GoodDealId).OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<GoodDealComment>()
+                .HasOne(c => c.CreatedBy).WithMany().HasForeignKey(c => c.CreatedById).OnDelete(DeleteBehavior.Restrict);
+
+            // GoodDealLike
+            modelBuilder.Entity<GoodDealLike>()
+                .HasIndex(l => new { l.GoodDealId, l.UserId }).IsUnique();
+
+            modelBuilder.Entity<GoodDealLike>()
+                .HasOne(l => l.GoodDeal).WithMany(gd => gd.Likes).HasForeignKey(l => l.GoodDealId).OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<GoodDealLike>()
+                .HasOne(l => l.User).WithMany().HasForeignKey(l => l.UserId).OnDelete(DeleteBehavior.Restrict);
+
 
             var seedDate = new DateTime(2026, 5, 9, 0, 0, 0, DateTimeKind.Utc);
 
@@ -107,7 +132,11 @@ namespace SalesHub.Data
                     new OfferCategory { Id = 2, Name = "Заклади", CreatedAt = seedDate },
                     new OfferCategory { Id = 3, Name = "Культура", CreatedAt = seedDate },
                     new OfferCategory { Id = 4, Name = "Книги", CreatedAt = seedDate },
-                    new OfferCategory { Id = 5, Name = "Спорт", CreatedAt = seedDate }
+                    new OfferCategory { Id = 5, Name = "Спорт", CreatedAt = seedDate },
+                    new OfferCategory { Id = 6, Name = "Освіта", CreatedAt = seedDate, MarkerColor = "#3B82F6" },
+                    new OfferCategory { Id = 7, Name = "Побут", CreatedAt = seedDate, MarkerColor = "#F59E0B" },
+                    new OfferCategory { Id = 8, Name = "Відпочинок", CreatedAt = seedDate, MarkerColor = "#10B981" },
+                    new OfferCategory { Id = 9, Name = "Транспорт", CreatedAt = seedDate, MarkerColor = "#8B5CF6" }
                 );
 
         }

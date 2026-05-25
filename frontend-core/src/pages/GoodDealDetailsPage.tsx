@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { 
@@ -54,7 +53,7 @@ export default function GoodDealDetailsPage() {
     const [activeImage, setActiveImage] = useState(0);
 
     // Mock interactive states for premium UX
-    const [likesCount, setLikesCount] = useState(1);
+    const [likesCount, setLikesCount] = useState(0);
     const [hasLiked, setHasLiked] = useState(false);
     const [dislikesCount, setDislikesCount] = useState(0);
     const [hasDisliked, setHasDisliked] = useState(false);
@@ -66,10 +65,14 @@ export default function GoodDealDetailsPage() {
         if (!id) return;
         const fetchDeal = async () => {
             try {
-                const res = await api.get<GoodDealDetail>(`/api/GoodDeals/${id}`);
+                const res = await api.get<GoodDealDetail>(`/GoodDeals/${id}`);
                 setDeal(res.data);
-            } catch (err) {
-                setError('Failed to load offer.');
+            } catch (err: any) {
+                if (err?.response?.status === 404) {
+                    setError('Вигідну пропозицію не знайдено.');
+                } else {
+                    setError('Не вдалося завантажити пропозицію. Спробуйте пізніше.');
+                }
             } finally {
                 setIsLoading(false);
             }
@@ -169,12 +172,12 @@ export default function GoodDealDetailsPage() {
         );
     }
 
-    if (error || !deal) {
+    if (error || (!isLoading && !deal)) {
         return (
             <div className="max-w-4xl mx-auto px-4 py-20 text-center">
                 <Sparkles className="w-12 h-12 text-zinc-300 mx-auto mb-4" />
-                <h2 className="text-2xl font-bold mb-2">Good deal not found</h2>
-                <p className="text-zinc-500 mb-6">{error}</p>
+                <h2 className="text-2xl font-bold mb-2">Вигідну пропозицію не знайдено</h2>
+                <p className="text-zinc-500 mb-6">{error ?? 'Можливо її було видалено або вона не існує.'}</p>
                 <button onClick={() => navigate('/good-deals')} className="btn-primary">
                     Повернутися до списку
                 </button>
@@ -217,9 +220,9 @@ export default function GoodDealDetailsPage() {
 
                         {/* Badges on image */}
                         <div className="absolute top-5 left-5 flex flex-wrap gap-2">
-                            <span className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg uppercase tracking-wider flex items-center gap-1.5">
+                            <span className="bg-gradient-to-r from-orange-600 to-orange-400 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg uppercase tracking-wider flex items-center gap-1.5">
                                 <Sparkles className="w-3.5 h-3.5" />
-                                Хороша пропозиція
+                                Студентська вигода
                             </span>
 
                             {isExpired ? (
@@ -233,7 +236,7 @@ export default function GoodDealDetailsPage() {
                                     Скоро завершується
                                 </span>
                             ) : (
-                                <span className="bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
+                                <span className="bg-orange-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
                                     <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
                                     Активна
                                 </span>
@@ -260,7 +263,7 @@ export default function GoodDealDetailsPage() {
                                         <button
                                             key={i}
                                             onClick={() => setActiveImage(i)}
-                                            className={`w-2 h-2 rounded-full transition-all ${i === activeImage ? 'bg-emerald-400 w-5' : 'bg-white/60 hover:bg-white'}`}
+                                            className={`w-2 h-2 rounded-full transition-all ${i === activeImage ? 'bg-orange-400 w-5' : 'bg-white/60 hover:bg-white'}`}
                                         />
                                     ))}
                                 </div>
@@ -275,7 +278,7 @@ export default function GoodDealDetailsPage() {
                                 <button
                                     key={i}
                                     onClick={() => setActiveImage(i)}
-                                    className={`shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all ${i === activeImage ? 'border-emerald-500 scale-105 shadow-md' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                                    className={`shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all ${i === activeImage ? 'border-orange-500 scale-105 shadow-md' : 'border-transparent opacity-60 hover:opacity-100'}`}
                                 >
                                     <img src={url} alt="" className="w-full h-full object-cover" />
                                 </button>
@@ -286,8 +289,8 @@ export default function GoodDealDetailsPage() {
                     {/* 2. Text details card */}
                     <div className="glass-card p-6 sm:p-8 space-y-4">
                         {/* Category */}
-                        <div className="flex items-center gap-2 text-sm font-semibold text-emerald-600 dark:text-emerald-400">
-                            <Tag className="w-4 h-4 text-emerald-500" />
+                        <div className="flex items-center gap-2 text-sm font-semibold text-orange-600 dark:text-orange-400">
+                            <Tag className="w-4 h-4 text-orange-500" />
                             <span className="uppercase tracking-wider">{deal.categoryName}</span>
                         </div>
 
@@ -312,7 +315,7 @@ export default function GoodDealDetailsPage() {
                                 onClick={handleSave}
                                 className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border transition-all active:scale-95 ${
                                     isSaved 
-                                        ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-400 text-emerald-600 dark:text-emerald-400' 
+                                        ? 'bg-orange-50 dark:bg-orange-950/30 border-orange-400 text-orange-600 dark:text-orange-400' 
                                         : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
                                 }`}
                             >
@@ -327,8 +330,8 @@ export default function GoodDealDetailsPage() {
                                     onClick={handleLike}
                                     className={`inline-flex items-center justify-center p-2.5 transition-all ${
                                         hasLiked 
-                                            ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/20' 
-                                            : 'text-zinc-500 hover:text-emerald-500 hover:bg-zinc-50 dark:hover:bg-zinc-800/30'
+                                            ? 'text-orange-500 bg-orange-50 dark:bg-orange-950/20' 
+                                            : 'text-zinc-500 hover:text-orange-500 hover:bg-zinc-50 dark:hover:bg-zinc-800/30'
                                     }`}
                                     aria-label="Подобається"
                                 >
@@ -372,7 +375,7 @@ export default function GoodDealDetailsPage() {
                     {deal.targetAudiences && deal.targetAudiences.length > 0 && (
                         <div className="glass-card p-6 space-y-4">
                             <h3 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                                <Users className="w-5 h-5 text-emerald-500" />
+                                <Users className="w-5 h-5 text-orange-500" />
                                 Для кого це буде корисно
                             </h3>
                             <div className="flex flex-wrap gap-2">
@@ -389,17 +392,17 @@ export default function GoodDealDetailsPage() {
                     
                     {/* 1. Main Action Button Card */}
                     {deal.isOnline && deal.offerUrl && (
-                        <div className="glass-card p-6 space-y-4">
+                        <div className="glass-card p-6 space-y-4 hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300">
                             <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs uppercase tracking-wider font-semibold">
                                 <span>Посилання</span>
-                                <Globe className="w-4 h-4 text-emerald-500" />
+                                <Globe className="w-4 h-4 text-orange-500" />
                             </div>
                             <h4 className="text-2xl font-extrabold text-zinc-900 dark:text-white">Онлайн</h4>
                             <a
                                 href={deal.offerUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex w-full items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-white bg-emerald-500 hover:bg-emerald-600 transition-all shadow-md hover:shadow-lg active:scale-95"
+                                className="inline-flex w-full items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-white bg-orange-500 hover:bg-orange-600 transition-all shadow-md hover:shadow-lg active:scale-95"
                             >
                                 <Globe className="w-4.5 h-4.5" />
                                 Перейти на сайт
@@ -408,9 +411,9 @@ export default function GoodDealDetailsPage() {
                     )}
 
                     {/* 2. Offer Details sidebar card */}
-                    <div className="glass-card p-6">
+                    <div className="glass-card p-6 hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300">
                         <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-5 border-b border-zinc-100 dark:border-zinc-800 pb-3 flex items-center gap-2">
-                            <Eye className="w-4.5 h-4.5 text-emerald-500" />
+                            <Eye className="w-4.5 h-4.5 text-orange-500" />
                             Деталі пропозиції
                         </h3>
                         
@@ -418,7 +421,7 @@ export default function GoodDealDetailsPage() {
                             {/* Status */}
                             <div className="flex justify-between items-start gap-4">
                                 <div className="flex items-center gap-2 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                                    <CheckCircle2 className="w-4 h-4 text-orange-500 shrink-0" />
                                     <span>Статус</span>
                                 </div>
                                 <div className="text-sm font-medium">
@@ -427,8 +430,8 @@ export default function GoodDealDetailsPage() {
                                             <XCircle className="w-3.5 h-3.5" /> Завершено
                                         </span>
                                     ) : (
-                                        <span className="text-emerald-500 dark:text-emerald-400 font-bold flex items-center gap-1.5">
-                                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Активна
+                                        <span className="text-orange-500 dark:text-orange-400 font-bold flex items-center gap-1.5">
+                                            <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" /> Активна
                                         </span>
                                     )}
                                 </div>
@@ -437,7 +440,7 @@ export default function GoodDealDetailsPage() {
                             {/* Category */}
                             <div className="flex justify-between items-center gap-4">
                                 <div className="flex items-center gap-2 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                                    <Tag className="w-4 h-4 text-emerald-500 shrink-0" />
+                                    <Tag className="w-4 h-4 text-orange-500 shrink-0" />
                                     <span>Категорія</span>
                                 </div>
                                 <span className="text-sm font-bold text-zinc-800 dark:text-zinc-200">{deal.categoryName}</span>
@@ -447,7 +450,7 @@ export default function GoodDealDetailsPage() {
                             {deal.validFrom && (
                                 <div className="flex justify-between items-center gap-4">
                                     <div className="flex items-center gap-2 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                                        <Clock className="w-4 h-4 text-emerald-500 shrink-0" />
+                                        <Clock className="w-4 h-4 text-orange-500 shrink-0" />
                                         <span>Діє з</span>
                                     </div>
                                     <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{formatDate(deal.validFrom)}</span>
@@ -457,7 +460,7 @@ export default function GoodDealDetailsPage() {
                             {/* Valid To */}
                             <div className="flex justify-between items-center gap-4">
                                 <div className="flex items-center gap-2 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                                    <Calendar className="w-4 h-4 text-emerald-500 shrink-0" />
+                                    <Calendar className="w-4 h-4 text-orange-500 shrink-0" />
                                     <span>Діє до</span>
                                 </div>
                                 <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{formatDate(deal.validTo)}</span>
@@ -466,11 +469,11 @@ export default function GoodDealDetailsPage() {
                             {/* Creator */}
                             <div className="flex justify-between items-center gap-4">
                                 <div className="flex items-center gap-2 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                                    <User className="w-4 h-4 text-emerald-500 shrink-0" />
+                                    <User className="w-4 h-4 text-orange-500 shrink-0" />
                                     <span>Додав</span>
                                 </div>
                                 <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 flex items-center gap-1">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                                    <span className="w-1.5 h-1.5 rounded-full bg-orange-400" />
                                     {deal.creatorUserName || 'Користувач'}
                                 </span>
                             </div>
@@ -478,9 +481,9 @@ export default function GoodDealDetailsPage() {
                     </div>
 
                     {/* 3. Store / Place sidebar card */}
-                    <div className="glass-card p-6 space-y-5">
+                    <div className="glass-card p-6 space-y-5 hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300">
                         <h3 className="text-lg font-bold text-zinc-900 dark:text-white border-b border-zinc-100 dark:border-zinc-800 pb-3 flex items-center gap-2">
-                            <MapPin className="w-4.5 h-4.5 text-emerald-500" />
+                            <MapPin className="w-4.5 h-4.5 text-orange-500" />
                             Місце / Заклад
                         </h3>
 
@@ -488,7 +491,7 @@ export default function GoodDealDetailsPage() {
                             {/* Store Name */}
                             <div>
                                 <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                                    <MapPin className="w-3.5 h-3.5 text-emerald-500" />
+                                    <MapPin className="w-3.5 h-3.5 text-orange-500" />
                                     <span>Заклад</span>
                                 </div>
                                 <div className="flex items-center justify-between">
@@ -506,11 +509,11 @@ export default function GoodDealDetailsPage() {
                             {/* About Store / Type */}
                             <div>
                                 <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                                    <Tag className="w-3.5 h-3.5 text-emerald-500" />
+                                    <Tag className="w-3.5 h-3.5 text-orange-500" />
                                     <span>Тип магазину</span>
                                 </div>
                                 <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-                                    {deal.isOnline ? 'Інтернет-платформа' : 'Фізична локація / заклад партнер'}
+                                    {deal.isOnline ? 'Інтернет-платформа' : 'офлайн заклад'}
                                 </span>
                             </div>
                         </div>
@@ -523,7 +526,7 @@ export default function GoodDealDetailsPage() {
                                 rel="noopener noreferrer"
                                 className="inline-flex w-full items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 text-sm font-bold text-zinc-700 dark:text-zinc-300 transition-all active:scale-95"
                             >
-                                <MapPin className="w-4 h-4 text-emerald-500" />
+                                <MapPin className="w-4 h-4 text-orange-500" />
                                 <span>Показати на мапі</span>
                             </a>
                         )}

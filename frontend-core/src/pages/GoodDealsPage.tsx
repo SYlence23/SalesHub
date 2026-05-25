@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Sparkles, ChevronLeft, ChevronRight, Search, SlidersHorizontal, X, Users } from 'lucide-react';
-import GoodDealCard, { type GoodDeal, AudienceBadge, AUDIENCE_COLORS } from '../components/Offer/GoodDealCard';
+import GoodDealCard, { type GoodDeal, AudienceBadge } from '../components/Offer/GoodDealCard';
 import GoodDealSkeletonCard from '../components/Offer/GoodDealSkeletonCard';
 import { type Category } from '../components/Offer/OfferFilters';
 
@@ -13,7 +13,7 @@ interface ApiGoodDealResponse {
 }
 
 // Predefined audience list (same as in CreatePage)
-const AUDIENCES = Object.keys(AUDIENCE_COLORS);
+const AUDIENCES = ['Молодь', 'Студенти', 'Учні'];
 
 export default function GoodDealsPage() {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -110,21 +110,21 @@ export default function GoodDealsPage() {
             <div className="flex items-start sm:items-center justify-between mb-8 flex-col sm:flex-row gap-4">
                 <div>
                     <div className="flex items-center gap-2 mb-1">
-                        <Sparkles className="w-6 h-6 text-emerald-500" />
+                        <Sparkles className="w-6 h-6 text-orange-500" />
                         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-                            Хороші <span className="text-emerald-500">пропозиції</span>
+                            Студентська <span className="text-orange-500">вигода</span>
                         </h1>
                     </div>
                     <p className="text-zinc-500 dark:text-zinc-400">
-                        Хаб корисних пропозицій для студентів та інших груп.
+                        Хаб корисних вигід для молоді.
                     </p>
                 </div>
                 <button
                     onClick={() => navigate('/good-deals/create')}
-                    className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl font-medium text-white bg-emerald-500 hover:bg-emerald-600 transition-all shadow-md hover:shadow-lg active:scale-95 gap-2 whitespace-nowrap"
+                    className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl font-medium text-white bg-orange-500 hover:bg-orange-600 transition-all shadow-md hover:shadow-lg active:scale-95 gap-2 whitespace-nowrap"
                 >
                     <Sparkles className="w-4 h-4" />
-                    Додати пропозицію
+                    Додати вигоду
                 </button>
             </div>
 
@@ -138,11 +138,11 @@ export default function GoodDealsPage() {
                             value={localSearch}
                             onChange={e => setLocalSearch(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && applySearch()}
-                            placeholder="Пошук пропозицій..."
-                            className="w-full pl-10 pr-4 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+                            placeholder="Пошук вигід..."
+                            className="w-full pl-10 pr-4 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
                         />
                     </div>
-                    <button onClick={applySearch} className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl font-medium text-white bg-emerald-500 hover:bg-emerald-600 transition-all active:scale-95">
+                    <button onClick={applySearch} className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl font-medium text-white bg-orange-500 hover:bg-orange-600 transition-all active:scale-95">
                         Знайти
                     </button>
                 </div>
@@ -150,14 +150,14 @@ export default function GoodDealsPage() {
                     onClick={() => setIsFilterOpen(!isFilterOpen)}
                     className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium border transition-all active:scale-95 ${
                         selectedCategory || selectedAudience
-                            ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-400 text-emerald-700 dark:text-emerald-400'
+                            ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-400 text-orange-700 dark:text-orange-400'
                             : 'bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300'
                     }`}
                 >
                     <SlidersHorizontal className="w-4 h-4" />
                     Фільтри
                     {(selectedCategory || selectedAudience) && (
-                        <span className="bg-emerald-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                        <span className="bg-orange-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                             {[selectedCategory, selectedAudience].filter(Boolean).length}
                         </span>
                     )}
@@ -173,19 +173,24 @@ export default function GoodDealsPage() {
                         <div className="flex flex-wrap gap-2">
                             <button
                                 onClick={() => handleCategorySelect(null)}
-                                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${selectedCategory === null ? 'bg-emerald-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'}`}
+                                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${selectedCategory === null ? 'bg-orange-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'}`}
                             >
                                 Усі категорії
                             </button>
-                            {categories.map(c => (
-                                <button
-                                    key={c.id}
-                                    onClick={() => handleCategorySelect(c.id)}
-                                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${selectedCategory === c.id ? 'bg-emerald-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'}`}
-                                >
-                                    {c.name}
-                                </button>
-                            ))}
+                            {categories
+                                .filter(c => ['Розваги', 'Транспорт', 'Відпочинок', 'Освіта'].includes(c.name))
+                                .filter((c, index, self) => self.findIndex(t => t.name === c.name) === index)
+                                .sort((a, b) => a.name.localeCompare(b.name, 'uk'))
+                                .map(c => (
+                                    <button
+                                        key={c.id}
+                                        onClick={() => handleCategorySelect(c.id)}
+                                        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${selectedCategory === c.id ? 'bg-orange-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'}`}
+                                    >
+                                        {c.name}
+                                    </button>
+                                ))
+                            }
                         </div>
                     </div>
 
@@ -198,7 +203,7 @@ export default function GoodDealsPage() {
                         <div className="flex flex-wrap gap-2">
                             <button
                                 onClick={() => handleAudienceSelect(null)}
-                                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${selectedAudience === null ? 'bg-emerald-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'}`}
+                                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${selectedAudience === null ? 'bg-orange-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'}`}
                             >
                                 Будь-яка аудиторія
                             </button>
@@ -206,7 +211,7 @@ export default function GoodDealsPage() {
                                 <button
                                     key={a}
                                     onClick={() => handleAudienceSelect(a)}
-                                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${selectedAudience === a ? 'ring-2 ring-offset-1 ring-emerald-500' : ''}`}
+                                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${selectedAudience === a ? 'ring-2 ring-offset-1 ring-orange-500' : ''}`}
                                 >
                                     <AudienceBadge label={a} />
                                 </button>
@@ -220,7 +225,7 @@ export default function GoodDealsPage() {
             {hasActiveFilters && (
                 <div className="flex flex-wrap gap-2 mb-4">
                     {searchTerm && (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 text-sm border border-emerald-200 dark:border-emerald-800">
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 text-sm border border-orange-200 dark:border-orange-800">
                             🔍 "{searchTerm}"
                             <button onClick={() => { setLocalSearch(''); const p = new URLSearchParams(searchParams); p.delete('searchTerm'); p.set('page','1'); setSearchParams(p); }}>
                                 <X className="w-3.5 h-3.5" />
@@ -228,7 +233,7 @@ export default function GoodDealsPage() {
                         </span>
                     )}
                     {selectedCategoryName && (
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 text-sm border border-emerald-200 dark:border-emerald-800">
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 text-sm border border-orange-200 dark:border-orange-800">
                             {selectedCategoryName}
                             <button onClick={() => handleCategorySelect(null)}><X className="w-3.5 h-3.5" /></button>
                         </span>
@@ -279,12 +284,12 @@ export default function GoodDealsPage() {
                 </div>
             ) : (
                 <div className="glass-card p-12 text-center">
-                    <Sparkles className="w-12 h-12 text-emerald-400 mx-auto mb-4 opacity-50" />
+                    <Sparkles className="w-12 h-12 text-orange-400 mx-auto mb-4 opacity-50" />
                     <h3 className="text-2xl font-bold mb-2">Пропозицій не знайдено</h3>
                     <p className="text-zinc-500 dark:text-zinc-400 mb-6">
                         Спробуйте змінити фільтри або пошуковий запит.
                     </p>
-                    <button onClick={clearAll} className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl font-medium text-white bg-emerald-500 hover:bg-emerald-600 transition-all shadow-md active:scale-95">
+                    <button onClick={clearAll} className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl font-medium text-white bg-orange-500 hover:bg-orange-600 transition-all shadow-md active:scale-95">
                         Очистити фільтри
                     </button>
                 </div>

@@ -25,6 +25,8 @@ namespace SalesHub.Models
 
         public ICollection<GoodDealImage> Images { get; set; } = new List<GoodDealImage>();
         public ICollection<UserSavedGoodDeals> UserSavedGoodDeals { get; set; } = new List<UserSavedGoodDeals>();
+        public ICollection<GoodDealComment> Comments { get; set; } = new List<GoodDealComment>();
+        public ICollection<GoodDealLike> Likes { get; set; } = new List<GoodDealLike>();
     }
 }
 

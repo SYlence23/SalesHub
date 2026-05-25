@@ -92,7 +92,9 @@ export default function OfferFilters({
               Всі категорії
             </span>
           </label>
-          {categories.map((cat) => (
+          {categories
+            .filter(cat => !['Освіта', 'Побут', 'Подорожі', 'Відпочинок', 'Транспорт'].includes(cat.name))
+            .map((cat) => (
             <label key={cat.id} className="flex items-center gap-3 cursor-pointer group">
               <input
                 type="radio"

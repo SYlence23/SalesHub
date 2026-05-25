@@ -15,7 +15,7 @@ interface RegisterDto {
     isStudent: boolean;
 }
 
-const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchMode, onClose }) => {
+const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchMode }) => {
     const [name, setName] = useState('');
     const [surname, setSurname] = useState('');
     const [email, setEmail] = useState('');
@@ -50,6 +50,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchMode, onClose }) =>
             if (err.response?.data?.errors) {
                 const firstError = Object.values(err.response.data.errors)[0] as string[];
                 setError(firstError[0] || 'Validation error');
+            } else if (err.response?.data?.message) {
+                setError(err.response.data.message);
             } else if (typeof err.response?.data === 'string') {
                 setError(err.response.data);
             } else {

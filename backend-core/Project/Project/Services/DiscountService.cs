@@ -39,9 +39,12 @@ namespace SalesHub.Services
             query = sortOption switch
             {
                 "newest" => query.OrderByDescending(o => o.CreatedAt),
+                "oldest" => query.OrderBy(o => o.CreatedAt),
                 "price_asc" => query.OrderBy(o => o.NewPrice),
                 "price_desc" => query.OrderByDescending(o => o.NewPrice),
                 "discount_desc" => query.OrderByDescending(query => (query.OldPrice - query.NewPrice) * 100 / query.OldPrice),
+                "valid_to_asc" => query.OrderBy(o => o.ValidTo == null ? DateTime.MaxValue : o.ValidTo),
+                "valid_to_desc" => query.OrderByDescending(o => o.ValidTo),
                 _ => query.OrderByDescending(o => o.Id)
             };
 
@@ -181,11 +184,13 @@ namespace SalesHub.Services
                 IsActive = true,
                 Creator = OfferCreator.User,
                 CreatedById = userId,
-                Images = dto.ImageUrls?.Select((url, index) => new OfferImage
-                {
-                    ImageUrl = url,
-                    IsMain = index == 0
-                }).ToList() ?? new List<OfferImage>()
+                Images = dto.ImageUrls?
+                    .Where(url => !string.IsNullOrWhiteSpace(url))
+                    .Select((url, index) => new OfferImage
+                    {
+                        ImageUrl = url,
+                        IsMain = index == 0
+                    }).ToList() ?? new List<OfferImage>()
             };
 
             _context.Offers.Add(offer);

@@ -12,12 +12,14 @@ namespace SalesHub.Controllers
     {
         private readonly IUserService _userService;
         private readonly IDiscountService _discountService;
+        private readonly IGoodDealService _goodDealService;
         private readonly ILogger<UserController> _logger;
 
-        public UserController(IUserService userService, IDiscountService discountService, ILogger<UserController> logger)
+        public UserController(IUserService userService, IDiscountService discountService, IGoodDealService goodDealService, ILogger<UserController> logger)
         {
             _userService = userService;
             _discountService = discountService;
+            _goodDealService = goodDealService;
             _logger = logger;
         }
 
@@ -93,6 +95,18 @@ namespace SalesHub.Controllers
 
             var offers = await _userService.GetCreatedOffersAsync(userId.Value);
             return Ok(offers);
+        }
+
+        /// <summary>Вигоди, створені поточним користувачем</summary>
+        [HttpGet("my-good-deals")]
+        [Authorize]
+        public async Task<IActionResult> GetMyGoodDeals()
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return Unauthorized();
+
+            var deals = await _goodDealService.GetByUserIdAsync(userId.Value);
+            return Ok(deals);
         }
 
         /// <summary>Пропозиції публічного профілю</summary>
