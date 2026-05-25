@@ -24,66 +24,37 @@ namespace SalesHub.Controllers
         }
 
         [HttpPost("uploadImage")]
-        public async Task<IActionResult> UploadFileAsync(IFormFile file, string? prefix, string? bucketName = null)
+        public async Task<IActionResult> UploadFileAsync(IFormFile file, string? prefix, string bucketName = "saleshub-bucket-132831331335-eu-central-1-an")
         {
             try
             {
-                var targetBucket = string.IsNullOrEmpty(bucketName) ? _bucketName : bucketName;
-                var bucketExist = await Amazon.S3.Util.AmazonS3Util.DoesS3BucketExistV2Async(_s3Client, targetBucket);
-                if (!bucketExist) return NotFound($"Bucket {targetBucket} does not exist");
+                var bucketExist = await Amazon.S3.Util.AmazonS3Util.DoesS3BucketExistV2Async(_s3Client, bucketName);
+                if (!bucketExist) return NotFound($"Bucket {bucketName} does not exist");
                 
                 var uniqueFileName = $"{Guid.NewGuid()}_{file.FileName}";
                 var fileKey = string.IsNullOrEmpty(prefix) ? uniqueFileName : $"{prefix.TrimEnd('/')}/{uniqueFileName}";
                 
                 var request = new PutObjectRequest()
                 {
-                    BucketName = targetBucket,
+                    BucketName = bucketName,
                     Key = fileKey,
                     InputStream = file.OpenReadStream()
                 };
                 request.Metadata.Add("Content-Type", file.ContentType);
                 await _s3Client.PutObjectAsync(request);
                 
-                var localUrl = $"{Request.Scheme}://{Request.Host}/api/File/preview?key={Uri.EscapeDataString(fileKey)}";
                 return Ok(new 
                 { 
                     Message = "File successfuly uploaded", 
-                    Url = localUrl,
+                    Url = $"https://{bucketName}.s3.{_configuration["AWS:Region"]}.amazonaws.com/{fileKey}",
                     FileName = uniqueFileName,
                     Prefix = prefix ?? string.Empty
                 });
             }
             catch (Exception e)
             {
-                _logger.LogWarning(e, "S3 upload failed. Falling back to local storage.");
-                try
-                {
-                    var uploadsFolder = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot", "images");
-                    if (!System.IO.Directory.Exists(uploadsFolder)) 
-                        System.IO.Directory.CreateDirectory(uploadsFolder);
-                    
-                    var uniqueFileName = $"{Guid.NewGuid()}_{file.FileName}";
-                    var filePath = System.IO.Path.Combine(uploadsFolder, uniqueFileName);
-                    
-                    using (var stream = new System.IO.FileStream(filePath, System.IO.FileMode.Create))
-                    {
-                        await file.CopyToAsync(stream);
-                    }
-                    
-                    var localUrl = $"{Request.Scheme}://{Request.Host}/images/{uniqueFileName}";
-                    return Ok(new 
-                    { 
-                        Message = "File successfully uploaded to local storage (S3 fallback)", 
-                        Url = localUrl,
-                        FileName = uniqueFileName,
-                        Prefix = prefix ?? string.Empty
-                    });
-                }
-                catch (Exception localEx)
-                {
-                    _logger.LogError(localEx, "Local fallback upload also failed.");
-                    return StatusCode(500, "Failed to upload image both to S3 and local fallback.");
-                }
+                Console.WriteLine(e);
+                return NoContent();
             }
             
         }
