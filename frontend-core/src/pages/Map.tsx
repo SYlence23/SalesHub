@@ -1,21 +1,74 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api';
+import { useNavigate } from 'react-router-dom';
+import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
 import usePlacesAutocomplete, { getGeocode, getLatLng } from 'use-places-autocomplete';
+import { X, ChevronLeft, ChevronRight, ExternalLink, MapPin, Clock, Tag, Store, Loader2 } from 'lucide-react';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface MapMarker {
     id: number;
     title: string;
     newPrice: number;
+    oldPrice?: number;
+    mainImageUrl?: string;
+    storeName?: string;
     latitude: number;
     longitude: number;
     markerColor?: string;
     categoryId: number;
 }
 
+interface OfferDetail {
+    id: number;
+    title: string;
+    description: string;
+    isActive: boolean;
+    categoryName: string;
+    newPrice: number;
+    oldPrice?: number;
+    validFrom?: string;
+    validTo?: string;
+    storeName: string;
+    storeDescription: string;
+    address?: string;
+    isOnline: boolean;
+    offerUrl?: string;
+    imageUrls: string[];
+    saveCount: number;
+    likeCount: number;
+    dislikeCount: number;
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const FALLBACK_IMAGE =
+    'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=800&q=80';
+
+function formatDate(dateStr?: string) {
+    if (!dateStr) return '—';
+    return new Date(dateStr).toLocaleDateString('uk-UA', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+    });
+}
+
+function calcDiscount(newPrice: number, oldPrice?: number) {
+    if (!oldPrice || oldPrice <= 0) return 0;
+    return Math.round(((oldPrice - newPrice) / oldPrice) * 100);
+}
+
+function resolveImageUrl(url: string) {
+    if (!url) return FALLBACK_IMAGE;
+    return url.startsWith('http') ? url : `https://localhost:7094${url}`;
+}
+
+// ─── StreetSearch ─────────────────────────────────────────────────────────────
 
 const StreetSearch: React.FC<{
-    onSelect: (coords: { lat: number, lng: number }) => void,
-    mapRef: React.MutableRefObject<google.maps.Map | null>
+    onSelect: (coords: { lat: number; lng: number }) => void;
+    mapRef: React.MutableRefObject<google.maps.Map | null>;
 }> = ({ onSelect, mapRef }) => {
     const {
         ready,
@@ -34,12 +87,9 @@ const StreetSearch: React.FC<{
     const goToAddress = async (address: string, placeId?: string) => {
         setValue(address, false);
         clearSuggestions();
-
         if (!mapRef.current) return;
-
         try {
             let lat: number, lng: number;
-
             if (placeId) {
                 const service = new google.maps.places.PlacesService(mapRef.current);
                 const result = await new Promise<google.maps.places.PlaceResult | null>((resolve) => {
@@ -48,62 +98,51 @@ const StreetSearch: React.FC<{
                         else resolve(null);
                     });
                 });
-
                 if (result?.geometry?.location) {
                     lat = result.geometry.location.lat();
                     lng = result.geometry.location.lng();
-                } else {
-                    throw new Error("Could not get details from PlacesService");
-                }
+                } else throw new Error('Could not get details');
             } else {
                 const results = await getGeocode({ address });
                 const coords = await getLatLng(results[0]);
                 lat = coords.lat;
                 lng = coords.lng;
             }
-
             onSelect({ lat, lng });
-
             if (mapRef.current) {
                 mapRef.current.setCenter({ lat, lng });
                 mapRef.current.setZoom(17);
                 mapRef.current.panTo({ lat, lng });
-                console.log("Map focus moved to:", address);
             }
-        } catch (error) {
-            console.error("Error getting coordinates:", error);
-            alert("Could not find location. Try choosing the address from the list.");
+        } catch {
+            alert('Could not find location. Try choosing the address from the list.');
         }
     };
 
-    const handleButtonClick = (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (data.length > 0) {
-            goToAddress(data[0].description, data[0].place_id);
-        } else if (value) {
-            goToAddress(value);
-        }
+        if (data.length > 0) goToAddress(data[0].description, data[0].place_id);
+        else if (value) goToAddress(value);
     };
 
     return (
-        <div className="absolute top-20 left-4 z-[100] w-80">
-            <form onSubmit={handleButtonClick} className="flex gap-2">
-                <div className="relative flex-grow">
+        <div className="absolute top-4 left-4 z-[100] w-72 sm:w-80">
+            <form onSubmit={handleSubmit}>
+                <div className="relative">
                     <input
                         value={value}
                         onChange={(e) => setValue(e.target.value)}
                         disabled={!ready}
-                        placeholder={ready ? "Введіть вулицю або адресу..." : "Завантаження..."}
-                        className="w-full p-2.5 px-4 rounded-xl shadow-2xl border border-zinc-200 bg-white dark:bg-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all text-black"
+                        placeholder={ready ? 'Введіть вулицю або адресу...' : 'Завантаження...'}
+                        className="w-full p-2.5 px-4 rounded-xl shadow-2xl border border-zinc-200 bg-white dark:bg-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-primary-400 transition-all text-black text-sm"
                     />
-
-                    {status === "OK" && (
-                        <ul className="absolute left-0 w-full bg-white dark:bg-zinc-800 mt-2 rounded-xl shadow-2xl border border-zinc-200 overflow-hidden z-[9999] list-none p-0 m-0">
+                    {status === 'OK' && (
+                        <ul className="absolute left-0 w-full bg-white dark:bg-zinc-800 mt-2 rounded-xl shadow-2xl border border-zinc-200 dark:border-zinc-700 overflow-hidden z-[9999] list-none p-0 m-0">
                             {data.map(({ place_id, description }) => (
                                 <li
                                     key={place_id}
                                     onClick={() => goToAddress(description, place_id)}
-                                    className="p-3 px-4 hover:bg-zinc-100 dark:hover:bg-zinc-700 cursor-pointer text-sm border-b last:border-0 border-zinc-100 dark:border-zinc-700 text-black dark:text-white bg-white dark:bg-zinc-800"
+                                    className="p-3 px-4 hover:bg-zinc-100 dark:hover:bg-zinc-700 cursor-pointer text-sm border-b last:border-0 border-zinc-100 dark:border-zinc-700 text-black dark:text-white"
                                 >
                                     {description}
                                 </li>
@@ -116,205 +155,513 @@ const StreetSearch: React.FC<{
     );
 };
 
-const MapPage: React.FC = () => {
+// ─── Hover Tooltip (desktop only) ─────────────────────────────────────────────
 
+const MapTooltip: React.FC<{ marker: MapMarker; pos: { x: number; y: number } }> = ({
+    marker,
+    pos,
+}) => {
+    const discount = calcDiscount(marker.newPrice, marker.oldPrice);
+    const imgSrc = marker.mainImageUrl
+        ? resolveImageUrl(marker.mainImageUrl)
+        : FALLBACK_IMAGE;
+
+    return (
+        <div
+            className="fixed z-[300] pointer-events-none hidden lg:block animate-fade-in"
+            style={{ left: pos.x + 18, top: pos.y, transform: 'translateY(-50%)' }}
+        >
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-100 dark:border-zinc-800 overflow-hidden w-56">
+                {/* Image */}
+                <div className="h-32 overflow-hidden bg-zinc-100 dark:bg-zinc-800 relative">
+                    <img
+                        src={imgSrc}
+                        alt={marker.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => { e.currentTarget.src = FALLBACK_IMAGE; }}
+                    />
+                    {discount > 0 && (
+                        <span className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-md shadow">
+                            −{discount}%
+                        </span>
+                    )}
+                </div>
+                {/* Info */}
+                <div className="p-3">
+                    {marker.storeName && (
+                        <p className="text-[11px] text-primary-500 font-semibold mb-0.5 truncate">{marker.storeName}</p>
+                    )}
+                    <h4 className="font-bold text-sm text-zinc-900 dark:text-white leading-snug line-clamp-2 mb-2">
+                        {marker.title}
+                    </h4>
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-base font-extrabold text-zinc-900 dark:text-white">
+                            {marker.newPrice.toLocaleString('uk-UA')} ₴
+                        </span>
+                        {marker.oldPrice && marker.oldPrice > 0 && (
+                            <span className="text-xs text-zinc-400 line-through">
+                                {marker.oldPrice.toLocaleString('uk-UA')} ₴
+                            </span>
+                        )}
+                    </div>
+                    <p className="text-[11px] text-zinc-400 mt-1.5">Натисніть для деталей →</p>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// ─── Panel / Bottom-sheet content ─────────────────────────────────────────────
+
+const OfferPanelContent: React.FC<{
+    offer: OfferDetail;
+    onClose: () => void;
+    onNavigate: () => void;
+    activeImg: number;
+    setActiveImg: (i: number) => void;
+}> = ({ offer, onClose, onNavigate, activeImg, setActiveImg }) => {
+    const discount = calcDiscount(offer.newPrice, offer.oldPrice);
+    const images = offer.imageUrls?.length ? offer.imageUrls : [FALLBACK_IMAGE];
+    const isExpired = offer.validTo ? new Date(offer.validTo) < new Date() : false;
+
+    return (
+        <div className="flex flex-col h-full">
+
+            {/* ── Header ── */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-100 dark:border-zinc-800 flex-shrink-0 bg-white dark:bg-zinc-900">
+                <span className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">Деталі знижки</span>
+                <button
+                    onClick={onClose}
+                    className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center transition-colors"
+                    aria-label="Закрити"
+                >
+                    <X className="w-4 h-4 text-zinc-600 dark:text-zinc-300" />
+                </button>
+            </div>
+
+            {/* ── Scrollable Body ── */}
+            <div className="flex-1 overflow-y-auto">
+
+                {/* Image Gallery */}
+                <div className="relative h-52 sm:h-60 bg-zinc-100 dark:bg-zinc-800 flex-shrink-0">
+                    <img
+                        src={resolveImageUrl(images[activeImg])}
+                        alt={offer.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => { e.currentTarget.src = FALLBACK_IMAGE; }}
+                    />
+                    {/* Badges */}
+                    <div className="absolute top-3 left-3 flex gap-2">
+                        {discount > 0 && (
+                            <span className="bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-md">
+                                −{discount}%
+                            </span>
+                        )}
+                        <span className={`text-white text-xs font-semibold px-2.5 py-1 rounded-full shadow-md ${offer.isActive && !isExpired ? 'bg-emerald-500' : 'bg-zinc-500'}`}>
+                            {offer.isActive && !isExpired ? '● Активна' : '● Завершилась'}
+                        </span>
+                    </div>
+                    {/* Gallery nav */}
+                    {images.length > 1 && (
+                        <>
+                            <button
+                                onClick={() => setActiveImg((activeImg - 1 + images.length) % images.length)}
+                                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-all"
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                            </button>
+                            <button
+                                onClick={() => setActiveImg((activeImg + 1) % images.length)}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-all"
+                            >
+                                <ChevronRight className="w-4 h-4" />
+                            </button>
+                        </>
+                    )}
+                    {/* Dot indicators */}
+                    {images.length > 1 && (
+                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+                            {images.map((_, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => setActiveImg(i)}
+                                    className={`h-1.5 rounded-full transition-all duration-200 ${i === activeImg ? 'w-5 bg-white' : 'w-1.5 bg-white/55'}`}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Details */}
+                <div className="p-4 space-y-4">
+
+                    {/* Category + Title */}
+                    <div>
+                        <p className="text-xs font-bold text-primary-500 uppercase tracking-wider flex items-center gap-1 mb-1">
+                            <Tag className="w-3 h-3" /> {offer.categoryName}
+                        </p>
+                        <h2 className="text-xl font-bold text-zinc-900 dark:text-white leading-tight">
+                            {offer.title}
+                        </h2>
+                    </div>
+
+                    {/* Price */}
+                    <div className="bg-zinc-50 dark:bg-zinc-800/70 rounded-xl p-3.5">
+                        <div className="flex items-end gap-2.5 flex-wrap">
+                            <span className="text-3xl font-extrabold text-zinc-900 dark:text-white">
+                                {offer.newPrice.toFixed(2)}
+                                <span className="text-xl ml-1">₴</span>
+                            </span>
+                            {discount > 0 && (
+                                <span className="mb-1 bg-red-100 dark:bg-red-900/30 text-red-500 text-sm font-bold px-2 py-0.5 rounded-lg">
+                                    −{discount}%
+                                </span>
+                            )}
+                        </div>
+                        {offer.oldPrice && offer.oldPrice > 0 && (
+                            <p className="text-zinc-400 text-sm line-through mt-0.5">
+                                Було {offer.oldPrice.toFixed(2)} ₴
+                            </p>
+                        )}
+                    </div>
+
+                    {/* Description */}
+                    {offer.description && (
+                        <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed whitespace-pre-line">
+                            {offer.description}
+                        </p>
+                    )}
+
+                    {/* Store info */}
+                    <div className="border border-zinc-100 dark:border-zinc-800 rounded-xl p-3.5 space-y-2.5">
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <Store className="w-4 h-4 text-primary-500 flex-shrink-0" />
+                            <span className="text-sm font-bold text-zinc-900 dark:text-white">{offer.storeName}</span>
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wide ${offer.isOnline
+                                ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                                : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
+                                }`}>
+                                {offer.isOnline ? 'Онлайн' : 'Фізичний'}
+                            </span>
+                        </div>
+                        {offer.address && !offer.isOnline && (
+                            <div className="flex items-start gap-2">
+                                <MapPin className="w-4 h-4 text-zinc-400 flex-shrink-0 mt-0.5" />
+                                <span className="text-sm text-zinc-600 dark:text-zinc-300">{offer.address}</span>
+                            </div>
+                        )}
+                        {offer.storeDescription && (
+                            <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed pl-6">
+                                {offer.storeDescription}
+                            </p>
+                        )}
+                    </div>
+
+                    {/* Validity period */}
+                    {(offer.validFrom || offer.validTo) && (
+                        <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+                            <Clock className="w-4 h-4 flex-shrink-0" />
+                            <span>
+                                {offer.validFrom && `З ${formatDate(offer.validFrom)} `}
+                                {offer.validTo && `до ${formatDate(offer.validTo)}`}
+                            </span>
+                        </div>
+                    )}
+
+                    {/* Ratings summary */}
+                    {(offer.likeCount > 0 || offer.dislikeCount > 0) && (
+                        <div className="flex items-center gap-3 text-sm">
+                            <span className="text-emerald-500 font-semibold">👍 {offer.likeCount}</span>
+                            <span className="text-red-400 font-semibold">👎 {offer.dislikeCount}</span>
+                            <span className="text-zinc-400">· {offer.saveCount} збережень</span>
+                        </div>
+                    )}
+
+                    {/* Actions */}
+                    <div className="flex flex-col gap-2 pt-1 pb-6">
+                        <button
+                            onClick={onNavigate}
+                            className="w-full bg-primary-500 hover:bg-primary-600 active:scale-[0.98] text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm"
+                        >
+                            <ExternalLink className="w-4 h-4" />
+                            Відкрити повну сторінку
+                        </button>
+                        {offer.isOnline && offer.offerUrl && (
+                            <a
+                                href={offer.offerUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="w-full border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold py-2.5 rounded-xl flex items-center justify-center gap-2 hover:border-primary-400 hover:text-primary-500 transition-all text-sm"
+                            >
+                                Перейти на сайт магазину
+                            </a>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// ─── Loading skeleton for panel ───────────────────────────────────────────────
+
+const PanelLoader: React.FC = () => (
+    <div className="flex flex-col items-center justify-center gap-3 p-12 h-full">
+        <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">Завантаження деталей...</p>
+    </div>
+);
+
+// ─── MapPage ──────────────────────────────────────────────────────────────────
+
+const MapPage: React.FC = () => {
     const { isLoaded } = useJsApiLoader({
         id: 'google-map-script',
         googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string,
         libraries: ['places'],
         language: 'uk',
-        region: 'UA'
+        region: 'UA',
     });
 
-    // States 
+    const navigate = useNavigate();
+
+    // Map core state
     const [center, setCenter] = useState({ lat: 49.8397, lng: 24.0297 });
     const [zoom, setZoom] = useState(14);
-    const [userLocation, setUserLocation] = useState<{ lat: number, lng: number } | null>(null);
+    const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [markers, setMarkers] = useState<MapMarker[]>([]);
-    const [selectedMarker, setSelectedMarker] = useState<MapMarker | null>(null);
-    const [offerDetails, setOfferDetails] = useState<any | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isDetailLoading, setIsDetailLoading] = useState(false);
-
     const mapRef = useRef<google.maps.Map | null>(null);
 
+    // Hover tooltip (desktop only)
+    const [hoveredMarker, setHoveredMarker] = useState<MapMarker | null>(null);
+    const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
+    const mousePos = useRef({ x: 0, y: 0 });
 
+    // Detail panel
+    const [isPanelOpen, setIsPanelOpen] = useState(false);
+    const [isPanelLoading, setIsPanelLoading] = useState(false);
+    const [selectedOffer, setSelectedOffer] = useState<OfferDetail | null>(null);
+    const [activeImg, setActiveImg] = useState(0);
+
+    // Track global mouse position for tooltip
     useEffect(() => {
-        const query = new URLSearchParams(window.location.search);
-        const lat = query.get('lat');
-        const lng = query.get('lng');
+        const onMove = (e: MouseEvent) => {
+            mousePos.current = { x: e.clientX, y: e.clientY };
+            if (hoveredMarker) setTooltipPos({ x: e.clientX, y: e.clientY });
+        };
+        window.addEventListener('mousemove', onMove);
+        return () => window.removeEventListener('mousemove', onMove);
+    }, [hoveredMarker]);
+
+    // Lock body scroll on mobile when sheet is open
+    useEffect(() => {
+        const isMobile = window.innerWidth < 1024;
+        document.body.style.overflow = isPanelOpen && isMobile ? 'hidden' : '';
+        return () => { document.body.style.overflow = ''; };
+    }, [isPanelOpen]);
+
+    // ESC closes panel
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closePanel(); };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, []);
+
+    // Read ?lat=&lng= from URL
+    useEffect(() => {
+        const q = new URLSearchParams(window.location.search);
+        const lat = q.get('lat');
+        const lng = q.get('lng');
         if (lat && lng) {
-            const initialPos = { lat: parseFloat(lat.replace(',', '.')), lng: parseFloat(lng.replace(',', '.')) };
-            setCenter(initialPos);
-            setUserLocation(initialPos);
+            const pos = {
+                lat: parseFloat(lat.replace(',', '.')),
+                lng: parseFloat(lng.replace(',', '.')),
+            };
+            setCenter(pos);
+            setUserLocation(pos);
             setZoom(16);
         }
     }, []);
 
-    const onLoad = useCallback((map: google.maps.Map) => {
+    const onMapLoad = useCallback((map: google.maps.Map) => {
         mapRef.current = map;
     }, []);
 
+    // Fetch markers whenever map viewport changes
     const fetchMarkers = async () => {
         if (!mapRef.current) return;
         const bounds = mapRef.current.getBounds();
         if (!bounds) return;
-
         const ne = bounds.getNorthEast();
         const sw = bounds.getSouthWest();
-
         try {
-            const response = await fetch(`/api/Map/markers?minLat=${sw.lat()}&maxLat=${ne.lat()}&minLon=${sw.lng()}&maxLon=${ne.lng()}`);
-            if (response.ok) {
-                const data = await response.json();
-                setMarkers(data);
-            }
-        } catch (error) {
-            console.error('Failed to fetch markers:', error);
+            const res = await fetch(
+                `/api/Map/markers?minLat=${sw.lat()}&maxLat=${ne.lat()}&minLon=${sw.lng()}&maxLon=${ne.lng()}`
+            );
+            if (res.ok) setMarkers(await res.json());
+        } catch (err) {
+            console.error('Failed to fetch markers:', err);
         }
     };
 
-    const openDiscount = async (id: number) => {
-        setIsDetailLoading(true);
+    // Hover handlers
+    const handleMarkerMouseOver = (marker: MapMarker) => {
+        setHoveredMarker(marker);
+        setTooltipPos({ x: mousePos.current.x, y: mousePos.current.y });
+    };
+    const handleMarkerMouseOut = () => {
+        setHoveredMarker(null);
+        setTooltipPos(null);
+    };
+
+    // Click → open side panel / bottom sheet with full details
+    const handleMarkerClick = async (marker: MapMarker) => {
+        setHoveredMarker(null);
+        setTooltipPos(null);
+        setIsPanelOpen(true);
+        setIsPanelLoading(true);
+        setSelectedOffer(null);
+        setActiveImg(0);
         try {
-            const response = await fetch(`/api/Map/offer/${id}`);
-            if (response.ok) {
-                const data = await response.json();
-                setOfferDetails(data);
-                setIsModalOpen(true);
-            }
-        } catch (error) {
-            console.error('Error fetching discount details:', error);
+            const res = await fetch(`/api/Map/offer/${marker.id}`);
+            if (res.ok) setSelectedOffer(await res.json());
+        } catch (err) {
+            console.error('Error fetching offer details:', err);
         } finally {
-            setIsDetailLoading(false);
+            setIsPanelLoading(false);
         }
     };
 
-    const handleStreetSelect = useCallback(({ lat, lng }: { lat: number, lng: number }) => {
+    const closePanel = () => {
+        setIsPanelOpen(false);
+        setSelectedOffer(null);
+    };
+
+    const handleStreetSelect = useCallback(({ lat, lng }: { lat: number; lng: number }) => {
         setCenter({ lat, lng });
         setZoom(17);
     }, []);
 
     const shareLocation = () => {
-        if (!navigator.geolocation) {
-            alert('Geolocation is not supported by your browser.');
-            return;
-        }
-        navigator.geolocation.getCurrentPosition(async (position) => {
-            const { latitude, longitude } = position.coords;
-            setCenter({ lat: latitude, lng: longitude });
+        if (!navigator.geolocation) { alert('Геолокація не підтримується.'); return; }
+        navigator.geolocation.getCurrentPosition(({ coords }) => {
+            const pos = { lat: coords.latitude, lng: coords.longitude };
+            setCenter(pos);
             setZoom(16);
-            setUserLocation({ lat: latitude, lng: longitude });
-            if (mapRef.current) mapRef.current.panTo({ lat: latitude, lng: longitude });
+            setUserLocation(pos);
+            mapRef.current?.panTo(pos);
         });
     };
 
-    const closeModal = () => {
-        setIsModalOpen(false);
-        setOfferDetails(null);
-    };
+    if (!isLoaded) {
+        return (
+            <div className="flex items-center justify-center flex-grow min-h-[calc(100vh-60px)]">
+                <div className="animate-pulse text-zinc-500">Завантаження карти...</div>
+            </div>
+        );
+    }
 
-    useEffect(() => {
-        document.body.style.overflow = isModalOpen ? 'hidden' : 'unset';
-    }, [isModalOpen]);
+    // Shared panel content (used in both desktop panel and mobile sheet)
+    const panelContent = isPanelLoading ? (
+        <PanelLoader />
+    ) : selectedOffer ? (
+        <OfferPanelContent
+            offer={selectedOffer}
+            onClose={closePanel}
+            onNavigate={() => navigate(`/offers/${selectedOffer.id}`)}
+            activeImg={activeImg}
+            setActiveImg={setActiveImg}
+        />
+    ) : null;
 
-    useEffect(() => {
-        const handleEsc = (event: KeyboardEvent) => { if (event.key === 'Escape') closeModal(); };
-        window.addEventListener('keydown', handleEsc);
-        return () => window.removeEventListener('keydown', handleEsc);
-    }, []);
+    return (
+        <div className="w-full flex-grow flex flex-col lg:flex-row relative min-h-[calc(100vh-60px)] overflow-hidden">
 
-    return isLoaded ? (
-        <div className="w-full flex-grow relative min-h-[calc(100vh-60px)]">
+            {/* ── Map area ─────────────────────────────────────────────────── */}
+            <div className="relative flex-1 min-h-[55vh] lg:min-h-0">
+                {/* Search bar */}
+                <StreetSearch onSelect={handleStreetSelect} mapRef={mapRef} />
 
-            <StreetSearch onSelect={handleStreetSelect} mapRef={mapRef} />
+                {/* My Location button */}
+                <button
+                    onClick={shareLocation}
+                    className="absolute bottom-5 right-16 z-10 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700 p-2.5 px-4 text-sm rounded-full shadow-xl transition-colors flex items-center gap-2"
+                >
+                    📍 Моя локація
+                </button>
 
-            <button
-                onClick={shareLocation}
-                className="absolute bottom-5 right-16 z-10 bg-zinc-500 hover:bg-zinc-600 text-white p-2.5 px-4 text-sm rounded-full shadow-xl transition-colors flex items-center gap-2"
+                <GoogleMap
+                    mapContainerClassName="absolute inset-0 w-full h-full"
+                    center={center}
+                    zoom={zoom}
+                    onLoad={onMapLoad}
+                    onIdle={fetchMarkers}
+                >
+                    {/* User location marker */}
+                    {userLocation && (
+                        <Marker
+                            position={userLocation}
+                            icon={{ url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png' }}
+                        />
+                    )}
+
+                    {/* Offer markers */}
+                    {markers.map((marker) => (
+                        <Marker
+                            key={marker.id}
+                            position={{ lat: marker.latitude, lng: marker.longitude }}
+                            onMouseOver={() => handleMarkerMouseOver(marker)}
+                            onMouseOut={handleMarkerMouseOut}
+                            onClick={() => handleMarkerClick(marker)}
+                            icon={marker.markerColor
+                                ? {
+                                    path: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z',
+                                    fillColor: marker.markerColor,
+                                    fillOpacity: 1,
+                                    strokeWeight: 1,
+                                    strokeColor: '#FFFFFF',
+                                    scale: 1.5,
+                                    anchor: new google.maps.Point(12, 22),
+                                }
+                                : undefined}
+                        />
+                    ))}
+                </GoogleMap>
+            </div>
+
+            {/* ── Desktop side panel (lg+) ──────────────────────────────────── */}
+            <div
+                className={`hidden lg:flex flex-col border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 transition-[width] duration-300 ease-in-out overflow-hidden ${isPanelOpen ? 'w-[420px]' : 'w-0'}`}
             >
-                📍 Моя локація
-            </button>
+                {isPanelOpen && panelContent}
+            </div>
 
-            <GoogleMap
-                mapContainerClassName="absolute inset-0 w-full h-full"
-                center={center}
-                zoom={zoom}
-                onLoad={onLoad}
-                onIdle={fetchMarkers}
-            >
-                {userLocation && (
-                    <Marker
-                        position={userLocation}
-                        icon={{ url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png' }}
+            {/* ── Mobile bottom sheet (< lg) ────────────────────────────────── */}
+            {isPanelOpen && (
+                <div className="lg:hidden fixed inset-0 z-[500]">
+                    {/* Backdrop */}
+                    <div
+                        className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
+                        onClick={closePanel}
                     />
-                )}
-
-                {markers.map(marker => (
-                    <Marker
-                        key={marker.id}
-                        position={{ lat: marker.latitude, lng: marker.longitude }}
-                        onClick={() => setSelectedMarker(marker)}
-                        icon={marker.markerColor ? {
-                            path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z",
-                            fillColor: marker.markerColor,
-                            fillOpacity: 1,
-                            strokeWeight: 1,
-                            strokeColor: '#FFFFFF',
-                            scale: 1.5,
-                            anchor: new google.maps.Point(12, 22),
-                        } : undefined}
-                    />
-                ))}
-
-                {selectedMarker && (
-                    <InfoWindow
-                        position={{ lat: selectedMarker.latitude, lng: selectedMarker.longitude }}
-                        onCloseClick={() => setSelectedMarker(null)}
-                    >
-                        <div className="text-black p-2 min-w-[150px]">
-                            <h3 className="font-bold mb-1">{selectedMarker.title}</h3>
-                            <p className="text-emerald-600 font-semibold">{selectedMarker.newPrice} грн</p>
-                            <button
-                                onClick={() => openDiscount(selectedMarker.id)}
-                                className="w-full bg-blue-600 text-white py-1.5 rounded text-sm mt-2 hover:bg-blue-700 transition-colors"
-                            >
-                                {isDetailLoading ? 'Завантаження...' : 'Відкрити знижку'}
-                            </button>
+                    {/* Sheet */}
+                    <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-zinc-900 rounded-t-2xl shadow-2xl max-h-[88vh] flex flex-col animate-slide-up overflow-hidden">
+                        {/* Drag handle */}
+                        <div className="flex-shrink-0 flex justify-center pt-3 pb-1">
+                            <div className="w-10 h-1 bg-zinc-300 dark:bg-zinc-600 rounded-full" />
                         </div>
-                    </InfoWindow>
-                )}
-            </GoogleMap>
-
-            {/* Modal - відображення оферу */}
-            {isModalOpen && offerDetails && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={closeModal}>
-                    <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden relative" onClick={e => e.stopPropagation()}>
-                        <button onClick={closeModal} className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center bg-black/20 hover:bg-black/40 text-white rounded-full transition-all">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                        </button>
-
-                        {offerDetails.allImages?.[0] && (
-                            <div className="w-full h-48 bg-zinc-200">
-                                <img src={offerDetails.allImages[0]} alt={offerDetails.title} className="w-full h-full object-cover" />
-                            </div>
-                        )}
-
-                        <div className="p-6">
-                            <h2 className="text-2xl font-bold dark:text-white mb-1">{offerDetails.title}</h2>
-                            <p className="text-blue-600 font-medium mb-4">{offerDetails.storeName}</p>
-                            <div className="flex justify-between items-center pt-4 border-t border-zinc-100 dark:border-zinc-800">
-                                <span className="text-2xl font-bold text-emerald-600">{offerDetails.newPrice} грн</span>
-                                <span className="text-sm text-gray-500">До {new Date(offerDetails.validTo).toLocaleDateString()}</span>
-                            </div>
+                        {/* Scrollable content */}
+                        <div className="flex-1 overflow-y-auto">
+                            {panelContent}
                         </div>
                     </div>
                 </div>
             )}
-        </div>
-    ) : (
-        <div className="flex items-center justify-center flex-grow min-h-[calc(100vh-60px)]">
-            <div className="animate-pulse text-zinc-500">Завантаження карти...</div>
+
+            {/* ── Hover tooltip (desktop only, hidden when panel is open) ───── */}
+            {hoveredMarker && tooltipPos && !isPanelOpen && (
+                <MapTooltip marker={hoveredMarker} pos={tooltipPos} />
+            )}
         </div>
     );
 };
