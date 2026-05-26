@@ -4,8 +4,8 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import {
     ChevronLeft, ChevronRight, Bookmark, ThumbsUp, ThumbsDown, Share2,
-    MapPin, Globe, Tag, Clock, CheckCircle, XCircle, User, Calendar,
-    Send, Loader2, ExternalLink, Zap
+    MapPin, Globe, Tag, Clock, CheckCircle2, XCircle, User, Calendar,
+    Send, Loader2, ExternalLink, Eye
 } from 'lucide-react';
 
 interface OfferDetail {
@@ -47,8 +47,8 @@ interface Comment {
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=800&q=80";
 
 function formatDate(dateStr?: string) {
-    if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleDateString('uk-UA', { year: 'numeric', month: 'short', day: 'numeric' });
+    if (!dateStr) return 'Безстроково';
+    return new Date(dateStr).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 function timeAgo(dateStr: string) {
@@ -59,18 +59,6 @@ function timeAgo(dateStr: string) {
     const hrs = Math.floor(mins / 60);
     if (hrs < 24) return `${hrs} год тому`;
     return `${Math.floor(hrs / 24)} дн тому`;
-}
-
-function InfoRow({ icon, label, value, className }: { icon: React.ReactNode; label: string; value: React.ReactNode; className?: string }) {
-    return (
-        <div className={`flex items-start gap-3 py-3 border-b border-zinc-100 dark:border-zinc-800 last:border-0 ${className ?? ''}`}>
-            <span className="mt-0.5 text-primary-500 flex-shrink-0">{icon}</span>
-            <div className="min-w-0">
-                <p className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-0.5">{label}</p>
-                <div className="text-sm font-bold text-zinc-900 dark:text-white break-words">{value}</div>
-            </div>
-        </div>
-    );
 }
 
 export default function SingleOfferPage() {
@@ -105,7 +93,6 @@ export default function SingleOfferPage() {
         const fetchOfferAndInteractions = async () => {
             setIsLoading(true);
             try {
-                // Fetch Offer Details
                 const res = await api.get<OfferDetail>(`/Discounts/${id}`);
                 setOffer(res.data);
                 setSaveCount(res.data.saveCount);
@@ -117,7 +104,6 @@ export default function SingleOfferPage() {
                 return;
             }
 
-            // Fetch Reviews/Comments — окремо, щоб помилка не блокувала сторінку
             try {
                 const reviewsRes = await api.get<Comment[]>(`/Discounts/${id}/reviews`);
                 setComments(reviewsRes.data);
@@ -125,7 +111,6 @@ export default function SingleOfferPage() {
                 console.error("Error fetching reviews", e);
             }
 
-            // If authenticated, check saved and review status
             if (isAuthenticated) {
                 try {
                     const savedRes = await api.get<{ isSaved: boolean }>(`/User/saved-offers/${id}/check`);
@@ -164,7 +149,6 @@ export default function SingleOfferPage() {
                 await api.post(`/User/saved-offers/${id}`);
             }
         } catch (err) {
-            // Revert on failure
             setSaved(previousState);
             setSaveCount(prev => previousState ? prev + 1 : prev - 1);
         }
@@ -176,7 +160,6 @@ export default function SingleOfferPage() {
         const wasLiked = liked;
         const wasDisliked = disliked;
 
-        // Optimistic UI update
         setLiked(!wasLiked);
         setLikeCount(prev => wasLiked ? prev - 1 : prev + 1);
         if (wasDisliked) {
@@ -190,7 +173,6 @@ export default function SingleOfferPage() {
                 comment: null
             });
         } catch (err) {
-            // Revert
             setLiked(wasLiked);
             setDisliked(wasDisliked);
             setLikeCount(prev => wasLiked ? prev + 1 : prev - 1);
@@ -204,7 +186,6 @@ export default function SingleOfferPage() {
         const wasDisliked = disliked;
         const wasLiked = liked;
 
-        // Optimistic UI update
         setDisliked(!wasDisliked);
         setDislikeCount(prev => wasDisliked ? prev - 1 : prev + 1);
         if (wasLiked) {
@@ -218,7 +199,6 @@ export default function SingleOfferPage() {
                 comment: null
             });
         } catch (err) {
-            // Revert
             setDisliked(wasDisliked);
             setLiked(wasLiked);
             setDislikeCount(prev => wasDisliked ? prev + 1 : prev - 1);
@@ -241,11 +221,9 @@ export default function SingleOfferPage() {
         setIsPostingComment(true);
         try {
             const res = await api.post<Comment>(`/Discounts/${id}/reviews`, {
-                isRecommended: liked, // retain current recommendation status
+                isRecommended: liked,
                 comment: commentText.trim()
             });
-
-            // Update comments list
             setComments(prev => [res.data, ...prev]);
             setCommentText('');
         } catch (err) {
@@ -255,190 +233,236 @@ export default function SingleOfferPage() {
         }
     };
 
-    if (isLoading) return (
-        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-            <Loader2 className="w-10 h-10 text-primary-500 animate-spin" />
-            <p className="text-zinc-500 dark:text-zinc-400 font-medium">Завантаження пропозиції...</p>
-        </div>
-    );
+    // ── Loading skeleton (same style as GoodDealDetailsPage) ──
+    if (isLoading) {
+        return (
+            <div className="max-w-7xl mx-auto px-4 py-8 animate-pulse">
+                <div className="h-8 w-32 bg-zinc-200 dark:bg-zinc-700/50 rounded mb-6" />
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="lg:col-span-2 space-y-6">
+                        <div className="h-96 w-full bg-zinc-200 dark:bg-zinc-700/50 rounded-3xl" />
+                        <div className="h-40 w-full bg-zinc-200 dark:bg-zinc-700/50 rounded-3xl" />
+                    </div>
+                    <div className="space-y-6">
+                        <div className="h-48 w-full bg-zinc-200 dark:bg-zinc-700/50 rounded-3xl" />
+                        <div className="h-64 w-full bg-zinc-200 dark:bg-zinc-700/50 rounded-3xl" />
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
-    if (error || !offer) return (
-        <div className="max-w-2xl mx-auto px-4 py-20 text-center">
-            <div className="text-6xl mb-6">🔍</div>
-            <h2 className="text-2xl font-bold mb-2 text-zinc-900 dark:text-white">Знижку не знайдено</h2>
-            <p className="text-zinc-500 dark:text-zinc-400 mb-8">{error ?? 'Ця пропозиція не існує або була видалена.'}</p>
-            <button onClick={() => navigate('/offers')} className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-2.5 rounded-xl transition-colors font-bold">
-                Переглянути інші пропозиції
-            </button>
-        </div>
-    );
+    // ── Error state ──
+    if (error || !offer) {
+        return (
+            <div className="max-w-4xl mx-auto px-4 py-20 text-center">
+                <Tag className="w-12 h-12 text-zinc-300 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold mb-2">Знижку не знайдено</h2>
+                <p className="text-zinc-500 mb-6">{error ?? 'Можливо її було видалено або вона не існує.'}</p>
+                <button onClick={() => navigate('/offers')} className="btn-primary">
+                    Повернутися до списку
+                </button>
+            </div>
+        );
+    }
 
     const images = offer.imageUrls?.length > 0 ? offer.imageUrls : [FALLBACK_IMAGE];
     const discount = offer.oldPrice && offer.oldPrice > 0
         ? Math.round(((offer.oldPrice - offer.newPrice) / offer.oldPrice) * 100)
         : 0;
-    const isExpired = offer.validTo ? new Date(offer.validTo) < new Date() : false;
+    const now = new Date();
+    const validToDate = offer.validTo ? new Date(offer.validTo) : null;
+    const isExpired = validToDate && validToDate < now;
+    const isExpiringSoon = validToDate && !isExpired && (validToDate.getTime() - now.getTime()) < 3 * 24 * 60 * 60 * 1000;
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Back button */}
             <button
                 onClick={() => navigate(-1)}
-                className="flex items-center gap-1 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 mb-6 transition-colors group font-semibold"
+                className="flex items-center text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 mb-6 transition-colors font-semibold gap-1 text-sm uppercase tracking-wider"
             >
-                <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
-                Назад
+                <ChevronLeft className="w-4 h-4" />
+                <span>Назад</span>
             </button>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                {/* ── LEFT COLUMN ── */}
-                <div className="lg:col-span-2 flex flex-col gap-6">
+                {/* LEFT COLUMN: Main content cards */}
+                <div className="lg:col-span-2 space-y-6">
 
-                    {/* ── IMAGE GALLERY ── */}
-                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden rounded-2xl">
-                        <div className="relative aspect-[16/9] bg-zinc-100 dark:bg-zinc-800">
-                            <img
-                                src={images[activeImg].startsWith('http') ? images[activeImg] : `https://localhost:7094${images[activeImg]}`}
-                                alt={offer.title}
-                                className="w-full h-full object-cover transition-opacity duration-300"
-                                onError={e => { e.currentTarget.src = FALLBACK_IMAGE; }}
-                            />
-                            {/* Badges overlay */}
-                            <div className="absolute top-4 left-4 flex gap-2">
-                                {discount > 0 && (
-                                    <span className="bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow-lg">
-                                        -{discount}%
-                                    </span>
-                                )}
-                                <span className={`text-white text-xs font-semibold px-3 py-1 rounded-full shadow-lg ${offer.isActive && !isExpired ? 'bg-emerald-500' : 'bg-zinc-500'}`}>
-                                    {offer.isActive && !isExpired ? '● Активна' : '● Завершилась'}
+                    {/* 1. Image card */}
+                    <div className="relative w-full h-80 sm:h-[480px] rounded-3xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 group shadow-lg">
+                        <img
+                            src={images[activeImg].startsWith('http') ? images[activeImg] : `https://localhost:7094${images[activeImg]}`}
+                            alt={offer.title}
+                            className="w-full h-full object-cover transition-all duration-500"
+                            onError={e => { e.currentTarget.src = FALLBACK_IMAGE; }}
+                        />
+
+                        {/* Badges on image */}
+                        <div className="absolute top-5 left-5 flex flex-wrap gap-2">
+                            {discount > 0 && (
+                                <span className="bg-gradient-to-r from-red-600 to-red-400 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg uppercase tracking-wider flex items-center gap-1.5">
+                                    -{discount}%
                                 </span>
-                            </div>
-                            {/* Image nav arrows */}
-                            {images.length > 1 && (
-                                <>
-                                    <button
-                                        onClick={() => setActiveImg(i => (i - 1 + images.length) % images.length)}
-                                        className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-all"
-                                    >
-                                        <ChevronLeft className="w-5 h-5" />
-                                    </button>
-                                    <button
-                                        onClick={() => setActiveImg(i => (i + 1) % images.length)}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center backdrop-blur-sm transition-all"
-                                    >
-                                        <ChevronRight className="w-5 h-5" />
-                                    </button>
-                                </>
+                            )}
+
+                            {isExpired ? (
+                                <span className="bg-zinc-950/80 text-zinc-300 text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5 backdrop-blur-md">
+                                    <span className="w-2 h-2 rounded-full bg-zinc-400" />
+                                    Завершено
+                                </span>
+                            ) : isExpiringSoon ? (
+                                <span className="bg-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5 animate-pulse">
+                                    <span className="w-2 h-2 rounded-full bg-white" />
+                                    Скоро завершується
+                                </span>
+                            ) : (
+                                <span className="bg-primary-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
+                                    <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                                    Активна
+                                </span>
                             )}
                         </div>
-                        {/* Thumbnails */}
+
+                        {/* Image navigation arrows */}
                         {images.length > 1 && (
-                            <div className="flex gap-2 p-3 overflow-x-auto">
-                                {images.map((img, i) => (
-                                    <button
-                                        key={i}
-                                        onClick={() => setActiveImg(i)}
-                                        className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${i === activeImg ? 'border-primary-500 opacity-100' : 'border-transparent opacity-60 hover:opacity-90'}`}
-                                    >
-                                        <img src={img.startsWith('http') ? img : `https://localhost:7094${img}`} alt="" className="w-full h-full object-cover" onError={e => { e.currentTarget.src = FALLBACK_IMAGE; }} />
-                                    </button>
-                                ))}
-                            </div>
+                            <>
+                                <button
+                                    onClick={() => setActiveImg(i => (i - 1 + images.length) % images.length)}
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 p-2.5 bg-black/40 hover:bg-black/60 text-white rounded-full backdrop-blur-md transition-all opacity-0 group-hover:opacity-100 shadow-md"
+                                >
+                                    <ChevronLeft className="w-5 h-5" />
+                                </button>
+                                <button
+                                    onClick={() => setActiveImg(i => (i + 1) % images.length)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 p-2.5 bg-black/40 hover:bg-black/60 text-white rounded-full backdrop-blur-md transition-all opacity-0 group-hover:opacity-100 shadow-md"
+                                >
+                                    <ChevronRight className="w-5 h-5" />
+                                </button>
+                                <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-1.5 bg-black/35 px-3 py-1.5 rounded-full backdrop-blur-xs">
+                                    {images.map((_, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={() => setActiveImg(i)}
+                                            className={`w-2 h-2 rounded-full transition-all ${i === activeImg ? 'bg-primary-400 w-5' : 'bg-white/60 hover:bg-white'}`}
+                                        />
+                                    ))}
+                                </div>
+                            </>
                         )}
                     </div>
 
-                    {/* ── TITLE & DESCRIPTION ── */}
-                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm p-6 rounded-2xl">
-                        <div className="flex items-start justify-between gap-4 mb-3">
-                            <div>
-                                <p className="text-sm font-semibold text-primary-500 mb-1 flex items-center gap-1.5">
-                                    <Tag className="w-3.5 h-3.5" />
-                                    {offer.categoryName}
-                                </p>
-                                <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white leading-tight">
-                                    {offer.title}
-                                </h1>
-                            </div>
+                    {/* Thumbnails */}
+                    {images.length > 1 && (
+                        <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+                            {images.map((img, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => setActiveImg(i)}
+                                    className={`shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all ${i === activeImg ? 'border-primary-500 scale-105 shadow-md' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                                >
+                                    <img src={img.startsWith('http') ? img : `https://localhost:7094${img}`} alt="" className="w-full h-full object-cover" onError={e => { e.currentTarget.src = FALLBACK_IMAGE; }} />
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* 2. Text details card */}
+                    <div className="glass-card p-6 sm:p-8 space-y-4">
+                        {/* Category */}
+                        <div className="flex items-center gap-2 text-sm font-semibold text-primary-600 dark:text-primary-400">
+                            <Tag className="w-4 h-4 text-primary-500" />
+                            <span className="uppercase tracking-wider">{offer.categoryName}</span>
                         </div>
 
+                        {/* Title */}
+                        <h1 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-white leading-tight">
+                            {offer.title}
+                        </h1>
+
+                        {/* Description */}
                         {offer.description && (
-                            <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-sm mt-4 whitespace-pre-line">
+                            <p className="text-zinc-600 dark:text-zinc-300 leading-relaxed text-base whitespace-pre-wrap pt-2">
                                 {offer.description}
                             </p>
                         )}
                     </div>
 
-                    {/* ── FEEDBACK & COMMENTS (Unified at the bottom) ── */}
-                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm p-6 rounded-2xl">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-5 mb-6 gap-4">
-                            <h2 className="text-lg font-bold flex items-center gap-2">
-                                💬 Відгуки та коментарі
-                                <span className="text-sm font-normal text-zinc-500 dark:text-zinc-400">({comments.length})</span>
-                            </h2>
-                            
-                            {/* Like / Dislike / Save / Share Buttons */}
-                            <div className="flex flex-wrap items-center gap-2">
-                                {/* Like */}
+                    {/* 3. Action / Interactions card */}
+                    <div className="glass-card p-4 flex flex-wrap items-center justify-between gap-4">
+                        <div className="flex items-center gap-2">
+                            {/* Save Button */}
+                            <button
+                                onClick={handleSave}
+                                className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border transition-all active:scale-95 ${
+                                    saved
+                                        ? 'bg-primary-50 dark:bg-primary-950/30 border-primary-400 text-primary-600 dark:text-primary-400'
+                                        : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
+                                }`}
+                            >
+                                <Bookmark className={`w-4 h-4 ${saved ? 'fill-current' : ''}`} />
+                                <span>Зберегти</span>
+                                <span className="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-xs text-zinc-500">{saveCount}</span>
+                            </button>
+
+                            {/* Likes Container */}
+                            <div className="flex items-center bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden">
                                 <button
                                     onClick={handleLike}
-                                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-semibold text-xs transition-all active:scale-95 border
-                                        ${liked
-                                            ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-400 text-emerald-600 dark:text-emerald-400'
-                                            : 'border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:border-emerald-400 hover:text-emerald-500'
-                                        }`}
+                                    className={`inline-flex items-center justify-center p-2.5 transition-all ${
+                                        liked
+                                            ? 'text-primary-500 bg-primary-50 dark:bg-primary-950/20'
+                                            : 'text-zinc-500 hover:text-primary-500 hover:bg-zinc-50 dark:hover:bg-zinc-800/30'
+                                    }`}
+                                    aria-label="Подобається"
                                 >
-                                    <ThumbsUp className={`w-4 h-4 ${liked ? 'fill-emerald-400' : ''}`} />
-                                    <span>Рекомендую</span>
-                                    <span className="font-bold ml-0.5">{likeCount}</span>
+                                    <ThumbsUp className="w-4 h-4" />
+                                    <span className="ml-1.5 text-xs font-bold">{likeCount}</span>
                                 </button>
-
-                                {/* Dislike */}
+                                <div className="w-px h-6 bg-zinc-200 dark:bg-zinc-800" />
                                 <button
                                     onClick={handleDislike}
-                                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-semibold text-xs transition-all active:scale-95 border
-                                        ${disliked
-                                            ? 'bg-red-50 dark:bg-red-900/20 border-red-400 text-red-500 dark:text-red-400'
-                                            : 'border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:border-red-400 hover:text-red-500'
-                                        }`}
+                                    className={`inline-flex items-center justify-center p-2.5 transition-all ${
+                                        disliked
+                                            ? 'text-red-500 bg-red-50 dark:bg-red-950/20'
+                                            : 'text-zinc-500 hover:text-red-500 hover:bg-zinc-50 dark:hover:bg-zinc-800/30'
+                                    }`}
+                                    aria-label="Не подобається"
                                 >
-                                    <ThumbsDown className={`w-4 h-4 ${disliked ? 'fill-red-400' : ''}`} />
-                                    <span>Не рекомендую</span>
-                                    <span className="font-bold ml-0.5">{dislikeCount}</span>
-                                </button>
-
-                                {/* Save */}
-                                <button
-                                    onClick={handleSave}
-                                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-semibold text-xs transition-all active:scale-95 border
-                                        ${saved
-                                            ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-400 text-amber-600 dark:text-amber-400'
-                                            : 'border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:border-amber-400 hover:text-amber-500'
-                                        }`}
-                                >
-                                    <Bookmark className={`w-4 h-4 ${saved ? 'fill-amber-400' : ''}`} />
-                                    <span>{saved ? 'Збережено' : 'Зберегти'}</span>
-                                    <span className="font-bold ml-0.5">{saveCount}</span>
-                                </button>
-
-                                {/* Share */}
-                                <button
-                                    onClick={handleShare}
-                                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-semibold text-xs transition-all active:scale-95 border
-                                        ${shareCopied
-                                            ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-400 text-blue-600 dark:text-blue-400'
-                                            : 'border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:border-blue-400 hover:text-blue-500'
-                                        }`}
-                                >
-                                    <Share2 className="w-4 h-4" />
-                                    <span>{shareCopied ? 'Скопійовано!' : 'Поділитись'}</span>
+                                    <ThumbsDown className="w-4 h-4" />
+                                    <span className="ml-1.5 text-xs font-bold">{dislikeCount}</span>
                                 </button>
                             </div>
                         </div>
 
+                        {/* Share Button */}
+                        <div className="relative">
+                            <button
+                                onClick={handleShare}
+                                className="inline-flex items-center gap-1.5 px-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 rounded-xl text-sm font-medium transition-all active:scale-95"
+                            >
+                                <Share2 className="w-4 h-4" />
+                                <span>Поділитися</span>
+                            </button>
+                            {shareCopied && (
+                                <div className="absolute right-0 bottom-full mb-2 bg-zinc-900 text-white text-xs px-2.5 py-1.5 rounded-lg shadow-lg whitespace-nowrap animate-fade-in">
+                                    Посилання скопійовано!
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* 4. Comments card */}
+                    <div className="glass-card p-6 sm:p-8 space-y-6">
+                        <h3 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2 border-b border-zinc-100 dark:border-zinc-800 pb-4">
+                            💬 Відгуки та коментарі
+                            <span className="text-sm font-normal text-zinc-500 dark:text-zinc-400">({comments.length})</span>
+                        </h3>
+
                         {/* Post comment */}
-                        <form onSubmit={handlePostComment} className="mb-6">
+                        <form onSubmit={handlePostComment}>
                             <div className="flex gap-3">
                                 <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-1">
                                     {isAuthenticated ? (firstName?.substring(0, 2).toUpperCase() || 'YO') : 'YO'}
@@ -512,120 +536,204 @@ export default function SingleOfferPage() {
 
                 </div>
 
-                {/* ── RIGHT COLUMN ── */}
-                <div className="flex flex-col gap-6">
+                {/* RIGHT COLUMN: Sidebar cards stack */}
+                <div className="space-y-6">
 
-                    {/* ── PRICING ── */}
-                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm p-6 rounded-2xl">
-                        <div className="flex items-end gap-3 mb-2">
+                    {/* 1. Pricing card */}
+                    <div className="glass-card p-6 space-y-4 hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300">
+                        <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs uppercase tracking-wider font-semibold">
+                            <span>Ціна</span>
+                            <Tag className="w-4 h-4 text-primary-500" />
+                        </div>
+
+                        <div className="flex items-end gap-3">
                             <span className="text-4xl font-extrabold text-zinc-900 dark:text-white">
                                 {offer.newPrice.toFixed(2)}
                                 <span className="text-2xl ml-1">₴</span>
                             </span>
                             {discount > 0 && (
-                                <span className="mb-1 bg-red-100 dark:bg-red-900/30 text-red-500 text-sm font-bold px-2 py-0.5 rounded-lg">
+                                <span className="mb-1.5 bg-red-100 dark:bg-red-900/30 text-red-500 text-sm font-bold px-2.5 py-0.5 rounded-lg">
                                     -{discount}%
                                 </span>
                             )}
                         </div>
+
                         {offer.oldPrice && offer.oldPrice > 0 && (
-                            <p className="text-zinc-400 text-sm line-through mb-4">Було {offer.oldPrice.toFixed(2)} ₴</p>
+                            <p className="text-zinc-400 text-sm line-through">Було {offer.oldPrice.toFixed(2)} ₴</p>
                         )}
+
                         {offer.isOnline && offer.offerUrl ? (
-                            <a href={offer.offerUrl} target="_blank" rel="noreferrer" className="bg-primary-500 hover:bg-primary-600 text-white rounded-xl px-4 py-2.5 flex items-center justify-center transition-colors font-bold w-full text-center text-sm shadow-sm">
-                                <ExternalLink className="w-4 h-4 mr-2" /> Отримати знижку
+                            <a
+                                href={offer.offerUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex w-full items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-white bg-primary-500 hover:bg-primary-600 transition-all shadow-md hover:shadow-lg active:scale-95"
+                            >
+                                <ExternalLink className="w-4.5 h-4.5" />
+                                Отримати знижку
                             </a>
                         ) : !offer.isOnline && offer.latitude && offer.longitude ? (
                             <a
                                 href={`/map?lat=${offer.latitude}&lng=${offer.longitude}`}
-                                className="bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-900/40 rounded-xl px-4 py-2.5 flex items-center justify-center transition-colors font-bold w-full text-center text-sm"
+                                className="inline-flex w-full items-center justify-center gap-2 px-5 py-3 rounded-xl font-bold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-950/20 hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-all active:scale-95"
                             >
-                                <MapPin className="w-4 h-4 mr-2" /> Показати на карті
+                                <MapPin className="w-4.5 h-4.5" />
+                                Показати на карті
                             </a>
                         ) : null}
                     </div>
 
-                    {/* ── DETAILED PLACE / STORE INFO (Add info on the side) ── */}
-                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm p-6 rounded-2xl">
-                        <h2 className="text-base font-bold mb-4 text-zinc-900 dark:text-white flex items-center gap-2">
-                            🏪 Інформація про заклад
-                        </h2>
-                        
-                        <div className="space-y-4">
+                    {/* 2. Offer Details sidebar card */}
+                    <div className="glass-card p-6 hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300">
+                        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-5 border-b border-zinc-100 dark:border-zinc-800 pb-3 flex items-center gap-2">
+                            <Eye className="w-4.5 h-4.5 text-primary-500" />
+                            Деталі акції
+                        </h3>
+
+                        <div className="space-y-4.5">
+                            {/* Status */}
+                            <div className="flex justify-between items-start gap-4">
+                                <div className="flex items-center gap-2 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                                    <CheckCircle2 className="w-4 h-4 text-primary-500 shrink-0" />
+                                    <span>Статус</span>
+                                </div>
+                                <div className="text-sm font-medium">
+                                    {isExpired ? (
+                                        <span className="text-red-500 dark:text-red-400 font-bold flex items-center gap-1.5">
+                                            <XCircle className="w-3.5 h-3.5" /> Завершено
+                                        </span>
+                                    ) : (
+                                        <span className="text-primary-500 dark:text-primary-400 font-bold flex items-center gap-1.5">
+                                            <span className="w-2 h-2 rounded-full bg-primary-500 animate-pulse" /> Активна
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Category */}
+                            <div className="flex justify-between items-center gap-4">
+                                <div className="flex items-center gap-2 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                                    <Tag className="w-4 h-4 text-primary-500 shrink-0" />
+                                    <span>Категорія</span>
+                                </div>
+                                <span className="text-sm font-bold text-zinc-800 dark:text-zinc-200">{offer.categoryName}</span>
+                            </div>
+
+                            {/* Valid From */}
+                            {offer.validFrom && (
+                                <div className="flex justify-between items-center gap-4">
+                                    <div className="flex items-center gap-2 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                                        <Clock className="w-4 h-4 text-primary-500 shrink-0" />
+                                        <span>Діє з</span>
+                                    </div>
+                                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{formatDate(offer.validFrom)}</span>
+                                </div>
+                            )}
+
+                            {/* Valid To */}
+                            <div className="flex justify-between items-center gap-4">
+                                <div className="flex items-center gap-2 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                                    <Calendar className="w-4 h-4 text-primary-500 shrink-0" />
+                                    <span>Діє до</span>
+                                </div>
+                                <span className={`text-sm font-medium ${isExpired ? 'text-red-500' : 'text-zinc-700 dark:text-zinc-300'}`}>{formatDate(offer.validTo)}</span>
+                            </div>
+
+                            {/* Creator */}
+                            <div className="flex justify-between items-center gap-4">
+                                <div className="flex items-center gap-2 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                                    <User className="w-4 h-4 text-primary-500 shrink-0" />
+                                    <span>Додав</span>
+                                </div>
+                                <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 flex items-center gap-1">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-primary-400" />
+                                    {offer.createdByName || `Користувач #${offer.createdById}`}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 3. Store / Place sidebar card */}
+                    <div className="glass-card p-6 space-y-5 hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300">
+                        <h3 className="text-lg font-bold text-zinc-900 dark:text-white border-b border-zinc-100 dark:border-zinc-800 pb-3 flex items-center gap-2">
+                            <MapPin className="w-4.5 h-4.5 text-primary-500" />
+                            Місце / Заклад
+                        </h3>
+
+                        <div className="space-y-4.5">
+                            {/* Store Name */}
                             <div>
-                                <p className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Назва</p>
-                                <div className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                                    {offer.storeName}
-                                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${offer.isOnline ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'}`}>
-                                        {offer.isOnline ? 'Онлайн' : 'Фізичний'}
+                                <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                                    <MapPin className="w-3.5 h-3.5 text-primary-500" />
+                                    <span>Заклад</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="font-bold text-zinc-800 dark:text-zinc-200">{offer.storeName}</span>
+                                    <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider ${
+                                        offer.isOnline
+                                            ? 'bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400'
+                                            : 'bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400'
+                                    }`}>
+                                        {offer.isOnline ? 'Онлайн' : 'Офлайн'}
                                     </span>
                                 </div>
                             </div>
 
+                            {/* Address */}
                             {offer.address && !offer.isOnline && (
                                 <div>
-                                    <p className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Адреса</p>
-                                    <div className="text-sm text-zinc-800 dark:text-zinc-200 flex items-start gap-1.5 font-medium leading-relaxed">
-                                        <MapPin className="w-4.5 h-4.5 text-primary-500 flex-shrink-0 mt-0.5" />
-                                        <span>{offer.address}</span>
+                                    <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                                        <MapPin className="w-3.5 h-3.5 text-primary-500" />
+                                        <span>Адреса</span>
                                     </div>
+                                    <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                                        {offer.address}
+                                    </span>
                                 </div>
                             )}
 
+                            {/* About Store */}
                             {offer.storeDescription && (
                                 <div>
-                                    <p className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Про заклад</p>
-                                    <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed whitespace-pre-line font-medium">
+                                    <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                                        <Tag className="w-3.5 h-3.5 text-primary-500" />
+                                        <span>Про заклад</span>
+                                    </div>
+                                    <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400 leading-relaxed whitespace-pre-line">
                                         {offer.storeDescription}
                                     </p>
                                 </div>
                             )}
 
+                            {/* Website */}
                             {offer.offerUrl && (
                                 <div>
-                                    <p className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Джерело / Сайт</p>
+                                    <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                                        <Globe className="w-3.5 h-3.5 text-primary-500" />
+                                        <span>Сайт</span>
+                                    </div>
                                     <a href={offer.offerUrl} target="_blank" rel="noreferrer" className="text-sm text-primary-500 hover:text-primary-600 underline underline-offset-2 flex items-center gap-1.5 truncate font-semibold">
                                         <Globe className="w-4 h-4 flex-shrink-0" />
-                                        <span>{offer.storeName} Website</span>
+                                        <span>{offer.storeName}</span>
                                     </a>
                                 </div>
                             )}
                         </div>
 
-                        {/* Mini map link */}
+                        {/* Map Button for Physical places */}
                         {!offer.isOnline && offer.latitude && offer.longitude && (
                             <a
                                 href={`/map?lat=${offer.latitude}&lng=${offer.longitude}`}
-                                className="mt-6 flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border-2 border-zinc-200 dark:border-zinc-700 text-sm font-semibold text-zinc-700 dark:text-zinc-200 hover:border-primary-400 hover:text-primary-500 hover:bg-primary-50/50 dark:hover:bg-primary-950/20 transition-all active:scale-98 shadow-xs"
+                                className="inline-flex w-full items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 text-sm font-bold text-zinc-700 dark:text-zinc-300 transition-all active:scale-95"
                             >
                                 <MapPin className="w-4 h-4 text-primary-500" />
-                                <span>Показати на карті</span>
+                                <span>Показати на мапі</span>
                             </a>
                         )}
                     </div>
 
-                    {/* ── OFFER DETAILS ── */}
-                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm p-6 rounded-2xl">
-                        <h2 className="text-base font-bold mb-4 text-zinc-900 dark:text-white">Деталі акції</h2>
-                        <div className="divide-y-0 space-y-1">
-                            <InfoRow icon={<CheckCircle className="w-4 h-4" />} label="Статус" value={
-                                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${offer.isActive && !isExpired ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'}`}>
-                                    {offer.isActive && !isExpired ? '● Активна' : '● Завершилась'}
-                                </span>
-                            } />
-                            <InfoRow icon={<Tag className="w-4 h-4" />} label="Категорія" value={offer.categoryName} />
-                            <InfoRow icon={<Clock className="w-4 h-4" />} label="Початок акції" value={formatDate(offer.validFrom)} />
-                            <InfoRow icon={<XCircle className="w-4 h-4" />} label="Кінець акції" value={
-                                <span className={isExpired ? 'text-red-500' : ''}>{formatDate(offer.validTo)}</span>
-                            } />
-                            <InfoRow icon={<Zap className="w-4 h-4" />} label="Джерело" value={offer.creator === 'User' ? '👤 Додано користувачем' : '🤖 Авто-парсер'} />
-                            <InfoRow icon={<Calendar className="w-4 h-4" />} label="Дата публікації" value={formatDate(offer.createdAt)} />
-                            {(offer.createdByName || offer.createdById) && (
-                                <InfoRow icon={<User className="w-4 h-4" />} label="Автор публікації" value={offer.createdByName || `Користувач #${offer.createdById}`} />
-                            )}
-                        </div>
-                    </div>
                 </div>
+
             </div>
         </div>
     );
