@@ -11,6 +11,7 @@ import PlacesPage from './pages/PlacesPage';
 import PlaceDetailsPage from './pages/PlaceDetailsPage';
 import UserProfilePage from './pages/UserProfilePage';
 import PublicProfilePage from './pages/PublicProfilePage';
+import SingleOfferPage from './pages/SingleOfferPage';
 import GoodDealsPage from './pages/GoodDealsPage';
 import GoodDealCreatePage from './pages/GoodDealCreatePage';
 import GoodDealDetailsPage from './pages/GoodDealDetailsPage';
@@ -33,6 +34,7 @@ function App() {
                             <OfferCreatePage />
                         </ProtectedRoute>
                     } />
+                    <Route path="/offers/:id" element={<SingleOfferPage />} />
                     <Route path="/places" element={<PlacesPage />} />
                     <Route path="/places/:id" element={<PlaceDetailsPage />} />
                     <Route path="/map" element={<Map />} />

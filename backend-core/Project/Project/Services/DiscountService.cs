@@ -91,6 +91,17 @@ namespace SalesHub.Services
                     OfferUrl = o.Place.OfferUrl,
                     Latitude = o.Place.PlaceLocations.Select(pl => (double?)pl.Location.Coordinates.Y).FirstOrDefault(),
                     Longitude = o.Place.PlaceLocations.Select(pl => (double?)pl.Location.Coordinates.X).FirstOrDefault(),
+                    Description = o.Description,
+                    IsActive = o.IsActive,
+                    CreatedAt = o.CreatedAt,
+                    StoreDescription = o.Place.Description,
+                    Address = o.Place.PlaceLocations.Select(pl => pl.Location.Address).FirstOrDefault(),
+                    Creator = o.Creator == SalesHub.Enums.OfferCreator.User ? "User" : "Parser",
+                    CreatedById = o.CreatedById,
+                    CreatedByName = o.CreatedBy != null ? (o.CreatedBy.Name + " " + o.CreatedBy.Surname).Trim() : null,
+                    SaveCount = o.UserSavedOffers.Count(),
+                    LikeCount = o.Reviews.Count(r => r.IsRecommended),
+                    DislikeCount = o.Reviews.Count(r => !r.IsRecommended),
                     ImageUrls = o.Images.Select(i => i.ImageUrl).ToList()
                 })
                 .FirstOrDefaultAsync();
@@ -215,6 +226,85 @@ namespace SalesHub.Services
             if (offer == null) return false;
             _context.Offers.Remove(offer);
             return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<IEnumerable<OfferReviewDto>> GetReviewsAsync(int offerId)
+        {
+            return await _context.OfferReviews
+                .AsNoTracking()
+                .Include(r => r.CreatedBy)
+                .Where(r => r.OfferId == offerId && !string.IsNullOrWhiteSpace(r.Comment))
+                .OrderByDescending(r => r.CreatedAt)
+                .Select(r => new OfferReviewDto
+                {
+                    Id = r.Id,
+                    Author = r.CreatedBy != null ? r.CreatedBy.Name : "Unknown",
+                    Text = r.Comment,
+                    CreatedAt = r.CreatedAt,
+                    Avatar = r.CreatedBy != null && r.CreatedBy.Name.Length > 1 ? r.CreatedBy.Name.Substring(0, 2).ToUpper() : "U",
+                    IsRecommended = r.IsRecommended
+                })
+                .ToListAsync();
+        }
+
+        public async Task<OfferReviewDto?> AddOrUpdateReviewAsync(int offerId, int userId, OfferReviewCreateDto dto)
+        {
+            var offer = await _context.Offers.FindAsync(offerId);
+            if (offer == null) return null;
+
+            OfferReviews review;
+
+            if (string.IsNullOrWhiteSpace(dto.Comment))
+            {
+                // Vote-only action: find an existing vote-only record or create a new one
+                var existingVote = await _context.OfferReviews
+                    .FirstOrDefaultAsync(r => r.OfferId == offerId && r.CreatedById == userId && r.Comment == "");
+
+                if (existingVote == null)
+                {
+                    review = new OfferReviews
+                    {
+                        OfferId = offerId,
+                        CreatedById = userId,
+                        IsRecommended = dto.IsRecommended,
+                        Comment = "",
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    _context.OfferReviews.Add(review);
+                }
+                else
+                {
+                    review = existingVote;
+                    review.IsRecommended = dto.IsRecommended;
+                }
+            }
+            else
+            {
+                // Comment submission: always add a new record to support multiple comments
+                review = new OfferReviews
+                {
+                    OfferId = offerId,
+                    CreatedById = userId,
+                    IsRecommended = dto.IsRecommended,
+                    Comment = dto.Comment.Trim(),
+                    CreatedAt = DateTime.UtcNow
+                };
+                _context.OfferReviews.Add(review);
+            }
+
+            await _context.SaveChangesAsync();
+
+            var author = await _context.Users.FindAsync(userId);
+            
+            return new OfferReviewDto
+            {
+                Id = review.Id,
+                Author = author != null ? author.Name : "Unknown",
+                Text = review.Comment,
+                CreatedAt = review.CreatedAt,
+                Avatar = author != null && author.Name.Length > 1 ? author.Name.Substring(0, 2).ToUpper() : "U",
+                IsRecommended = review.IsRecommended
+            };
         }
 
         public async Task<IEnumerable<object>> GetNearbyAsync(double lat, double lon, double radiusMeters)

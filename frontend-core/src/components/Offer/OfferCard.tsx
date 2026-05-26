@@ -1,4 +1,5 @@
 import { User } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export interface Offer {
   id: number;
@@ -20,7 +21,7 @@ export default function OfferCard({ offer }: OfferCardProps) {
     : 0;
 
   return (
-    <div className="glass-card overflow-hidden group flex flex-col h-full hover:-translate-y-1.5 hover:shadow-xl transition-all duration-300">
+    <Link to={`/offers/${offer.id}`} className="glass-card overflow-hidden group flex flex-col h-full hover:-translate-y-1 transition-transform duration-300">
       <div className="relative h-48 sm:h-56 w-full overflow-hidden bg-zinc-100 dark:bg-zinc-800">
         <img
           src={offer.mainImageUrl}
@@ -62,6 +63,6 @@ export default function OfferCard({ offer }: OfferCardProps) {
           )}
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

@@ -118,9 +118,9 @@ const AddressAutocomplete: React.FC<{
                 lng = coords.lng;
             }
 
-            // Expanded Lviv Region validation
-            if (lat < 47.50 || lat > 51.50 || lng < 21.50 || lng > 26.50) {
-                if (onError) onError("Unfortunately, offers can only be created within the Lviv region.");
+            // Lviv Region validation aligned with backend boundaries
+            if (lat < 48.70 || lat > 50.60 || lng < 22.70 || lng > 25.50) {
+                if (onError) onError("На жаль, пропозиції можна створювати лише в межах Львівської області.");
                 return;
             }
 
@@ -434,9 +434,9 @@ export default function OfferCreatePage() {
 
                         const { lat, lng } = await getLatLng(results[0]);
 
-                        // Validation
-                        if (lat < 47.50 || lat > 51.50 || lng < 21.50 || lng > 26.50) {
-                            throw new Error("Unfortunately, the entered address is outside the Lviv region.");
+                        // Validation aligned with backend boundaries
+                        if (lat < 48.70 || lat > 50.60 || lng < 22.70 || lng > 25.50) {
+                            throw new Error("На жаль, введена адреса знаходиться поза межами Львівської області.");
                         }
 
                         currentLat = lat;
@@ -506,9 +506,21 @@ export default function OfferCreatePage() {
         } catch (err: any) {
             console.error("Error creating offer:", err);
             const backendError = err.response?.data;
-            let errorMessage = "An unexpected error occurred.";
+            let errorMessage = "Виникла неочікувана помилка під час публікації пропозиції.";
 
-            if (typeof backendError === 'string') {
+            if (backendError?.errors && typeof backendError.errors === 'object') {
+                const messages: string[] = [];
+                Object.entries(backendError.errors).forEach(([_, errs]) => {
+                    if (Array.isArray(errs)) {
+                        messages.push(...errs);
+                    } else if (typeof errs === 'string') {
+                        messages.push(errs);
+                    }
+                });
+                if (messages.length > 0) {
+                    errorMessage = messages.join(" | ");
+                }
+            } else if (typeof backendError === 'string') {
                 errorMessage = backendError;
             } else if (backendError?.message) {
                 errorMessage = backendError.message;

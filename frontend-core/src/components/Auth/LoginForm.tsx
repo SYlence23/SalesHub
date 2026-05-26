@@ -30,7 +30,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchMode, onClose }) => {
                 navigate('/');
             }
         } catch (err: any) {
-            setError(err.response?.data || 'An error occurred during login');
+            const msg = err.response?.data?.message || err.response?.data || 'Невірний email або пароль або виникла помилка зв\'язку.';
+            setError(typeof msg === 'string' ? msg : 'Виникла помилка під час входу');
         }
     };
 
