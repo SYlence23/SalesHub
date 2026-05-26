@@ -81,11 +81,11 @@ namespace SalesHub.Data
 
             modelBuilder.Entity<OfferCategory>()
                 .HasData(
-                    new OfferCategory { Id = 1, Name = "Розваги", CreatedAt = seedDate },
-                    new OfferCategory { Id = 2, Name = "Заклади", CreatedAt = seedDate },
-                    new OfferCategory { Id = 3, Name = "Культура", CreatedAt = seedDate },
-                    new OfferCategory { Id = 4, Name = "Книги", CreatedAt = seedDate },
-                    new OfferCategory { Id = 5, Name = "Спорт", CreatedAt = seedDate }
+                    new OfferCategory { Id = 1, Name = "Розваги", MarkerColor= "#a83058ff", CreatedAt = seedDate },
+                    new OfferCategory { Id = 2, Name = "Заклади", MarkerColor="#fdad35ff",CreatedAt = seedDate },
+                    new OfferCategory { Id = 3, Name = "Культура", MarkerColor="#115e10ff", CreatedAt = seedDate },
+                    new OfferCategory { Id = 4, Name = "Книги", MarkerColor="#5c2917ff", CreatedAt = seedDate },
+                    new OfferCategory { Id = 5, Name = "Спорт", MarkerColor="#1f1342ff", CreatedAt = seedDate }
                 );
 
         }

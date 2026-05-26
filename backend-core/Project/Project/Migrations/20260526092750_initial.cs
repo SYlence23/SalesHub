@@ -1,23 +1,22 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using NetTopologySuite.Geometries;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace SalesHub.Migrations
 {
     /// <inheritdoc />
-    public partial class IdentityUpdate : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<int>(
-                name: "CreatedById",
-                table: "Places",
-                type: "integer",
-                nullable: false,
-                defaultValue: 0);
+            migrationBuilder.AlterDatabase()
+                .Annotation("Npgsql:PostgresExtension:postgis", ",,");
 
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
@@ -61,6 +60,45 @@ namespace SalesHub.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Locations",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Address = table.Column<string>(type: "text", nullable: false),
+                    City = table.Column<string>(type: "text", nullable: false),
+                    Coordinates = table.Column<Point>(type: "geometry", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Locations", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OfferCategories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    IconUrl = table.Column<string>(type: "text", nullable: true),
+                    MarkerColor = table.Column<string>(type: "text", nullable: true),
+                    ParentId = table.Column<int>(type: "integer", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OfferCategories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OfferCategories_OfferCategories_ParentId",
+                        column: x => x.ParentId,
+                        principalTable: "OfferCategories",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -170,6 +208,141 @@ namespace SalesHub.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Places",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    IsOnline = table.Column<bool>(type: "boolean", nullable: false),
+                    OfferUrl = table.Column<string>(type: "text", nullable: false),
+                    CreatedById = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Places", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Places_AspNetUsers_CreatedById",
+                        column: x => x.CreatedById,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Offers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Title = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    NewPrice = table.Column<decimal>(type: "numeric", nullable: false),
+                    OldPrice = table.Column<decimal>(type: "numeric", nullable: true),
+                    ValidFrom = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ValidTo = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Creator = table.Column<int>(type: "integer", nullable: false),
+                    CategoryId = table.Column<int>(type: "integer", nullable: false),
+                    PlaceId = table.Column<int>(type: "integer", nullable: false),
+                    CreatedById = table.Column<int>(type: "integer", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Offers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Offers_AspNetUsers_CreatedById",
+                        column: x => x.CreatedById,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Offers_OfferCategories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "OfferCategories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Offers_Places_PlaceId",
+                        column: x => x.PlaceId,
+                        principalTable: "Places",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PlaceImages",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ImageUrl = table.Column<string>(type: "text", nullable: false),
+                    IsMain = table.Column<bool>(type: "boolean", nullable: false),
+                    PlaceId = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PlaceImages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PlaceImages_Places_PlaceId",
+                        column: x => x.PlaceId,
+                        principalTable: "Places",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PlaceLocations",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    PlaceId = table.Column<int>(type: "integer", nullable: false),
+                    LocationId = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PlaceLocations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PlaceLocations_Locations_LocationId",
+                        column: x => x.LocationId,
+                        principalTable: "Locations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PlaceLocations_Places_PlaceId",
+                        column: x => x.PlaceId,
+                        principalTable: "Places",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OfferImages",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ImageUrl = table.Column<string>(type: "text", nullable: false),
+                    IsMain = table.Column<bool>(type: "boolean", nullable: false),
+                    OfferId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OfferImages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OfferImages_Offers_OfferId",
+                        column: x => x.OfferId,
+                        principalTable: "Offers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "OfferReviews",
                 columns: table => new
                 {
@@ -225,15 +398,17 @@ namespace SalesHub.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Places_CreatedById",
-                table: "Places",
-                column: "CreatedById");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Offers_CreatedById",
-                table: "Offers",
-                column: "CreatedById");
+            migrationBuilder.InsertData(
+                table: "OfferCategories",
+                columns: new[] { "Id", "CreatedAt", "IconUrl", "MarkerColor", "Name", "ParentId" },
+                values: new object[,]
+                {
+                    { 1, new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc), null, "#a83058ff", "Розваги", null },
+                    { 2, new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc), null, "#fdad35ff", "Заклади", null },
+                    { 3, new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc), null, "#115e10ff", "Культура", null },
+                    { 4, new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc), null, "#5c2917ff", "Книги", null },
+                    { 5, new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc), null, "#1f1342ff", "Спорт", null }
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -273,6 +448,16 @@ namespace SalesHub.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_OfferCategories_ParentId",
+                table: "OfferCategories",
+                column: "ParentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OfferImages_OfferId",
+                table: "OfferImages",
+                column: "OfferId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_OfferReviews_CreatedById",
                 table: "OfferReviews",
                 column: "CreatedById");
@@ -283,6 +468,41 @@ namespace SalesHub.Migrations
                 column: "OfferId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Offers_CategoryId",
+                table: "Offers",
+                column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Offers_CreatedById",
+                table: "Offers",
+                column: "CreatedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Offers_PlaceId",
+                table: "Offers",
+                column: "PlaceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PlaceImages_PlaceId",
+                table: "PlaceImages",
+                column: "PlaceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PlaceLocations_LocationId",
+                table: "PlaceLocations",
+                column: "LocationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PlaceLocations_PlaceId",
+                table: "PlaceLocations",
+                column: "PlaceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Places_CreatedById",
+                table: "Places",
+                column: "CreatedById");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserSavedOffers_OfferId",
                 table: "UserSavedOffers",
                 column: "OfferId");
@@ -291,45 +511,11 @@ namespace SalesHub.Migrations
                 name: "IX_UserSavedOffers_UserId",
                 table: "UserSavedOffers",
                 column: "UserId");
-
-            migrationBuilder.Sql(@"
-                INSERT INTO ""AspNetUsers"" (""Id"", ""Name"", ""Surname"", ""Category"", ""EmailConfirmed"", ""PhoneNumberConfirmed"", ""TwoFactorEnabled"", ""LockoutEnabled"", ""AccessFailedCount"")
-                VALUES 
-                (0, 'System', 'User', 0, false, false, false, false, 0),
-                (1, 'Admin', 'User', 0, false, false, false, false, 0),
-                (2, 'Regular', 'User', 0, false, false, false, false, 0)
-                ON CONFLICT (""Id"") DO NOTHING;
-                
-                SELECT setval(pg_get_serial_sequence('""AspNetUsers""', 'Id'), COALESCE(MAX(""Id""), 1)) FROM ""AspNetUsers"";
-            ");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Offers_AspNetUsers_CreatedById",
-                table: "Offers",
-                column: "CreatedById",
-                principalTable: "AspNetUsers",
-                principalColumn: "Id");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Places_AspNetUsers_CreatedById",
-                table: "Places",
-                column: "CreatedById",
-                principalTable: "AspNetUsers",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Offers_AspNetUsers_CreatedById",
-                table: "Offers");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_Places_AspNetUsers_CreatedById",
-                table: "Places");
-
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 
@@ -346,7 +532,16 @@ namespace SalesHub.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "OfferImages");
+
+            migrationBuilder.DropTable(
                 name: "OfferReviews");
+
+            migrationBuilder.DropTable(
+                name: "PlaceImages");
+
+            migrationBuilder.DropTable(
+                name: "PlaceLocations");
 
             migrationBuilder.DropTable(
                 name: "UserSavedOffers");
@@ -355,19 +550,19 @@ namespace SalesHub.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
+                name: "Locations");
+
+            migrationBuilder.DropTable(
+                name: "Offers");
+
+            migrationBuilder.DropTable(
+                name: "OfferCategories");
+
+            migrationBuilder.DropTable(
+                name: "Places");
+
+            migrationBuilder.DropTable(
                 name: "AspNetUsers");
-
-            migrationBuilder.DropIndex(
-                name: "IX_Places_CreatedById",
-                table: "Places");
-
-            migrationBuilder.DropIndex(
-                name: "IX_Offers_CreatedById",
-                table: "Offers");
-
-            migrationBuilder.DropColumn(
-                name: "CreatedById",
-                table: "Places");
         }
     }
 }
