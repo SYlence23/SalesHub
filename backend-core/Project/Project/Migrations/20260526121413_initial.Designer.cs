@@ -13,8 +13,8 @@ using SalesHub.Data;
 namespace SalesHub.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260525192734_FixPendingChanges")]
-    partial class FixPendingChanges
+    [Migration("20260526121413_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -315,6 +315,36 @@ namespace SalesHub.Migrations
                     b.ToTable("GoodDeals");
                 });
 
+            modelBuilder.Entity("SalesHub.Models.GoodDealComment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("CreatedById")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("GoodDealId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("GoodDealId");
+
+                    b.ToTable("GoodDealComments");
+                });
+
             modelBuilder.Entity("SalesHub.Models.GoodDealImage", b =>
                 {
                     b.Property<int>("Id")
@@ -341,6 +371,33 @@ namespace SalesHub.Migrations
                     b.HasIndex("GoodDealId");
 
                     b.ToTable("GoodDealImages");
+                });
+
+            modelBuilder.Entity("SalesHub.Models.GoodDealLike", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("GoodDealId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("GoodDealId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("GoodDealLikes");
                 });
 
             modelBuilder.Entity("SalesHub.Models.Location", b =>
@@ -467,30 +524,35 @@ namespace SalesHub.Migrations
                         {
                             Id = 1,
                             CreatedAt = new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc),
+                            MarkerColor = "#a83058ff",
                             Name = "Розваги"
                         },
                         new
                         {
                             Id = 2,
                             CreatedAt = new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc),
+                            MarkerColor = "#fdad35ff",
                             Name = "Заклади"
                         },
                         new
                         {
                             Id = 3,
                             CreatedAt = new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc),
+                            MarkerColor = "#115e10ff",
                             Name = "Культура"
                         },
                         new
                         {
                             Id = 4,
                             CreatedAt = new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc),
+                            MarkerColor = "#5c2917ff",
                             Name = "Книги"
                         },
                         new
                         {
                             Id = 5,
                             CreatedAt = new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc),
+                            MarkerColor = "#1f1342ff",
                             Name = "Спорт"
                         },
                         new
@@ -792,6 +854,25 @@ namespace SalesHub.Migrations
                     b.Navigation("Place");
                 });
 
+            modelBuilder.Entity("SalesHub.Models.GoodDealComment", b =>
+                {
+                    b.HasOne("SalesHub.Models.ApplicationUser", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SalesHub.Models.GoodDeal", "GoodDeal")
+                        .WithMany("Comments")
+                        .HasForeignKey("GoodDealId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("GoodDeal");
+                });
+
             modelBuilder.Entity("SalesHub.Models.GoodDealImage", b =>
                 {
                     b.HasOne("SalesHub.Models.GoodDeal", "GoodDeal")
@@ -801,6 +882,25 @@ namespace SalesHub.Migrations
                         .IsRequired();
 
                     b.Navigation("GoodDeal");
+                });
+
+            modelBuilder.Entity("SalesHub.Models.GoodDealLike", b =>
+                {
+                    b.HasOne("SalesHub.Models.GoodDeal", "GoodDeal")
+                        .WithMany("Likes")
+                        .HasForeignKey("GoodDealId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SalesHub.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("GoodDeal");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SalesHub.Models.Offer", b =>
@@ -942,7 +1042,11 @@ namespace SalesHub.Migrations
 
             modelBuilder.Entity("SalesHub.Models.GoodDeal", b =>
                 {
+                    b.Navigation("Comments");
+
                     b.Navigation("Images");
+
+                    b.Navigation("Likes");
 
                     b.Navigation("UserSavedGoodDeals");
                 });

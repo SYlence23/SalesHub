@@ -232,6 +232,45 @@ namespace SalesHub.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "GoodDeals",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Title = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    ValidFrom = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ValidTo = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    TargetAudiences = table.Column<string[]>(type: "text[]", nullable: false),
+                    CategoryId = table.Column<int>(type: "integer", nullable: false),
+                    PlaceId = table.Column<int>(type: "integer", nullable: false),
+                    CreatedById = table.Column<int>(type: "integer", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GoodDeals", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_GoodDeals_AspNetUsers_CreatedById",
+                        column: x => x.CreatedById,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_GoodDeals_OfferCategories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "OfferCategories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_GoodDeals_Places_PlaceId",
+                        column: x => x.PlaceId,
+                        principalTable: "Places",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Offers",
                 columns: table => new
                 {
@@ -322,6 +361,110 @@ namespace SalesHub.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "GoodDealComments",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    GoodDealId = table.Column<int>(type: "integer", nullable: false),
+                    CreatedById = table.Column<int>(type: "integer", nullable: false),
+                    Text = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GoodDealComments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_GoodDealComments_AspNetUsers_CreatedById",
+                        column: x => x.CreatedById,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_GoodDealComments_GoodDeals_GoodDealId",
+                        column: x => x.GoodDealId,
+                        principalTable: "GoodDeals",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "GoodDealImages",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ImageUrl = table.Column<string>(type: "text", nullable: false),
+                    IsMain = table.Column<bool>(type: "boolean", nullable: false),
+                    GoodDealId = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GoodDealImages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_GoodDealImages_GoodDeals_GoodDealId",
+                        column: x => x.GoodDealId,
+                        principalTable: "GoodDeals",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "GoodDealLikes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    GoodDealId = table.Column<int>(type: "integer", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GoodDealLikes", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_GoodDealLikes_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_GoodDealLikes_GoodDeals_GoodDealId",
+                        column: x => x.GoodDealId,
+                        principalTable: "GoodDeals",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserSavedGoodDeals",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    GoodDealId = table.Column<int>(type: "integer", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserSavedGoodDeals", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserSavedGoodDeals_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserSavedGoodDeals_GoodDeals_GoodDealId",
+                        column: x => x.GoodDealId,
+                        principalTable: "GoodDeals",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "OfferImages",
                 columns: table => new
                 {
@@ -407,7 +550,11 @@ namespace SalesHub.Migrations
                     { 2, new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc), null, "#fdad35ff", "Заклади", null },
                     { 3, new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc), null, "#115e10ff", "Культура", null },
                     { 4, new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc), null, "#5c2917ff", "Книги", null },
-                    { 5, new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc), null, "#1f1342ff", "Спорт", null }
+                    { 5, new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc), null, "#1f1342ff", "Спорт", null },
+                    { 6, new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc), null, "#3B82F6", "Освіта", null },
+                    { 7, new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc), null, "#F59E0B", "Побут", null },
+                    { 8, new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc), null, "#10B981", "Відпочинок", null },
+                    { 9, new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc), null, "#8B5CF6", "Транспорт", null }
                 });
 
             migrationBuilder.CreateIndex(
@@ -446,6 +593,47 @@ namespace SalesHub.Migrations
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GoodDealComments_CreatedById",
+                table: "GoodDealComments",
+                column: "CreatedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GoodDealComments_GoodDealId",
+                table: "GoodDealComments",
+                column: "GoodDealId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GoodDealImages_GoodDealId",
+                table: "GoodDealImages",
+                column: "GoodDealId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GoodDealLikes_GoodDealId_UserId",
+                table: "GoodDealLikes",
+                columns: new[] { "GoodDealId", "UserId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GoodDealLikes_UserId",
+                table: "GoodDealLikes",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GoodDeals_CategoryId",
+                table: "GoodDeals",
+                column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GoodDeals_CreatedById",
+                table: "GoodDeals",
+                column: "CreatedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GoodDeals_PlaceId",
+                table: "GoodDeals",
+                column: "PlaceId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OfferCategories_ParentId",
@@ -503,6 +691,16 @@ namespace SalesHub.Migrations
                 column: "CreatedById");
 
             migrationBuilder.CreateIndex(
+                name: "IX_UserSavedGoodDeals_GoodDealId",
+                table: "UserSavedGoodDeals",
+                column: "GoodDealId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserSavedGoodDeals_UserId",
+                table: "UserSavedGoodDeals",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserSavedOffers_OfferId",
                 table: "UserSavedOffers",
                 column: "OfferId");
@@ -532,6 +730,15 @@ namespace SalesHub.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "GoodDealComments");
+
+            migrationBuilder.DropTable(
+                name: "GoodDealImages");
+
+            migrationBuilder.DropTable(
+                name: "GoodDealLikes");
+
+            migrationBuilder.DropTable(
                 name: "OfferImages");
 
             migrationBuilder.DropTable(
@@ -544,6 +751,9 @@ namespace SalesHub.Migrations
                 name: "PlaceLocations");
 
             migrationBuilder.DropTable(
+                name: "UserSavedGoodDeals");
+
+            migrationBuilder.DropTable(
                 name: "UserSavedOffers");
 
             migrationBuilder.DropTable(
@@ -551,6 +761,9 @@ namespace SalesHub.Migrations
 
             migrationBuilder.DropTable(
                 name: "Locations");
+
+            migrationBuilder.DropTable(
+                name: "GoodDeals");
 
             migrationBuilder.DropTable(
                 name: "Offers");
