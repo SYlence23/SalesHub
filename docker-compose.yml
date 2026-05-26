@@ -12,11 +12,11 @@ services:
     networks:
       - saleshub_net
     healthcheck:
-      # Тут теж підставляємо змінні
       test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 30s
 
   backend:
     build:
@@ -39,6 +39,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    restart: on-failure
   frontend:
     build:
       context: ./frontend-core
