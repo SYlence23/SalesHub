@@ -5,6 +5,7 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import OfferCard, { type Offer } from '../components/Offer/OfferCard';
 import OfferSkeletonCard from '../components/Offer/OfferSkeletonCard';
+import GoodDealCard, { type GoodDeal } from '../components/Offer/GoodDealCard';
 
 type Tab = 'my-offers' | 'saved' | 'settings';
 
@@ -29,9 +30,15 @@ export default function UserProfilePage() {
 
     // Пропозиції
     const [myOffers, setMyOffers] = useState<Offer[]>([]);
+    const [myGoodDeals, setMyGoodDeals] = useState<GoodDeal[]>([]);
     const [savedOffers, setSavedOffers] = useState<Offer[]>([]);
+    const [savedGoodDeals, setSavedGoodDeals] = useState<GoodDeal[]>([]);
     const [isLoadingMyOffers, setIsLoadingMyOffers] = useState(false);
+    const [isLoadingMyGoodDeals, setIsLoadingMyGoodDeals] = useState(false);
     const [isLoadingSaved, setIsLoadingSaved] = useState(false);
+    const [isLoadingSavedGoodDeals, setIsLoadingSavedGoodDeals] = useState(false);
+    const [myOffersSubTab, setMyOffersSubTab] = useState<'offers' | 'good-deals'>('offers');
+    const [savedSubTab, setSavedSubTab] = useState<'offers' | 'good-deals'>('offers');
 
     // Форма редагування профілю
     const [editName, setEditName] = useState('');
@@ -79,6 +86,18 @@ export default function UserProfilePage() {
         }
     }, []);
 
+    const fetchMyGoodDeals = useCallback(async () => {
+        setIsLoadingMyGoodDeals(true);
+        try {
+            const res = await api.get<GoodDeal[]>('/User/my-good-deals');
+            setMyGoodDeals(res.data);
+        } catch {
+            setMyGoodDeals([]);
+        } finally {
+            setIsLoadingMyGoodDeals(false);
+        }
+    }, []);
+
     // ── Завантаження "Збережені" ─────────────────────────────────────────────
     const fetchSavedOffers = useCallback(async () => {
         setIsLoadingSaved(true);
@@ -92,10 +111,28 @@ export default function UserProfilePage() {
         }
     }, []);
 
+    const fetchSavedGoodDeals = useCallback(async () => {
+        setIsLoadingSavedGoodDeals(true);
+        try {
+            const res = await api.get<GoodDeal[]>('/User/saved-good-deals');
+            setSavedGoodDeals(res.data);
+        } catch {
+            setSavedGoodDeals([]);
+        } finally {
+            setIsLoadingSavedGoodDeals(false);
+        }
+    }, []);
+
     useEffect(() => {
-        if (activeTab === 'my-offers') fetchMyOffers();
-        if (activeTab === 'saved') fetchSavedOffers();
-    }, [activeTab, fetchMyOffers, fetchSavedOffers]);
+        if (activeTab === 'my-offers') {
+            fetchMyOffers();
+            fetchMyGoodDeals();
+        }
+        if (activeTab === 'saved') {
+            fetchSavedOffers();
+            fetchSavedGoodDeals();
+        }
+    }, [activeTab, fetchMyOffers, fetchMyGoodDeals, fetchSavedOffers, fetchSavedGoodDeals]);
 
     // ── Видалення пропозиції ─────────────────────────────────────────────────
     const handleDeleteOffer = async (offerId: number) => {
@@ -104,7 +141,17 @@ export default function UserProfilePage() {
             await api.delete(`/User/my-offers/${offerId}`);
             setMyOffers(prev => prev.filter(o => o.id !== offerId));
         } catch {
-            alert('Не вдалося видалити пропозицію.');
+            alert('Failed to delete offer.');
+        }
+    };
+
+    const handleDeleteGoodDeal = async (dealId: number) => {
+        if (!confirm('Ви впевнені, що хочете видалити цю вигідну пропозицію?')) return;
+        try {
+            await api.delete(`/GoodDeals/${dealId}`);
+            setMyGoodDeals(prev => prev.filter(d => d.id !== dealId));
+        } catch {
+            alert('Failed to delete good deal.');
         }
     };
 
@@ -114,7 +161,16 @@ export default function UserProfilePage() {
             await api.delete(`/User/saved-offers/${offerId}`);
             setSavedOffers(prev => prev.filter(o => o.id !== offerId));
         } catch {
-            alert('Не вдалося видалити зі збережених.');
+            alert('Failed to remove from saved.');
+        }
+    };
+
+    const handleUnsaveGoodDeal = async (dealId: number) => {
+        try {
+            await api.delete(`/User/saved-good-deals/${dealId}`);
+            setSavedGoodDeals(prev => prev.filter(d => d.id !== dealId));
+        } catch {
+            alert('Failed to remove from saved.');
         }
     };
 
@@ -128,7 +184,7 @@ export default function UserProfilePage() {
             setProfileMsg({ text: 'Профіль успішно оновлено.', ok: true });
             setProfile(prev => prev ? { ...prev, name: editName, surname: editSurname, category: editIsStudent ? 'Student' : 'NonStudent' } : prev);
         } catch (err: any) {
-            setProfileMsg({ text: err.response?.data?.message || 'Помилка оновлення.', ok: false });
+            setProfileMsg({ text: err.response?.data?.message || 'Update failed.', ok: false });
         } finally {
             setIsSavingProfile(false);
         }
@@ -145,7 +201,7 @@ export default function UserProfilePage() {
             setCurrentPassword('');
             setNewPassword('');
         } catch (err: any) {
-            setPasswordMsg({ text: err.response?.data?.message || 'Помилка зміни пароля.', ok: false });
+            setPasswordMsg({ text: err.response?.data?.message || 'Failed to change password.', ok: false });
         } finally {
             setIsSavingPassword(false);
         }
@@ -232,49 +288,112 @@ export default function UserProfilePage() {
             {/* ── Вміст таба: Мої пропозиції ────────────────────────────────── */}
             {activeTab === 'my-offers' && (
                 <section>
-                    <div className="flex items-center justify-between mb-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                         <h2 className="text-xl font-bold text-zinc-900 dark:text-white">Мої пропозиції</h2>
-                        <Link to="/offers/create" className="btn-primary text-sm px-4 py-2">
-                            + Додати пропозицію
-                        </Link>
+                        <div className="flex items-center gap-3 flex-wrap">
+                            <div className="flex bg-zinc-100 dark:bg-zinc-800 p-1 rounded-xl">
+                                <button
+                                    onClick={() => setMyOffersSubTab('offers')}
+                                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${myOffersSubTab === 'offers' ? 'bg-white dark:bg-zinc-700 shadow text-primary-600 dark:text-primary-400' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'}`}
+                                >
+                                    Знижки
+                                </button>
+                                <button
+                                    onClick={() => setMyOffersSubTab('good-deals')}
+                                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${myOffersSubTab === 'good-deals' ? 'bg-white dark:bg-zinc-700 shadow text-primary-600 dark:text-primary-400' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'}`}
+                                >
+                                    Вигідні пропозиції
+                                </button>
+                            </div>
+                            <Link 
+                                to={myOffersSubTab === 'offers' ? "/offers/create" : "/good-deals/create"} 
+                                className="btn-primary text-sm px-4 py-2 whitespace-nowrap"
+                            >
+                                + {myOffersSubTab === 'offers' ? 'Додати знижку' : 'Додати вигоду'}
+                            </Link>
+                        </div>
                     </div>
 
-                    {isLoadingMyOffers ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                            {[...Array(3)].map((_, i) => <OfferSkeletonCard key={i} />)}
-                        </div>
-                    ) : myOffers.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                            {myOffers.map(offer => (
-                                <div key={offer.id} className="relative group">
-                                    <OfferCard offer={offer} />
-                                    {/* Кнопки управління */}
-                                    <div className="absolute top-3 left-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button
-                                            onClick={() => navigate(`/offers/edit/${offer.id}`)}
-                                            className="p-2 bg-white dark:bg-zinc-800 rounded-xl shadow-md hover:bg-primary-50 dark:hover:bg-zinc-700 transition-colors"
-                                            title="Редагувати"
-                                        >
-                                            <Edit className="w-4 h-4 text-primary-600" />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDeleteOffer(offer.id)}
-                                            className="p-2 bg-white dark:bg-zinc-800 rounded-xl shadow-md hover:bg-red-50 dark:hover:bg-zinc-700 transition-colors"
-                                            title="Видалити"
-                                        >
-                                            <Trash2 className="w-4 h-4 text-red-500" />
-                                        </button>
-                                    </div>
+                    {myOffersSubTab === 'offers' ? (
+                        <>
+                            {isLoadingMyOffers ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                                    {[...Array(3)].map((_, i) => <OfferSkeletonCard key={i} />)}
                                 </div>
-                            ))}
-                        </div>
+                            ) : myOffers.length > 0 ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                                    {myOffers.map(offer => (
+                                        <div key={offer.id} className="relative group animate-in fade-in duration-300">
+                                            <OfferCard offer={offer} />
+                                            {/* Кнопки управління */}
+                                            <div className="absolute top-3 left-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                                <button
+                                                    onClick={() => navigate(`/offers/edit/${offer.id}`)}
+                                                    className="p-2 bg-white dark:bg-zinc-800 rounded-xl shadow-md hover:bg-primary-50 dark:hover:bg-zinc-700 transition-colors"
+                                                    title="Редагувати"
+                                                >
+                                                    <Edit className="w-4 h-4 text-primary-600" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteOffer(offer.id)}
+                                                    className="p-2 bg-white dark:bg-zinc-800 rounded-xl shadow-md hover:bg-red-50 dark:hover:bg-zinc-700 transition-colors"
+                                                    title="Видалити"
+                                                >
+                                                    <Trash2 className="w-4 h-4 text-red-500" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <EmptyState
+                                    emoji="📝"
+                                    title="Ще немає знижок"
+                                    description="Ви ще не додали жодної знижки."
+                                    action={{ label: 'Створити першу', onClick: () => navigate('/offers/create') }}
+                                />
+                            )}
+                        </>
                     ) : (
-                        <EmptyState
-                            emoji="📝"
-                            title="Ще немає пропозицій"
-                            description="Ви ще не додали жодної пропозиції."
-                            action={{ label: 'Створити першу', onClick: () => navigate('/offers/create') }}
-                        />
+                        <>
+                            {isLoadingMyGoodDeals ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                                    {[...Array(3)].map((_, i) => <OfferSkeletonCard key={i} />)}
+                                </div>
+                            ) : myGoodDeals.length > 0 ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                                    {myGoodDeals.map(deal => (
+                                        <div key={deal.id} className="relative group animate-in fade-in duration-300">
+                                            <GoodDealCard deal={deal} />
+                                            {/* Кнопки управління */}
+                                            <div className="absolute top-3 left-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                                <button
+                                                    onClick={() => navigate(`/good-deals/edit/${deal.id}`)}
+                                                    className="p-2 bg-white dark:bg-zinc-800 rounded-xl shadow-md hover:bg-primary-50 dark:hover:bg-zinc-700 transition-colors"
+                                                    title="Редагувати"
+                                                >
+                                                    <Edit className="w-4 h-4 text-orange-600" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteGoodDeal(deal.id)}
+                                                    className="p-2 bg-white dark:bg-zinc-800 rounded-xl shadow-md hover:bg-red-50 dark:hover:bg-zinc-700 transition-colors"
+                                                    title="Видалити"
+                                                >
+                                                    <Trash2 className="w-4 h-4 text-red-500" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <EmptyState
+                                    emoji="✨"
+                                    title="Ще немає вигідних пропозицій"
+                                    description="Ви ще не додали жодної вигідної пропозиції."
+                                    action={{ label: 'Створити першу', onClick: () => navigate('/good-deals/create') }}
+                                />
+                            )}
+                        </>
                     )}
                 </section>
             )}
@@ -282,34 +401,86 @@ export default function UserProfilePage() {
             {/* ── Вміст таба: Збережені ─────────────────────────────────────── */}
             {activeTab === 'saved' && (
                 <section>
-                    <h2 className="text-xl font-bold text-zinc-900 dark:text-white mb-6">Збережені пропозиції</h2>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+                        <h2 className="text-xl font-bold text-zinc-900 dark:text-white">Збережені</h2>
+                        <div className="flex bg-zinc-100 dark:bg-zinc-800 p-1 rounded-xl w-full sm:w-auto self-start">
+                            <button
+                                onClick={() => setSavedSubTab('offers')}
+                                className={`flex-1 sm:flex-none px-6 py-2 text-sm font-semibold rounded-lg transition-all ${savedSubTab === 'offers' ? 'bg-white dark:bg-zinc-700 shadow text-primary-600 dark:text-primary-400' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'}`}
+                            >
+                                Знижки
+                            </button>
+                            <button
+                                onClick={() => setSavedSubTab('good-deals')}
+                                className={`flex-1 sm:flex-none px-6 py-2 text-sm font-semibold rounded-lg transition-all ${savedSubTab === 'good-deals' ? 'bg-white dark:bg-zinc-700 shadow text-primary-600 dark:text-primary-400' : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'}`}
+                            >
+                                Вигідні пропозиції
+                            </button>
+                        </div>
+                    </div>
 
-                    {isLoadingSaved ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                            {[...Array(3)].map((_, i) => <OfferSkeletonCard key={i} />)}
-                        </div>
-                    ) : savedOffers.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                            {savedOffers.map(offer => (
-                                <div key={offer.id} className="relative group">
-                                    <OfferCard offer={offer} />
-                                    <button
-                                        onClick={() => handleUnsaveOffer(offer.id)}
-                                        className="absolute top-3 left-3 p-2 bg-white dark:bg-zinc-800 rounded-xl shadow-md hover:bg-red-50 dark:hover:bg-zinc-700 opacity-0 group-hover:opacity-100 transition-all"
-                                        title="Видалити зі збережених"
-                                    >
-                                        <X className="w-4 h-4 text-red-500" />
-                                    </button>
+                    {savedSubTab === 'offers' && (
+                        <>
+                            {isLoadingSaved ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                                    {[...Array(3)].map((_, i) => <OfferSkeletonCard key={i} />)}
                                 </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <EmptyState
-                            emoji="🔖"
-                            title="Немає збережених"
-                            description="Зберігайте пропозиції, щоб не загубити їх."
-                            action={{ label: 'Переглянути пропозиції', onClick: () => navigate('/offers') }}
-                        />
+                            ) : savedOffers.length > 0 ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                                    {savedOffers.map(offer => (
+                                        <div key={offer.id} className="relative group">
+                                            <OfferCard offer={offer} />
+                                            <button
+                                                onClick={() => handleUnsaveOffer(offer.id)}
+                                                className="absolute top-3 left-3 p-2 bg-white dark:bg-zinc-800 rounded-xl shadow-md hover:bg-red-50 dark:hover:bg-zinc-700 opacity-0 group-hover:opacity-100 transition-all z-10"
+                                                title="Видалити зі збережених"
+                                            >
+                                                <X className="w-4 h-4 text-red-500" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <EmptyState
+                                    emoji="🔖"
+                                    title="Немає збережених"
+                                    description="Ви ще не зберегли жодної знижки."
+                                    action={{ label: 'Переглянути знижки', onClick: () => navigate('/offers') }}
+                                />
+                            )}
+                        </>
+                    )}
+
+                    {savedSubTab === 'good-deals' && (
+                        <>
+                            {isLoadingSavedGoodDeals ? (
+                                <div className="flex flex-col gap-4">
+                                    {[...Array(3)].map((_, i) => <div key={i} className="h-48 bg-zinc-100 dark:bg-zinc-800 animate-pulse rounded-2xl" />)}
+                                </div>
+                            ) : savedGoodDeals.length > 0 ? (
+                                <div className="flex flex-col gap-4">
+                                    {savedGoodDeals.map(deal => (
+                                        <div key={deal.id} className="relative group">
+                                            <GoodDealCard deal={deal} />
+                                            <button
+                                                onClick={() => handleUnsaveGoodDeal(deal.id)}
+                                                className="absolute top-3 left-3 p-2 bg-white dark:bg-zinc-800 rounded-xl shadow-md hover:bg-red-50 dark:hover:bg-zinc-700 opacity-0 group-hover:opacity-100 transition-all z-10"
+                                                title="Видалити зі збережених"
+                                            >
+                                                <X className="w-4 h-4 text-red-500" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <EmptyState
+                                    emoji="💡"
+                                    title="Немає збережених"
+                                    description="Ви ще не зберегли жодної вигідної пропозиції."
+                                    action={{ label: 'Переглянути вигідні пропозиції', onClick: () => navigate('/good-deals') }}
+                                />
+                            )}
+                        </>
                     )}
                 </section>
             )}

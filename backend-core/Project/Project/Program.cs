@@ -16,7 +16,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
         o => o.UseNetTopologySuite()
-    ));
+    ).ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 
 
 builder.Services.AddControllers()
@@ -29,6 +29,7 @@ builder.Services.AddScoped<IDiscountService, DiscountService>();
 builder.Services.AddScoped<IPlaceService, PlaceService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IGoodDealService, GoodDealService>();
 builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
 builder.Services.AddAWSService<IAmazonS3>();
 builder.Services.AddOpenApi();
@@ -98,6 +99,9 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
+    // Автоматичне застосування міграцій при старті
+    await dbContext.Database.MigrateAsync();
+
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
 
     if (!await roleManager.RoleExistsAsync("Admin"))
@@ -106,6 +110,44 @@ using (var scope = app.Services.CreateScope())
     if (!await roleManager.RoleExistsAsync("User"))
         await roleManager.CreateAsync(new IdentityRole<int> { Name = "User" });
 
+    // Seed new categories if they don't exist
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    bool changed = false;
+
+    // Rename "Подорожі" to "Транспорт" if it exists
+    var travelCat = await context.OfferCategories.FirstOrDefaultAsync(c => c.Name == "Подорожі");
+    if (travelCat != null)
+    {
+        travelCat.Name = "Транспорт";
+        changed = true;
+    }
+
+    var requiredCategories = new[] { "Освіта", "Побут", "Відпочинок", "Транспорт" };
+    foreach (var catName in requiredCategories)
+    {
+        if (!await context.OfferCategories.AnyAsync(c => c.Name == catName))
+        {
+            var seedColor = catName switch
+            {
+                "Освіта" => "#3B82F6", // blue
+                "Побут" => "#F59E0B", // amber
+                "Відпочинок" => "#10B981", // emerald
+                "Транспорт" => "#8B5CF6", // violet
+                _ => "#6B7280"
+            };
+            await context.OfferCategories.AddAsync(new OfferCategory 
+            { 
+                Name = catName, 
+                CreatedAt = DateTime.UtcNow,
+                MarkerColor = seedColor
+            });
+            changed = true;
+        }
+    }
+    if (changed)
+    {
+        await context.SaveChangesAsync();
+    }
 }
 
 app.MapControllers();

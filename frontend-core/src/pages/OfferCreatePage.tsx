@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 //import axios from 'axios';
-import { ImagePlus, MapPin, Loader2, Plus, ChevronLeft, X, Search } from 'lucide-react';
+import { ImagePlus, MapPin, Loader2, Plus, ChevronLeft, X, Search, Tag, Sparkles } from 'lucide-react';
 import usePlacesAutocomplete, { getGeocode, getLatLng } from 'use-places-autocomplete';
 import { useJsApiLoader } from '@react-google-maps/api';
 import { type Category } from '../components/Offer/OfferFilters';
@@ -67,7 +67,7 @@ const AddressAutocomplete: React.FC<{
     onChange: (address: string) => void;
     isLoaded: boolean;
     onError?: (msg: string | null) => void;
-}> = ({ onSelect, onChange, isLoaded, onError }) => {
+}> = ({ onSelect, onChange, onError }) => {
     const {
         ready,
         value,
@@ -128,7 +128,7 @@ const AddressAutocomplete: React.FC<{
             onSelect({ lat, lng }, address);
         } catch (error) {
             console.error("Error geocoding address:", error);
-            if (onError) onError("Your API key might need 'Geocoding API' enabled. Please select an address from the dropdown.");
+            if (onError) onError("Your API key might need 'Geocoding API' enabled. Please select the address from the dropdown.");
         }
     };
 
@@ -142,7 +142,7 @@ const AddressAutocomplete: React.FC<{
                         onChange(e.target.value);
                     }}
                     disabled={!ready}
-                    placeholder={ready ? "Enter address (street, house...)" : "Loading..."}
+                    placeholder={ready ? "Введіть адресу (вулиця, будинок...)" : "Завантаження..."}
                     className="w-full px-4 py-2 pl-10 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
                 />
                 <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-400" />
@@ -163,7 +163,7 @@ const AddressAutocomplete: React.FC<{
             )}
             {status === "ZERO_RESULTS" && (
                 <div className="absolute left-0 w-full bg-white dark:bg-zinc-800 mt-2 p-4 rounded-xl shadow-2xl border border-zinc-200 dark:border-zinc-700 z-[100] text-sm text-zinc-500">
-                    No addresses found. Try being more specific (e.g., add 'Lviv').
+                    No address found. Try to refine (e.g., add 'Lviv').
                 </div>
             )}
         </div>
@@ -236,6 +236,35 @@ export default function OfferCreatePage() {
     const [selectedPlaceId, setSelectedPlaceId] = useState('');
     const [isNewPlace, setIsNewPlace] = useState(false);
 
+    const [placeSearchInput, setPlaceSearchInput] = useState('');
+    const [isPlaceDropdownOpen, setIsPlaceDropdownOpen] = useState(false);
+    const placeDropdownRef = useRef<HTMLDivElement>(null);
+
+    // Initial load sync of placeSearchInput
+    useEffect(() => {
+        if (selectedPlaceId && places.length > 0) {
+            const found = places.find(p => p.id.toString() === selectedPlaceId);
+            if (found) setPlaceSearchInput(found.name);
+        }
+    }, [selectedPlaceId, places]);
+
+    // Click outside handler for searchable dropdown
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (placeDropdownRef.current && !placeDropdownRef.current.contains(event.target as Node)) {
+                setIsPlaceDropdownOpen(false);
+                if (selectedPlaceId) {
+                    const found = places.find(p => p.id.toString() === selectedPlaceId);
+                    if (found) setPlaceSearchInput(found.name);
+                } else {
+                    setPlaceSearchInput('');
+                }
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [selectedPlaceId, places]);
+
 
 
     // Fetching / Meta State
@@ -267,7 +296,7 @@ export default function OfferCreatePage() {
                 setPlaces(uniquePlaces);
             } catch (err) {
                 console.error("Failed to load initial data", err);
-                setError("Could not load categories or places. Please try refreshing.");
+                setError("Could not load categories or places. Please try refreshing the page.");
             }
         };
 
@@ -414,7 +443,7 @@ export default function OfferCreatePage() {
                         currentLng = lng;
                     } catch (e: any) {
                         console.error("Geocoding failed:", e);
-                        throw new Error(`Could not find coordinates for "${placeForm.address}". Please select an address from the dropdown suggestions to be sure.`);
+                        throw new Error(`Could not find coordinates for "${placeForm.address}". Please select a valid address from the dropdown to get location coordinates.`);
                     }
                 }
 
@@ -502,15 +531,33 @@ export default function OfferCreatePage() {
                 className="flex items-center text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 mb-6 transition-colors"
             >
                 <ChevronLeft className="w-5 h-5 mr-1" />
-                Back to Offers
+                Назад до знижок
             </button>
 
             <div className="mb-8">
-                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
-                    Create New <span className="text-primary-500">Offer</span>
+                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+                    Створити <span className="text-primary-500">пропозицію</span>
                 </h1>
-                <p className="text-zinc-500 dark:text-zinc-400">
-                    Fill in the details to publish a new discount or deal.
+                {/* Type Toggle */}
+                <div className="inline-flex bg-zinc-100 dark:bg-zinc-800 rounded-2xl p-1 gap-1 mb-3">
+                    <button
+                        type="button"
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 bg-primary-500 text-white shadow-md"
+                    >
+                        <Tag className="w-4 h-4" />
+                        Знижка
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => navigate('/good-deals/create')}
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+                    >
+                        <Sparkles className="w-4 h-4" />
+                        Студентська вигода
+                    </button>
+                </div>
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm">
+                    Заповніть деталі, щоб опублікувати нову знижку або пропозицію.
                 </p>
             </div>
 
@@ -523,7 +570,7 @@ export default function OfferCreatePage() {
             <form onSubmit={handleSubmit} className="space-y-8">
                 {/* --- IMAGE UPLOAD (UI ONLY) --- */}
                 <div className="glass-card p-6 rounded-2xl">
-                    <h2 className="text-xl font-semibold mb-4">Offer Images</h2>
+                    <h2 className="text-xl font-semibold mb-4">Зображення пропозиції</h2>
 
                     {(imagePreviews.length > 0 || isImageLoading) && (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-4">
@@ -547,7 +594,7 @@ export default function OfferCreatePage() {
                                     </button>
                                     {index === 0 && (
                                         <div className="absolute bottom-2 left-2 px-2 py-1 bg-primary-500/90 text-white text-xs font-bold rounded shadow-sm backdrop-blur-md">
-                                            Main
+                                            Головне
                                         </div>
                                     )}
                                 </div>
@@ -556,7 +603,7 @@ export default function OfferCreatePage() {
                             {isImageLoading && Array.from({ length: imageQuantity }).map((_, i) => (
                                 <div key={`loading-${i}`} className="relative aspect-square rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 flex flex-col items-center justify-center">
                                     <Loader2 className="w-8 h-8 text-primary-500 animate-spin mb-2" />
-                                    <span className="text-xs text-zinc-500 font-medium">Uploading...</span>
+                                    <span className="text-xs text-zinc-500 font-medium">Завантаження...</span>
                                 </div>
                             ))}
                         </div>
@@ -567,9 +614,9 @@ export default function OfferCreatePage() {
                             <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                 <ImagePlus className={`${imagePreviews.length > 0 ? 'w-6 h-6 mb-2' : 'w-10 h-10 mb-3'} text-zinc-400`} />
                                 <p className={`mb-2 text-zinc-500 dark:text-zinc-400 ${imagePreviews.length > 0 ? 'text-sm' : ''}`}>
-                                    <span className="font-semibold">Click to upload</span> or drag and drop
+                                    <span className="font-semibold">Натисніть для завантаження</span> або перетягніть файли
                                 </p>
-                                {!imagePreviews.length && <p className="text-xs text-zinc-500 dark:text-zinc-400">PNG, JPG or WEBP (MAX. 800x400px)</p>}
+                                {!imagePreviews.length && <p className="text-xs text-zinc-500 dark:text-zinc-400">PNG, JPG або WEBP (МАКС. 800x400px)</p>}
                             </div>
                             <input type="file" className="hidden" accept='image/*' multiple onChange={handleImageChange} />
                         </label>)}
@@ -579,10 +626,10 @@ export default function OfferCreatePage() {
 
                 {/* --- BASIC INFO --- */}
                 <div className="glass-card p-6 rounded-2xl space-y-6">
-                    <h2 className="text-xl font-semibold mb-4">Basic Details</h2>
+                    <h2 className="text-xl font-semibold mb-4">Основна інформація</h2>
 
                     <div>
-                        <label className="block text-sm font-medium mb-2">Title *</label>
+                        <label className="block text-sm font-medium mb-2">Назва *</label>
                         <input
                             type="text"
                             required
@@ -590,24 +637,24 @@ export default function OfferCreatePage() {
                             value={offerForm.title}
                             onChange={handleOfferFormChange}
                             className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
-                            placeholder="e.g. 50% Off Summer Collection"
+                            placeholder="наприклад, Знижка 50% на літню колекцію"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium mb-2">Description</label>
+                        <label className="block text-sm font-medium mb-2">Опис</label>
                         <textarea
                             name="description"
                             value={offerForm.description}
                             onChange={handleOfferFormChange}
                             className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all min-h-[100px] resize-x"
-                            placeholder="Describe your offer..."
+                            placeholder="Опишіть вашу пропозицію..."
                         />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label className="block text-sm font-medium mb-2">Category *</label>
+                            <label className="block text-sm font-medium mb-2">Категорія *</label>
                             <select
                                 required
                                 name="categoryId"
@@ -615,8 +662,10 @@ export default function OfferCreatePage() {
                                 onChange={handleOfferFormChange}
                                 className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all appearance-none"
                             >
-                                <option value="" disabled>Select a category</option>
-                                {categories.map(c => (
+                                <option value="" disabled>Виберіть категорію</option>
+                                {categories
+                                    .filter(c => !['Освіта', 'Побут', 'Подорожі', 'Відпочинок', 'Транспорт'].includes(c.name))
+                                    .map(c => (
                                     <option key={c.id} value={c.id}>{c.name}</option>
                                 ))}
                             </select>
@@ -626,11 +675,11 @@ export default function OfferCreatePage() {
 
                 {/* --- PRICING & DATES --- */}
                 <div className="glass-card p-6 rounded-2xl space-y-6">
-                    <h2 className="text-xl font-semibold mb-4">Pricing & Dates</h2>
+                    <h2 className="text-xl font-semibold mb-4">Ціни та дати</h2>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label className="block text-sm font-medium mb-2">New Price *</label>
+                            <label className="block text-sm font-medium mb-2">Нова ціна *</label>
                             <input
                                 type="number"
                                 required
@@ -644,7 +693,7 @@ export default function OfferCreatePage() {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-2">Old Price (Optional)</label>
+                            <label className="block text-sm font-medium mb-2">Стара ціна</label>
                             <input
                                 type="number"
                                 min="0"
@@ -657,7 +706,7 @@ export default function OfferCreatePage() {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-2">Valid From</label>
+                            <label className="block text-sm font-medium mb-2">Дійсна з</label>
                             <input
                                 type="datetime-local"
                                 name="validFrom"
@@ -667,7 +716,7 @@ export default function OfferCreatePage() {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-2">Valid To</label>
+                            <label className="block text-sm font-medium mb-2">Дійсна до</label>
                             <input
                                 type="datetime-local"
                                 name="validTo"
@@ -679,42 +728,97 @@ export default function OfferCreatePage() {
                     </div>
                 </div>
 
-                {/* --- PLACE DETAILS --- */}
-                <div className="glass-card p-6 rounded-2xl space-y-6 border-2 border-primary-500">
+                <div className={`glass-card p-6 rounded-2xl space-y-6 border-2 transition-all duration-300 ${
+                    isNewPlace 
+                        ? 'border-orange-400 !bg-orange-50/70 dark:!bg-orange-950/20' 
+                        : 'border-primary-500'
+                }`}>
                     <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-semibold">Store / Place</h2>
+                        <h2 className="text-xl font-semibold">Магазин / Заклад</h2>
                         <button
                             type="button"
                             onClick={() => setIsNewPlace(!isNewPlace)}
                             className="text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 flex items-center gap-1"
                         >
                             {isNewPlace ? (
-                                <>Select Existing Place</>
+                                <>Вибрати існуючий заклад</>
                             ) : (
-                                <><Plus className="w-4 h-4" /> Add New Place</>
+                                <><Plus className="w-4 h-4" /> Додати новий заклад</>
                             )}
                         </button>
                     </div>
 
                     {!isNewPlace ? (
-                        <div>
-                            <label className="block text-sm font-medium mb-2">Select Place *</label>
-                            <select
-                                required={!isNewPlace}
-                                value={selectedPlaceId}
-                                onChange={(e) => setSelectedPlaceId(e.target.value)}
-                                className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all appearance-none"
-                            >
-                                <option value="" disabled>Select an existing store</option>
-                                {places.map(p => (
-                                    <option key={p.id} value={p.id}>{p.name}</option>
-                                ))}
-                            </select>
+                        <div className="relative" ref={placeDropdownRef}>
+                            <label className="block text-sm font-medium mb-2">Вибрати заклад *</label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="Шукати існуючий заклад..."
+                                    value={placeSearchInput}
+                                    onChange={(e) => {
+                                        setPlaceSearchInput(e.target.value);
+                                        setIsPlaceDropdownOpen(true);
+                                        const exactMatch = places.find(p => p.name.toLowerCase() === e.target.value.toLowerCase());
+                                        if (exactMatch) {
+                                            setSelectedPlaceId(exactMatch.id.toString());
+                                        } else {
+                                            setSelectedPlaceId('');
+                                        }
+                                    }}
+                                    onFocus={() => setIsPlaceDropdownOpen(true)}
+                                    className="w-full px-4 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
+                                />
+                                {selectedPlaceId && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSelectedPlaceId('');
+                                            setPlaceSearchInput('');
+                                        }}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-red-500"
+                                    >
+                                        <X className="w-4.5 h-4.5" />
+                                    </button>
+                                )}
+                            </div>
+
+                            {isPlaceDropdownOpen && (
+                                <ul className="absolute left-0 w-full bg-white dark:bg-zinc-800 mt-2 rounded-xl shadow-2xl border border-zinc-200 dark:border-zinc-700 overflow-hidden z-[100] max-h-60 overflow-y-auto list-none p-0 m-0">
+                                    {places
+                                        .filter(p => p.name.toLowerCase().includes(placeSearchInput.toLowerCase()))
+                                        .map(p => (
+                                            <li
+                                                key={p.id}
+                                                onClick={() => {
+                                                    setSelectedPlaceId(p.id.toString());
+                                                    setPlaceSearchInput(p.name);
+                                                    setIsPlaceDropdownOpen(false);
+                                                }}
+                                                className={`p-3 px-4 hover:bg-zinc-100 dark:hover:bg-zinc-700 cursor-pointer text-sm border-b last:border-0 border-zinc-100 dark:border-zinc-700 text-zinc-900 dark:text-white flex justify-between items-center ${
+                                                    selectedPlaceId === p.id.toString() ? 'bg-primary-50 dark:bg-primary-950/20 font-semibold text-primary-600 dark:text-primary-400' : ''
+                                                }`}
+                                            >
+                                                <span>{p.name}</span>
+                                                {p.isOnline && (
+                                                    <span className="text-[10px] bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                                                        Онлайн
+                                                    </span>
+                                                )}
+                                            </li>
+                                        ))}
+                                    {places.filter(p => p.name.toLowerCase().includes(placeSearchInput.toLowerCase())).length === 0 && (
+                                        <li className="p-4 text-center text-sm text-zinc-500">
+                                            Закладів не знайдено. Спробуйте додати новий.
+                                        </li>
+                                    )}
+                                </ul>
+                            )}
                         </div>
                     ) : (
                         <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
                             <div>
-                                <label className="block text-sm font-medium mb-2">Store Name *</label>
+                                <label className="block text-sm font-medium mb-2">Назва магазину *</label>
                                 <input
                                     type="text"
                                     required={isNewPlace}
@@ -722,18 +826,18 @@ export default function OfferCreatePage() {
                                     value={placeForm.name}
                                     onChange={handlePlaceFormChange}
                                     className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
-                                    placeholder="e.g. Mega Store Downtown"
+                                    placeholder="наприклад, Мега Магазин у центрі"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-2">Store Description</label>
+                                <label className="block text-sm font-medium mb-2">Опис магазину</label>
                                 <input
                                     type="text"
                                     name="description"
                                     value={placeForm.description}
                                     onChange={handlePlaceFormChange}
                                     className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
-                                    placeholder="Brief description..."
+                                    placeholder="Короткий опис..."
                                 />
                             </div>
 
@@ -746,14 +850,14 @@ export default function OfferCreatePage() {
                                     className="w-5 h-5 rounded border-zinc-300 text-primary-500 focus:ring-primary-500"
                                 />
                                 <div>
-                                    <p className="font-medium">Online Store</p>
-                                    <p className="text-sm text-zinc-500">This offer is valid online only.</p>
+                                    <p className="font-medium">Інтернет-магазин</p>
+                                    <p className="text-sm text-zinc-500">Ця пропозиція дійсна лише в інтернеті.</p>
                                 </div>
                             </label>
 
                             {placeForm.isOnline ? (
                                 <div>
-                                    <label className="block text-sm font-medium mb-2">Offer URL</label>
+                                    <label className="block text-sm font-medium mb-2">URL пропозиції</label>
                                     <input
                                         type="url"
                                         name="offerUrl"
@@ -767,7 +871,7 @@ export default function OfferCreatePage() {
                                 <div className="grid grid-cols-1 gap-6 p-4 bg-zinc-50 dark:bg-zinc-900/30 rounded-xl border border-zinc-200 dark:border-zinc-800/50">
                                     <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400 mb-2">
                                         <MapPin className="w-4 h-4" />
-                                        <span className="text-sm font-medium">Store Location</span>
+                                        <span className="text-sm font-medium">Розташування магазину</span>
                                     </div>
 
                                     <AddressAutocomplete
@@ -808,10 +912,10 @@ export default function OfferCreatePage() {
                         {isSubmitting ? (
                             <span className="flex items-center gap-2">
                                 <Loader2 className="w-5 h-5 animate-spin" />
-                                Publishing...
+                                Публікація...
                             </span>
                         ) : (
-                            "Publish Offer"
+                            "Опублікувати пропозицію"
                         )}
                     </button>
                 </div>

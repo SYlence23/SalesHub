@@ -13,6 +13,12 @@ namespace SalesHub.Data
         {
         }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.ConfigureWarnings(w =>
+                w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+        }
+
 
         public DbSet<SalesHub.Models.Location> Locations { get; set; }
         public DbSet<Offer> Offers { get; set; }
@@ -23,7 +29,12 @@ namespace SalesHub.Data
         public DbSet<PlaceImage> PlaceImages { get; set; }
         public DbSet<PlaceLocation> PlaceLocations { get; set; }
         public DbSet<UserSavedOffers> UserSavedOffers { get; set; }
-        
+        public DbSet<GoodDeal> GoodDeals { get; set; }
+        public DbSet<GoodDealImage> GoodDealImages { get; set; }
+        public DbSet<UserSavedGoodDeals> UserSavedGoodDeals { get; set; }
+        public DbSet<GoodDealComment> GoodDealComments { get; set; }
+        public DbSet<GoodDealLike> GoodDealLikes { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -76,6 +87,42 @@ namespace SalesHub.Data
             modelBuilder.Entity<OfferCategory>()
                 .HasOne(c => c.Parent).WithMany(c => c.SubCategories).HasForeignKey(c => c.ParentId);
 
+            // GoodDeal relationships
+            modelBuilder.Entity<GoodDeal>()
+                .HasOne(gd => gd.Category).WithMany().HasForeignKey(gd => gd.CategoryId);
+
+            modelBuilder.Entity<GoodDeal>()
+                .HasOne(gd => gd.Place).WithMany().HasForeignKey(gd => gd.PlaceId);
+
+            modelBuilder.Entity<GoodDeal>()
+                .HasOne(gd => gd.CreatedBy).WithMany().HasForeignKey(gd => gd.CreatedById);
+
+            modelBuilder.Entity<GoodDealImage>()
+                .HasOne(gdi => gdi.GoodDeal).WithMany(gd => gd.Images).HasForeignKey(gdi => gdi.GoodDealId);
+
+            modelBuilder.Entity<UserSavedGoodDeals>()
+                .HasOne(usgd => usgd.GoodDeal).WithMany(gd => gd.UserSavedGoodDeals).HasForeignKey(usgd => usgd.GoodDealId);
+
+            modelBuilder.Entity<UserSavedGoodDeals>()
+                .HasOne(usgd => usgd.User).WithMany(u => u.UserSavedGoodDeals).HasForeignKey(usgd => usgd.UserId);
+
+            // GoodDealComment
+            modelBuilder.Entity<GoodDealComment>()
+                .HasOne(c => c.GoodDeal).WithMany(gd => gd.Comments).HasForeignKey(c => c.GoodDealId).OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<GoodDealComment>()
+                .HasOne(c => c.CreatedBy).WithMany().HasForeignKey(c => c.CreatedById).OnDelete(DeleteBehavior.Restrict);
+
+            // GoodDealLike
+            modelBuilder.Entity<GoodDealLike>()
+                .HasIndex(l => new { l.GoodDealId, l.UserId }).IsUnique();
+
+            modelBuilder.Entity<GoodDealLike>()
+                .HasOne(l => l.GoodDeal).WithMany(gd => gd.Likes).HasForeignKey(l => l.GoodDealId).OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<GoodDealLike>()
+                .HasOne(l => l.User).WithMany().HasForeignKey(l => l.UserId).OnDelete(DeleteBehavior.Restrict);
+
 
             var seedDate = new DateTime(2026, 5, 9, 0, 0, 0, DateTimeKind.Utc);
 
@@ -85,7 +132,11 @@ namespace SalesHub.Data
                     new OfferCategory { Id = 2, Name = "Заклади", MarkerColor="#fdad35ff",CreatedAt = seedDate },
                     new OfferCategory { Id = 3, Name = "Культура", MarkerColor="#115e10ff", CreatedAt = seedDate },
                     new OfferCategory { Id = 4, Name = "Книги", MarkerColor="#5c2917ff", CreatedAt = seedDate },
-                    new OfferCategory { Id = 5, Name = "Спорт", MarkerColor="#1f1342ff", CreatedAt = seedDate }
+                    new OfferCategory { Id = 5, Name = "Спорт", MarkerColor="#1f1342ff", CreatedAt = seedDate },
+                    new OfferCategory { Id = 6, Name = "Освіта", MarkerColor = "#3B82F6", CreatedAt = seedDate },
+                    new OfferCategory { Id = 7, Name = "Побут", MarkerColor = "#F59E0B", CreatedAt = seedDate },
+                    new OfferCategory { Id = 8, Name = "Відпочинок", MarkerColor = "#10B981", CreatedAt = seedDate },
+                    new OfferCategory { Id = 9, Name = "Транспорт", MarkerColor = "#8B5CF6", CreatedAt = seedDate }
                 );
 
         }

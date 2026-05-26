@@ -14,5 +14,10 @@ namespace SalesHub.Services
         Task<(bool Succeeded, string Message)> UnsaveOfferAsync(int userId, int offerId);
         Task<bool> IsOfferSavedAsync(int userId, int offerId);
         Task<(bool Succeeded, string Message)> DeleteOfferAsync(int userId, int offerId);
+        
+        Task<IEnumerable<GoodDealPreviewDto>> GetSavedGoodDealsAsync(int userId);
+        Task<(bool Succeeded, string Message)> SaveGoodDealAsync(int userId, int goodDealId);
+        Task<(bool Succeeded, string Message)> UnsaveGoodDealAsync(int userId, int goodDealId);
+        Task<bool> IsGoodDealSavedAsync(int userId, int goodDealId);
     }
 }
