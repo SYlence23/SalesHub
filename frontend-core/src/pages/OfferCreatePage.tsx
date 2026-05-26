@@ -693,7 +693,7 @@ export default function OfferCreatePage() {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-2">Стара ціна (опціонально)</label>
+                            <label className="block text-sm font-medium mb-2">Стара ціна</label>
                             <input
                                 type="number"
                                 min="0"
