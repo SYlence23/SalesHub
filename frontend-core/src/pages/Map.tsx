@@ -45,6 +45,56 @@ interface OfferDetail {
 const FALLBACK_IMAGE =
     'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=800&q=80';
 
+// ─── Dark Map Styles ──────────────────────────────────────────────────────────
+
+const DARK_MAP_STYLES: google.maps.MapTypeStyle[] = [
+    { elementType: 'geometry', stylers: [{ color: '#1d2c4d' }] },
+    { elementType: 'labels.text.fill', stylers: [{ color: '#8ec3b9' }] },
+    { elementType: 'labels.text.stroke', stylers: [{ color: '#1a3646' }] },
+    { featureType: 'administrative.country', elementType: 'geometry.stroke', stylers: [{ color: '#4b6878' }] },
+    { featureType: 'administrative.land_parcel', elementType: 'labels.text.fill', stylers: [{ color: '#64779e' }] },
+    { featureType: 'administrative.province', elementType: 'geometry.stroke', stylers: [{ color: '#4b6878' }] },
+    { featureType: 'landscape.man_made', elementType: 'geometry.stroke', stylers: [{ color: '#334e87' }] },
+    { featureType: 'landscape.natural', elementType: 'geometry', stylers: [{ color: '#023e58' }] },
+    { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#283d6a' }] },
+    { featureType: 'poi', elementType: 'labels.text.fill', stylers: [{ color: '#6f9ba5' }] },
+    { featureType: 'poi', elementType: 'labels.text.stroke', stylers: [{ color: '#1d2c4d' }] },
+    { featureType: 'poi.park', elementType: 'geometry.fill', stylers: [{ color: '#023e58' }] },
+    { featureType: 'poi.park', elementType: 'labels.text.fill', stylers: [{ color: '#3C7680' }] },
+    { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#304a7d' }] },
+    { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#98a5be' }] },
+    { featureType: 'road', elementType: 'labels.text.stroke', stylers: [{ color: '#1d2c4d' }] },
+    { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#2c6675' }] },
+    { featureType: 'road.highway', elementType: 'geometry.stroke', stylers: [{ color: '#255763' }] },
+    { featureType: 'road.highway', elementType: 'labels.text.fill', stylers: [{ color: '#b0d5ce' }] },
+    { featureType: 'road.highway', elementType: 'labels.text.stroke', stylers: [{ color: '#023e58' }] },
+    { featureType: 'transit', elementType: 'labels.text.fill', stylers: [{ color: '#98a5be' }] },
+    { featureType: 'transit', elementType: 'labels.text.stroke', stylers: [{ color: '#1d2c4d' }] },
+    { featureType: 'transit.line', elementType: 'geometry.fill', stylers: [{ color: '#283d6a' }] },
+    { featureType: 'transit.station', elementType: 'geometry', stylers: [{ color: '#3a4762' }] },
+    { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0e1626' }] },
+    { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#4e6d70' }] },
+];
+
+// ─── Hook: detect system dark mode ────────────────────────────────────────────
+
+function useIsDarkMode() {
+    const [isDark, setIsDark] = useState(() =>
+        typeof window !== 'undefined'
+            ? window.matchMedia('(prefers-color-scheme: dark)').matches
+            : false,
+    );
+
+    useEffect(() => {
+        const mq = window.matchMedia('(prefers-color-scheme: dark)');
+        const handler = (e: MediaQueryListEvent) => setIsDark(e.matches);
+        mq.addEventListener('change', handler);
+        return () => mq.removeEventListener('change', handler);
+    }, []);
+
+    return isDark;
+}
+
 function formatDate(dateStr?: string) {
     if (!dateStr) return '—';
     return new Date(dateStr).toLocaleDateString('uk-UA', {
@@ -415,6 +465,8 @@ const PanelLoader: React.FC = () => (
 // ─── MapPage ──────────────────────────────────────────────────────────────────
 
 const MapPage: React.FC = () => {
+    const isDarkMode = useIsDarkMode();
+
     const { isLoaded } = useJsApiLoader({
         id: 'google-map-script',
         googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string,
@@ -596,6 +648,10 @@ const MapPage: React.FC = () => {
                     zoom={zoom}
                     onLoad={onMapLoad}
                     onIdle={fetchMarkers}
+                    options={{
+                        styles: isDarkMode ? DARK_MAP_STYLES : undefined,
+                        disableDefaultUI: false,
+                    }}
                 >
                     {/* User location marker */}
                     {userLocation && (
