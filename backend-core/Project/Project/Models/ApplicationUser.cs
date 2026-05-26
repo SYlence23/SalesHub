@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using SalesHub.Enums;
 
 namespace SalesHub.Models
@@ -13,6 +13,7 @@ namespace SalesHub.Models
         public ICollection<OfferReviews> UserReviews { get; set; } 
         public ICollection<Place> UserPlaces { get; set; }
         public ICollection<UserSavedOffers> UserSavedOffers { get; set; }
+        public ICollection<UserSavedGoodDeals> UserSavedGoodDeals { get; set; }
 
     }
 }

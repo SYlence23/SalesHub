@@ -49,7 +49,7 @@ export default function PlaceDetailsPage() {
     if (!place) {
         return (
             <div className="max-w-7xl mx-auto px-4 py-20 text-center">
-                <h2 className="text-2xl font-bold mb-4">Заклад не знайдено</h2>
+                <h2 className="text-2xl font-bold mb-4">Place not found</h2>
                 <Link to="/places" className="btn-primary">Назад до закладів</Link>
             </div>
         );

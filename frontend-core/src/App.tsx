@@ -12,8 +12,12 @@ import PlaceDetailsPage from './pages/PlaceDetailsPage';
 import UserProfilePage from './pages/UserProfilePage';
 import PublicProfilePage from './pages/PublicProfilePage';
 import SingleOfferPage from './pages/SingleOfferPage';
+import GoodDealsPage from './pages/GoodDealsPage';
+import GoodDealCreatePage from './pages/GoodDealCreatePage';
+import GoodDealDetailsPage from './pages/GoodDealDetailsPage';
 
 function App() {
+    ``
     const location = useLocation();
     const isMapPage = location.pathname === '/map';
 
@@ -42,6 +46,13 @@ function App() {
                         </ProtectedRoute>
                     } />
                     <Route path="/profile/:id" element={<PublicProfilePage />} />
+                    <Route path="/good-deals" element={<GoodDealsPage />} />
+                    <Route path="/good-deals/create" element={
+                        <ProtectedRoute>
+                            <GoodDealCreatePage />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/good-deals/:id" element={<GoodDealDetailsPage />} />
                 </Routes>
             </main>
 
