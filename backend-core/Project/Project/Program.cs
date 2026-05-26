@@ -254,7 +254,6 @@ using (var scope = app.Services.CreateScope())
     {
         Console.WriteLine($"Error seeding test data: {ex.Message}");
     }
-    }
 }
 
 app.MapControllers();

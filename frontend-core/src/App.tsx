@@ -17,7 +17,6 @@ import GoodDealCreatePage from './pages/GoodDealCreatePage';
 import GoodDealDetailsPage from './pages/GoodDealDetailsPage';
 
 function App() {
-    ``
     const location = useLocation();
     const isMapPage = location.pathname === '/map';
 

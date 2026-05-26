@@ -111,36 +111,41 @@ export default function SingleOfferPage() {
                 setSaveCount(res.data.saveCount);
                 setLikeCount(res.data.likeCount);
                 setDislikeCount(res.data.dislikeCount);
-
-                // Fetch Reviews/Comments
-                const reviewsRes = await api.get<Comment[]>(`/Discounts/${id}/reviews`);
-                setComments(reviewsRes.data);
-
-                // If authenticated, check saved and review status
-                if (isAuthenticated) {
-                    try {
-                        const savedRes = await api.get<{ isSaved: boolean }>(`/User/saved-offers/${id}/check`);
-                        setSaved(savedRes.data.isSaved);
-                    } catch (e) {
-                        console.error("Error checking saved status", e);
-                    }
-
-                    try {
-                        const reviewRes = await api.get<{ hasReview: boolean, isRecommended: boolean, comment: string }>(`/Discounts/${id}/review/check`);
-                        if (reviewRes.data.hasReview) {
-                            setLiked(reviewRes.data.isRecommended === true);
-                            setDisliked(reviewRes.data.isRecommended === false);
-                        }
-                    } catch (e) {
-                        console.error("Error checking review status", e);
-                    }
-                }
-
             } catch {
                 setError('Не вдалося завантажити пропозицію. Можливо, її було видалено або вона не існує.');
-            } finally {
                 setIsLoading(false);
+                return;
             }
+
+            // Fetch Reviews/Comments — окремо, щоб помилка не блокувала сторінку
+            try {
+                const reviewsRes = await api.get<Comment[]>(`/Discounts/${id}/reviews`);
+                setComments(reviewsRes.data);
+            } catch (e) {
+                console.error("Error fetching reviews", e);
+            }
+
+            // If authenticated, check saved and review status
+            if (isAuthenticated) {
+                try {
+                    const savedRes = await api.get<{ isSaved: boolean }>(`/User/saved-offers/${id}/check`);
+                    setSaved(savedRes.data.isSaved);
+                } catch (e) {
+                    console.error("Error checking saved status", e);
+                }
+
+                try {
+                    const reviewRes = await api.get<{ hasReview: boolean, isRecommended: boolean, comment: string }>(`/Discounts/${id}/review/check`);
+                    if (reviewRes.data.hasReview) {
+                        setLiked(reviewRes.data.isRecommended === true);
+                        setDisliked(reviewRes.data.isRecommended === false);
+                    }
+                } catch (e) {
+                    console.error("Error checking review status", e);
+                }
+            }
+
+            setIsLoading(false);
         };
         fetchOfferAndInteractions();
     }, [id, isAuthenticated, fullName, firstName]);
