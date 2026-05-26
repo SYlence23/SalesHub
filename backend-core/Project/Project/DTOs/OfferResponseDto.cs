@@ -19,6 +19,7 @@ public class OfferResponseDto
     public string Address { get; set; }
     public string Creator { get; set; }
     public int? CreatedById { get; set; }
+    public string? CreatedByName { get; set; }
     public int SaveCount { get; set; }
     public int LikeCount { get; set; }
     public int DislikeCount { get; set; }

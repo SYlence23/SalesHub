@@ -95,6 +95,7 @@ namespace SalesHub.Services
                     Address = o.Place.PlaceLocations.Select(pl => pl.Location.Address).FirstOrDefault(),
                     Creator = o.Creator == SalesHub.Enums.OfferCreator.User ? "User" : "Parser",
                     CreatedById = o.CreatedById,
+                    CreatedByName = o.CreatedBy != null ? (o.CreatedBy.Name + " " + o.CreatedBy.Surname).Trim() : null,
                     SaveCount = o.UserSavedOffers.Count(),
                     LikeCount = o.Reviews.Count(r => r.IsRecommended),
                     DislikeCount = o.Reviews.Count(r => !r.IsRecommended),
@@ -246,28 +247,44 @@ namespace SalesHub.Services
             var offer = await _context.Offers.FindAsync(offerId);
             if (offer == null) return null;
 
-            var review = await _context.OfferReviews
-                .FirstOrDefaultAsync(r => r.OfferId == offerId && r.CreatedById == userId);
+            OfferReviews review;
 
-            if (review == null)
+            if (string.IsNullOrWhiteSpace(dto.Comment))
             {
+                // Vote-only action: find an existing vote-only record or create a new one
+                var existingVote = await _context.OfferReviews
+                    .FirstOrDefaultAsync(r => r.OfferId == offerId && r.CreatedById == userId && r.Comment == "");
+
+                if (existingVote == null)
+                {
+                    review = new OfferReviews
+                    {
+                        OfferId = offerId,
+                        CreatedById = userId,
+                        IsRecommended = dto.IsRecommended,
+                        Comment = "",
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    _context.OfferReviews.Add(review);
+                }
+                else
+                {
+                    review = existingVote;
+                    review.IsRecommended = dto.IsRecommended;
+                }
+            }
+            else
+            {
+                // Comment submission: always add a new record to support multiple comments
                 review = new OfferReviews
                 {
                     OfferId = offerId,
                     CreatedById = userId,
                     IsRecommended = dto.IsRecommended,
-                    Comment = dto.Comment ?? "",
+                    Comment = dto.Comment.Trim(),
                     CreatedAt = DateTime.UtcNow
                 };
                 _context.OfferReviews.Add(review);
-            }
-            else
-            {
-                review.IsRecommended = dto.IsRecommended;
-                if (dto.Comment != null)
-                {
-                    review.Comment = dto.Comment;
-                }
             }
 
             await _context.SaveChangesAsync();

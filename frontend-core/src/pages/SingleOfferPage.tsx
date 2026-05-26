@@ -21,6 +21,7 @@ interface OfferDetail {
     createdAt: string;
     creator: string;
     createdById?: number;
+    createdByName?: string;
     isOnline: boolean;
     storeName: string;
     storeDescription: string;
@@ -47,16 +48,17 @@ const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1607082348824-0a96f2a4
 
 function formatDate(dateStr?: string) {
     if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    return new Date(dateStr).toLocaleDateString('uk-UA', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
 function timeAgo(dateStr: string) {
     const diff = Date.now() - new Date(dateStr).getTime();
     const mins = Math.floor(diff / 60000);
-    if (mins < 60) return `${mins}m ago`;
+    if (mins < 1) return 'щойно';
+    if (mins < 60) return `${mins} хв тому`;
     const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h ago`;
-    return `${Math.floor(hrs / 24)}d ago`;
+    if (hrs < 24) return `${hrs} год тому`;
+    return `${Math.floor(hrs / 24)} дн тому`;
 }
 
 function InfoRow({ icon, label, value, className }: { icon: React.ReactNode; label: string; value: React.ReactNode; className?: string }) {
@@ -64,8 +66,8 @@ function InfoRow({ icon, label, value, className }: { icon: React.ReactNode; lab
         <div className={`flex items-start gap-3 py-3 border-b border-zinc-100 dark:border-zinc-800 last:border-0 ${className ?? ''}`}>
             <span className="mt-0.5 text-primary-500 flex-shrink-0">{icon}</span>
             <div className="min-w-0">
-                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-0.5">{label}</p>
-                <div className="text-sm font-semibold text-zinc-900 dark:text-white break-words">{value}</div>
+                <p className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-0.5">{label}</p>
+                <div className="text-sm font-bold text-zinc-900 dark:text-white break-words">{value}</div>
             </div>
         </div>
     );
@@ -114,7 +116,7 @@ export default function SingleOfferPage() {
                 const reviewsRes = await api.get<Comment[]>(`/Discounts/${id}/reviews`);
                 setComments(reviewsRes.data);
 
-                // If authenticated, check if saved and parse own review for likes/dislikes
+                // If authenticated, check saved and review status
                 if (isAuthenticated) {
                     try {
                         const savedRes = await api.get<{ isSaved: boolean }>(`/User/saved-offers/${id}/check`);
@@ -123,16 +125,19 @@ export default function SingleOfferPage() {
                         console.error("Error checking saved status", e);
                     }
 
-                    // Check if current user has a review
-                    const myReview = reviewsRes.data.find(c => c.author === fullName || c.author === firstName);
-                    if (myReview) {
-                        setLiked(myReview.isRecommended === true);
-                        setDisliked(myReview.isRecommended === false);
+                    try {
+                        const reviewRes = await api.get<{ hasReview: boolean, isRecommended: boolean, comment: string }>(`/Discounts/${id}/review/check`);
+                        if (reviewRes.data.hasReview) {
+                            setLiked(reviewRes.data.isRecommended === true);
+                            setDisliked(reviewRes.data.isRecommended === false);
+                        }
+                    } catch (e) {
+                        console.error("Error checking review status", e);
                     }
                 }
 
             } catch {
-                setError('Failed to load offer. It may have been removed or does not exist.');
+                setError('Не вдалося завантажити пропозицію. Можливо, її було видалено або вона не існує.');
             } finally {
                 setIsLoading(false);
             }
@@ -175,11 +180,9 @@ export default function SingleOfferPage() {
         }
 
         try {
-            // Find existing comment to preserve text
-            const myReview = comments.find(c => c.author === fullName || c.author === firstName);
             await api.post(`/Discounts/${id}/reviews`, {
                 isRecommended: !wasLiked,
-                comment: myReview ? myReview.text : null
+                comment: null
             });
         } catch (err) {
             // Revert
@@ -205,10 +208,9 @@ export default function SingleOfferPage() {
         }
 
         try {
-            const myReview = comments.find(c => c.author === fullName || c.author === firstName);
             await api.post(`/Discounts/${id}/reviews`, {
                 isRecommended: false,
-                comment: myReview ? myReview.text : null
+                comment: null
             });
         } catch (err) {
             // Revert
@@ -234,16 +236,12 @@ export default function SingleOfferPage() {
         setIsPostingComment(true);
         try {
             const res = await api.post<Comment>(`/Discounts/${id}/reviews`, {
-                isRecommended: liked, // retain the current recommendation status
+                isRecommended: liked, // retain current recommendation status
                 comment: commentText.trim()
             });
 
             // Update comments list
-            setComments(prev => {
-                // Remove existing comment from current user if it exists (since it's an upsert)
-                const filtered = prev.filter(c => c.author !== fullName && c.author !== firstName);
-                return [res.data, ...filtered];
-            });
+            setComments(prev => [res.data, ...prev]);
             setCommentText('');
         } catch (err) {
             console.error("Failed to post comment", err);
@@ -255,16 +253,18 @@ export default function SingleOfferPage() {
     if (isLoading) return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
             <Loader2 className="w-10 h-10 text-primary-500 animate-spin" />
-            <p className="text-zinc-500 dark:text-zinc-400">Loading offer...</p>
+            <p className="text-zinc-500 dark:text-zinc-400 font-medium">Завантаження пропозиції...</p>
         </div>
     );
 
     if (error || !offer) return (
         <div className="max-w-2xl mx-auto px-4 py-20 text-center">
             <div className="text-6xl mb-6">🔍</div>
-            <h2 className="text-2xl font-bold mb-2">Offer not found</h2>
-            <p className="text-zinc-500 dark:text-zinc-400 mb-8">{error ?? 'This offer does not exist.'}</p>
-            <button onClick={() => navigate('/offers')} className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-2 rounded-xl transition-colors">Browse Offers</button>
+            <h2 className="text-2xl font-bold mb-2 text-zinc-900 dark:text-white">Знижку не знайдено</h2>
+            <p className="text-zinc-500 dark:text-zinc-400 mb-8">{error ?? 'Ця пропозиція не існує або була видалена.'}</p>
+            <button onClick={() => navigate('/offers')} className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-2.5 rounded-xl transition-colors font-bold">
+                Переглянути інші пропозиції
+            </button>
         </div>
     );
 
@@ -279,10 +279,10 @@ export default function SingleOfferPage() {
             {/* Back button */}
             <button
                 onClick={() => navigate(-1)}
-                className="flex items-center gap-1 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 mb-6 transition-colors group"
+                className="flex items-center gap-1 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 mb-6 transition-colors group font-semibold"
             >
                 <ChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
-                Back
+                Назад
             </button>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -294,7 +294,7 @@ export default function SingleOfferPage() {
                     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden rounded-2xl">
                         <div className="relative aspect-[16/9] bg-zinc-100 dark:bg-zinc-800">
                             <img
-                                src={images[activeImg].startsWith('http') ? images[activeImg] : `http://localhost:5266${images[activeImg]}`}
+                                src={images[activeImg].startsWith('http') ? images[activeImg] : `https://localhost:7094${images[activeImg]}`}
                                 alt={offer.title}
                                 className="w-full h-full object-cover transition-opacity duration-300"
                                 onError={e => { e.currentTarget.src = FALLBACK_IMAGE; }}
@@ -307,7 +307,7 @@ export default function SingleOfferPage() {
                                     </span>
                                 )}
                                 <span className={`text-white text-xs font-semibold px-3 py-1 rounded-full shadow-lg ${offer.isActive && !isExpired ? 'bg-emerald-500' : 'bg-zinc-500'}`}>
-                                    {offer.isActive && !isExpired ? '● Active' : '● Expired'}
+                                    {offer.isActive && !isExpired ? '● Активна' : '● Завершилась'}
                                 </span>
                             </div>
                             {/* Image nav arrows */}
@@ -337,7 +337,7 @@ export default function SingleOfferPage() {
                                         onClick={() => setActiveImg(i)}
                                         className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${i === activeImg ? 'border-primary-500 opacity-100' : 'border-transparent opacity-60 hover:opacity-90'}`}
                                     >
-                                        <img src={img.startsWith('http') ? img : `http://localhost:5266${img}`} alt="" className="w-full h-full object-cover" onError={e => { e.currentTarget.src = FALLBACK_IMAGE; }} />
+                                        <img src={img.startsWith('http') ? img : `https://localhost:7094${img}`} alt="" className="w-full h-full object-cover" onError={e => { e.currentTarget.src = FALLBACK_IMAGE; }} />
                                     </button>
                                 ))}
                             </div>
@@ -365,96 +365,72 @@ export default function SingleOfferPage() {
                         )}
                     </div>
 
-                    {/* ── INTERACTION BUTTONS ── */}
-                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm p-4 rounded-2xl">
-                        <div className="flex flex-wrap items-center gap-3">
-
-                            {/* Save */}
-                            <button
-                                onClick={handleSave}
-                                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all active:scale-95 border-2
-                                    ${saved
-                                        ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-400 text-amber-600 dark:text-amber-400'
-                                        : 'border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:border-amber-400 hover:text-amber-500'
-                                    }`}
-                            >
-                                <Bookmark className={`w-4.5 h-4.5 ${saved ? 'fill-amber-400' : ''}`} />
-                                <span>{saved ? 'Saved' : 'Save'}</span>
-                                <span className={`ml-1 px-1.5 py-0.5 text-xs rounded-md font-bold ${saved ? 'bg-amber-100 dark:bg-amber-800/40 text-amber-600 dark:text-amber-400' : 'bg-zinc-100 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400'}`}>
-                                    {saveCount}
-                                </span>
-                            </button>
-
-                            {/* Divider */}
-                            <div className="h-8 w-px bg-zinc-200 dark:bg-zinc-700" />
-
-                            {/* Like */}
-                            <button
-                                onClick={handleLike}
-                                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all active:scale-95 border-2
-                                    ${liked
-                                        ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-400 text-emerald-600 dark:text-emerald-400'
-                                        : 'border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:border-emerald-400 hover:text-emerald-500'
-                                    }`}
-                            >
-                                <ThumbsUp className={`w-4.5 h-4.5 ${liked ? 'fill-emerald-400' : ''}`} />
-                                <span className={`px-1.5 py-0.5 text-xs rounded-md font-bold ${liked ? 'bg-emerald-100 dark:bg-emerald-800/40 text-emerald-600 dark:text-emerald-400' : 'bg-zinc-100 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400'}`}>
-                                    {likeCount}
-                                </span>
-                            </button>
-
-                            {/* Dislike */}
-                            <button
-                                onClick={handleDislike}
-                                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all active:scale-95 border-2
-                                    ${disliked
-                                        ? 'bg-red-50 dark:bg-red-900/20 border-red-400 text-red-500 dark:text-red-400'
-                                        : 'border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:border-red-400 hover:text-red-500'
-                                    }`}
-                            >
-                                <ThumbsDown className={`w-4.5 h-4.5 ${disliked ? 'fill-red-400' : ''}`} />
-                                <span className={`px-1.5 py-0.5 text-xs rounded-md font-bold ${disliked ? 'bg-red-100 dark:bg-red-800/40 text-red-500 dark:text-red-400' : 'bg-zinc-100 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400'}`}>
-                                    {dislikeCount}
-                                </span>
-                            </button>
-
-                            {/* Divider */}
-                            <div className="h-8 w-px bg-zinc-200 dark:bg-zinc-700" />
-
-                            {/* Share */}
-                            <button
-                                onClick={handleShare}
-                                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all active:scale-95 border-2
-                                    ${shareCopied
-                                        ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-400 text-blue-600 dark:text-blue-400'
-                                        : 'border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:border-blue-400 hover:text-blue-500'
-                                    }`}
-                            >
-                                <Share2 className="w-4.5 h-4.5" />
-                                <span>{shareCopied ? 'Copied!' : 'Share'}</span>
-                            </button>
-
-                            {/* Online offer link */}
-                            {offer.isOnline && offer.offerUrl && (
-                                <a
-                                    href={offer.offerUrl}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="ml-auto flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white rounded-xl px-4 text-sm py-2.5 transition-colors font-medium"
-                                >
-                                    <ExternalLink className="w-4 h-4" />
-                                    Go to Store
-                                </a>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* ── COMMENTS ── */}
+                    {/* ── FEEDBACK & COMMENTS (Unified at the bottom) ── */}
                     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm p-6 rounded-2xl">
-                        <h2 className="text-lg font-bold mb-5 flex items-center gap-2">
-                            💬 Comments
-                            <span className="text-sm font-normal text-zinc-500 dark:text-zinc-400">({comments.length})</span>
-                        </h2>
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-5 mb-6 gap-4">
+                            <h2 className="text-lg font-bold flex items-center gap-2">
+                                💬 Відгуки та коментарі
+                                <span className="text-sm font-normal text-zinc-500 dark:text-zinc-400">({comments.length})</span>
+                            </h2>
+                            
+                            {/* Like / Dislike / Save / Share Buttons */}
+                            <div className="flex flex-wrap items-center gap-2">
+                                {/* Like */}
+                                <button
+                                    onClick={handleLike}
+                                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-semibold text-xs transition-all active:scale-95 border
+                                        ${liked
+                                            ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-400 text-emerald-600 dark:text-emerald-400'
+                                            : 'border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:border-emerald-400 hover:text-emerald-500'
+                                        }`}
+                                >
+                                    <ThumbsUp className={`w-4 h-4 ${liked ? 'fill-emerald-400' : ''}`} />
+                                    <span>Рекомендую</span>
+                                    <span className="font-bold ml-0.5">{likeCount}</span>
+                                </button>
+
+                                {/* Dislike */}
+                                <button
+                                    onClick={handleDislike}
+                                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-semibold text-xs transition-all active:scale-95 border
+                                        ${disliked
+                                            ? 'bg-red-50 dark:bg-red-900/20 border-red-400 text-red-500 dark:text-red-400'
+                                            : 'border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:border-red-400 hover:text-red-500'
+                                        }`}
+                                >
+                                    <ThumbsDown className={`w-4 h-4 ${disliked ? 'fill-red-400' : ''}`} />
+                                    <span>Не рекомендую</span>
+                                    <span className="font-bold ml-0.5">{dislikeCount}</span>
+                                </button>
+
+                                {/* Save */}
+                                <button
+                                    onClick={handleSave}
+                                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-semibold text-xs transition-all active:scale-95 border
+                                        ${saved
+                                            ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-400 text-amber-600 dark:text-amber-400'
+                                            : 'border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:border-amber-400 hover:text-amber-500'
+                                        }`}
+                                >
+                                    <Bookmark className={`w-4 h-4 ${saved ? 'fill-amber-400' : ''}`} />
+                                    <span>{saved ? 'Збережено' : 'Зберегти'}</span>
+                                    <span className="font-bold ml-0.5">{saveCount}</span>
+                                </button>
+
+                                {/* Share */}
+                                <button
+                                    onClick={handleShare}
+                                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl font-semibold text-xs transition-all active:scale-95 border
+                                        ${shareCopied
+                                            ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-400 text-blue-600 dark:text-blue-400'
+                                            : 'border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:border-blue-400 hover:text-blue-500'
+                                        }`}
+                                >
+                                    <Share2 className="w-4 h-4" />
+                                    <span>{shareCopied ? 'Скопійовано!' : 'Поділитись'}</span>
+                                </button>
+                            </div>
+                        </div>
 
                         {/* Post comment */}
                         <form onSubmit={handlePostComment} className="mb-6">
@@ -467,20 +443,25 @@ export default function SingleOfferPage() {
                                         ref={commentInputRef}
                                         value={commentText}
                                         onChange={e => setCommentText(e.target.value)}
-                                        placeholder={isAuthenticated ? "Share your thoughts about this offer..." : "Log in to post a comment..."}
+                                        placeholder={isAuthenticated ? "Поділіться своїми враженнями про цю знижку..." : "Увійдіть в систему, щоб залишити коментар..."}
                                         disabled={!isAuthenticated}
                                         rows={3}
                                         className="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all resize-none text-sm disabled:opacity-60"
                                     />
-                                    <div className="flex justify-end mt-2">
+                                    <div className="flex justify-between items-center mt-2 gap-4">
+                                        <div className="text-xs text-red-500 font-medium">
+                                            {isAuthenticated && !liked && !disliked && (
+                                                <span>* Будь ласка, оберіть «Рекомендую» або «Не рекомендую» перед надсиланням коментаря</span>
+                                            )}
+                                        </div>
                                         <button
                                             type="submit"
-                                            disabled={!commentText.trim() || isPostingComment || !isAuthenticated}
-                                            className="bg-primary-500 hover:bg-primary-600 text-white rounded-xl py-2 px-4 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center transition-colors"
+                                            disabled={!commentText.trim() || isPostingComment || !isAuthenticated || (!liked && !disliked)}
+                                            className="bg-primary-500 hover:bg-primary-600 text-white font-bold rounded-xl py-2 px-4 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center transition-colors shadow-sm flex-shrink-0"
                                         >
                                             {isPostingComment
-                                                ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Posting...</>
-                                                : <><Send className="w-4 h-4 mr-2" />Post</>
+                                                ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Надсилання...</>
+                                                : <><Send className="w-4 h-4 mr-2" />Надіслати</>
                                             }
                                         </button>
                                     </div>
@@ -490,31 +471,37 @@ export default function SingleOfferPage() {
 
                         {/* Comment list */}
                         <div className="space-y-4">
-                            {comments.map(comment => (
-                                <div key={comment.id} className="flex gap-3 group">
-                                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-zinc-400 to-zinc-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-0.5">
-                                        {comment.avatar}
-                                    </div>
-                                    <div className="flex-1 bg-zinc-50 dark:bg-zinc-800/60 rounded-xl px-4 py-3 border border-zinc-100 dark:border-zinc-800">
-                                        <div className="flex items-center justify-between mb-1">
-                                            <span className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
-                                                {comment.author}
-                                                {comment.isRecommended !== null && (
-                                                    <span className="text-xs font-medium text-zinc-500">
-                                                        {comment.isRecommended ? (
-                                                            <span className="text-emerald-500 flex items-center gap-1"><ThumbsUp className="w-3 h-3" /> Recommends</span>
-                                                        ) : (
-                                                            <span className="text-red-500 flex items-center gap-1"><ThumbsDown className="w-3 h-3" /> Doesn't recommend</span>
-                                                        )}
-                                                    </span>
-                                                )}
-                                            </span>
-                                            <span className="text-xs text-zinc-400">{timeAgo(comment.createdAt)}</span>
+                            {comments.length > 0 ? (
+                                comments.map(comment => (
+                                    <div key={comment.id} className="flex gap-3 group">
+                                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-zinc-400 to-zinc-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-0.5">
+                                            {comment.avatar}
                                         </div>
-                                        <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">{comment.text}</p>
+                                        <div className="flex-1 bg-zinc-50 dark:bg-zinc-800/60 rounded-xl px-4 py-3 border border-zinc-100 dark:border-zinc-800">
+                                            <div className="flex items-center justify-between mb-1">
+                                                <span className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+                                                    {comment.author}
+                                                    {comment.isRecommended !== null && (
+                                                        <span className="text-xs font-medium">
+                                                            {comment.isRecommended ? (
+                                                                <span className="text-emerald-500 flex items-center gap-1"><ThumbsUp className="w-3 h-3" /> Рекомендує</span>
+                                                            ) : (
+                                                                <span className="text-red-500 flex items-center gap-1"><ThumbsDown className="w-3 h-3" /> Не рекомендує</span>
+                                                            )}
+                                                        </span>
+                                                    )}
+                                                </span>
+                                                <span className="text-xs text-zinc-400">{timeAgo(comment.createdAt)}</span>
+                                            </div>
+                                            <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">{comment.text}</p>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))
+                            ) : (
+                                <p className="text-center py-6 text-zinc-500 dark:text-zinc-400 text-sm">
+                                    Коментарів ще немає. Будьте першим, хто поділиться своєю думкою!
+                                </p>
+                            )}
                         </div>
                     </div>
 
@@ -537,72 +524,66 @@ export default function SingleOfferPage() {
                             )}
                         </div>
                         {offer.oldPrice && offer.oldPrice > 0 && (
-                            <p className="text-zinc-400 text-sm line-through mb-4">Was {offer.oldPrice.toFixed(2)} ₴</p>
+                            <p className="text-zinc-400 text-sm line-through mb-4">Було {offer.oldPrice.toFixed(2)} ₴</p>
                         )}
                         {offer.isOnline && offer.offerUrl ? (
-                            <a href={offer.offerUrl} target="_blank" rel="noreferrer" className="bg-primary-500 hover:bg-primary-600 text-white rounded-xl px-4 py-2.5 flex items-center justify-center transition-colors font-medium w-full text-center text-sm">
-                                <ExternalLink className="w-4 h-4 mr-2" /> Get This Deal
+                            <a href={offer.offerUrl} target="_blank" rel="noreferrer" className="bg-primary-500 hover:bg-primary-600 text-white rounded-xl px-4 py-2.5 flex items-center justify-center transition-colors font-bold w-full text-center text-sm shadow-sm">
+                                <ExternalLink className="w-4 h-4 mr-2" /> Отримати знижку
                             </a>
                         ) : !offer.isOnline && offer.latitude && offer.longitude ? (
                             <a
                                 href={`/map?lat=${offer.latitude}&lng=${offer.longitude}`}
-                                className="bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-900/40 rounded-xl px-4 py-2.5 flex items-center justify-center transition-colors font-medium w-full text-center text-sm"
+                                className="bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-900/40 rounded-xl px-4 py-2.5 flex items-center justify-center transition-colors font-bold w-full text-center text-sm"
                             >
-                                <MapPin className="w-4 h-4 mr-2" /> View on Map
+                                <MapPin className="w-4 h-4 mr-2" /> Показати на карті
                             </a>
                         ) : null}
                     </div>
 
-                    {/* ── OFFER DETAILS ── */}
+                    {/* ── DETAILED PLACE / STORE INFO (Add info on the side) ── */}
                     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm p-6 rounded-2xl">
-                        <h2 className="text-base font-bold mb-2 text-zinc-900 dark:text-white">Offer Details</h2>
-                        <div className="divide-y-0">
-                            <InfoRow icon={<CheckCircle className="w-4 h-4" />} label="Status" value={
-                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold ${offer.isActive && !isExpired ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'}`}>
-                                    {offer.isActive && !isExpired ? '● Active' : '● Inactive'}
-                                </span>
-                            } />
-                            <InfoRow icon={<Tag className="w-4 h-4" />} label="Category" value={offer.categoryName} />
-                            <InfoRow icon={<Clock className="w-4 h-4" />} label="Valid From" value={formatDate(offer.validFrom)} />
-                            <InfoRow icon={<XCircle className="w-4 h-4" />} label="Valid To" value={
-                                <span className={isExpired ? 'text-red-500' : ''}>{formatDate(offer.validTo)}</span>
-                            } />
-                            <InfoRow icon={<Zap className="w-4 h-4" />} label="Creator" value={offer.creator === 'User' ? '👤 User submitted' : '🤖 Auto-parsed'} />
-                            <InfoRow icon={<Calendar className="w-4 h-4" />} label="Created At" value={formatDate(offer.createdAt)} />
-                            {offer.createdById && (
-                                <InfoRow icon={<User className="w-4 h-4" />} label="Created By" value={`User #${offer.createdById}`} />
-                            )}
-                        </div>
-                    </div>
-
-                    {/* ── PLACE / STORE ── */}
-                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm p-6 rounded-2xl">
-                        <h2 className="text-base font-bold mb-2 text-zinc-900 dark:text-white">Store / Place</h2>
-                        <div>
-                            <InfoRow
-                                icon={offer.isOnline ? <Globe className="w-4 h-4" /> : <MapPin className="w-4 h-4" />}
-                                label="Store"
-                                value={
-                                    <span className="flex items-center gap-2">
-                                        {offer.storeName}
-                                        <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${offer.isOnline ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'}`}>
-                                            {offer.isOnline ? 'Online' : 'Physical'}
-                                        </span>
+                        <h2 className="text-base font-bold mb-4 text-zinc-900 dark:text-white flex items-center gap-2">
+                            🏪 Інформація про заклад
+                        </h2>
+                        
+                        <div className="space-y-4">
+                            <div>
+                                <p className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Назва</p>
+                                <div className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                                    {offer.storeName}
+                                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${offer.isOnline ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'}`}>
+                                        {offer.isOnline ? 'Онлайн' : 'Фізичний'}
                                     </span>
-                                }
-                            />
+                                </div>
+                            </div>
+
+                            {offer.address && !offer.isOnline && (
+                                <div>
+                                    <p className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Адреса</p>
+                                    <div className="text-sm text-zinc-800 dark:text-zinc-200 flex items-start gap-1.5 font-medium leading-relaxed">
+                                        <MapPin className="w-4.5 h-4.5 text-primary-500 flex-shrink-0 mt-0.5" />
+                                        <span>{offer.address}</span>
+                                    </div>
+                                </div>
+                            )}
+
                             {offer.storeDescription && (
-                                <InfoRow icon={<Tag className="w-4 h-4" />} label="About Store" value={offer.storeDescription} />
+                                <div>
+                                    <p className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Про заклад</p>
+                                    <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed whitespace-pre-line font-medium">
+                                        {offer.storeDescription}
+                                    </p>
+                                </div>
                             )}
-                            {!offer.isOnline && offer.address && (
-                                <InfoRow icon={<MapPin className="w-4 h-4" />} label="Address" value={offer.address} />
-                            )}
-                            {offer.isOnline && offer.offerUrl && (
-                                <InfoRow icon={<Globe className="w-4 h-4" />} label="Website" value={
-                                    <a href={offer.offerUrl} target="_blank" rel="noreferrer" className="text-primary-500 hover:text-primary-600 underline underline-offset-2 truncate block max-w-full">
-                                        {offer.offerUrl}
+
+                            {offer.offerUrl && (
+                                <div>
+                                    <p className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Джерело / Сайт</p>
+                                    <a href={offer.offerUrl} target="_blank" rel="noreferrer" className="text-sm text-primary-500 hover:text-primary-600 underline underline-offset-2 flex items-center gap-1.5 truncate font-semibold">
+                                        <Globe className="w-4 h-4 flex-shrink-0" />
+                                        <span>{offer.storeName} Website</span>
                                     </a>
-                                } />
+                                </div>
                             )}
                         </div>
 
@@ -610,11 +591,34 @@ export default function SingleOfferPage() {
                         {!offer.isOnline && offer.latitude && offer.longitude && (
                             <a
                                 href={`/map?lat=${offer.latitude}&lng=${offer.longitude}`}
-                                className="mt-4 flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border-2 border-zinc-200 dark:border-zinc-700 text-sm font-medium text-zinc-700 dark:text-zinc-200 hover:border-primary-400 hover:text-primary-500 transition-all"
+                                className="mt-6 flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border-2 border-zinc-200 dark:border-zinc-700 text-sm font-semibold text-zinc-700 dark:text-zinc-200 hover:border-primary-400 hover:text-primary-500 hover:bg-primary-50/50 dark:hover:bg-primary-950/20 transition-all active:scale-98 shadow-xs"
                             >
-                                <MapPin className="w-4 h-4" /> Open on Map
+                                <MapPin className="w-4 h-4 text-primary-500" />
+                                <span>Показати на карті</span>
                             </a>
                         )}
+                    </div>
+
+                    {/* ── OFFER DETAILS ── */}
+                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm p-6 rounded-2xl">
+                        <h2 className="text-base font-bold mb-4 text-zinc-900 dark:text-white">Деталі акції</h2>
+                        <div className="divide-y-0 space-y-1">
+                            <InfoRow icon={<CheckCircle className="w-4 h-4" />} label="Статус" value={
+                                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${offer.isActive && !isExpired ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'}`}>
+                                    {offer.isActive && !isExpired ? '● Активна' : '● Завершилась'}
+                                </span>
+                            } />
+                            <InfoRow icon={<Tag className="w-4 h-4" />} label="Категорія" value={offer.categoryName} />
+                            <InfoRow icon={<Clock className="w-4 h-4" />} label="Початок акції" value={formatDate(offer.validFrom)} />
+                            <InfoRow icon={<XCircle className="w-4 h-4" />} label="Кінець акції" value={
+                                <span className={isExpired ? 'text-red-500' : ''}>{formatDate(offer.validTo)}</span>
+                            } />
+                            <InfoRow icon={<Zap className="w-4 h-4" />} label="Джерело" value={offer.creator === 'User' ? '👤 Додано користувачем' : '🤖 Авто-парсер'} />
+                            <InfoRow icon={<Calendar className="w-4 h-4" />} label="Дата публікації" value={formatDate(offer.createdAt)} />
+                            {(offer.createdByName || offer.createdById) && (
+                                <InfoRow icon={<User className="w-4 h-4" />} label="Автор публікації" value={offer.createdByName || `Користувач #${offer.createdById}`} />
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>

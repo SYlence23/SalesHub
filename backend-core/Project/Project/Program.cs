@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Identity;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using NetTopologySuite.Geometries;
+using SalesHub.Enums;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -101,6 +103,112 @@ using (var scope = app.Services.CreateScope())
     if (!await roleManager.RoleExistsAsync("User"))
         await roleManager.CreateAsync(new IdentityRole<int> { Name = "User" });
 
+    try
+    {
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+
+
+        // 1. Seed test user
+        var testEmail = "testuser@saleshub.com";
+        var testUser = await userManager.FindByEmailAsync(testEmail);
+        if (testUser == null)
+        {
+            testUser = new ApplicationUser
+            {
+                UserName = testEmail,
+                Email = testEmail,
+                Name = "Тестовий",
+                Surname = "Користувач",
+                EmailConfirmed = true
+            };
+            var createResult = await userManager.CreateAsync(testUser, "Password123!");
+            if (createResult.Succeeded)
+            {
+                await userManager.AddToRoleAsync(testUser, "User");
+            }
+        }
+
+        // 2. Seed test Place
+        var testPlace = await context.Places.FirstOrDefaultAsync(p => p.Name == "Сільпо");
+        if (testPlace == null)
+        {
+            testPlace = new Place
+            {
+                Name = "Сільпо",
+                Description = "Мережа супермаркетів «Сільпо» пропонує широкий асортимент свіжих продуктів харчування, готових страв власної кулінарії, свіжовипеченого хліба з пекарні та кондитерських виробів. Заклад вирізняється високим рівнем обслуговування, тематичним дизайном інтер'єру та вигідною програмою лояльності «Власний Рахунок».",
+                IsOnline = false,
+                OfferUrl = "https://silpo.ua",
+                CreatedById = testUser.Id
+            };
+
+            var testLocation = new SalesHub.Models.Location
+            {
+                Name = "Сільпо (ТРЦ Victoria Gardens)",
+                Address = "вулиця Кульпарківська, 226А (ТРЦ Victoria Gardens, 1-й поверх)",
+                City = "Львів",
+                Coordinates = new Point(24.0298, 49.8164) { SRID = 4326 }
+            };
+
+            var placeLocation = new PlaceLocation
+            {
+                Place = testPlace,
+                Location = testLocation
+            };
+
+            testPlace.PlaceLocations.Add(placeLocation);
+            context.Places.Add(testPlace);
+            await context.SaveChangesAsync();
+        }
+
+        // 3. Seed test Offer
+        var testOffer = await context.Offers.FirstOrDefaultAsync(o => o.Title == "Супер Знижка на Круасани");
+        if (testOffer == null)
+        {
+            testOffer = new Offer
+            {
+                Title = "Супер Знижка на Круасани",
+                Description = "Купуйте свіжі хрусткі круасани власної випічки «Сільпо» зі знижкою 50% щовечора після 20:00! Акція поширюється на круасани з шоколадною, мигдалевою та класичною вершковою начинкою. Смакуйте теплу випічку до кави за найкращою ціною.",
+                IsActive = true,
+                NewPrice = 25.00m,
+                OldPrice = 50.00m,
+                ValidFrom = DateTime.UtcNow,
+                ValidTo = DateTime.UtcNow.AddDays(30),
+                Creator = OfferCreator.User,
+                CategoryId = 2, // "Заклади" category
+                PlaceId = testPlace.Id,
+                CreatedById = testUser.Id
+            };
+
+            var testImage = new OfferImage
+            {
+                ImageUrl = "https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=800&q=80",
+                IsMain = true,
+                Offer = testOffer
+            };
+            testOffer.Images = new List<OfferImage> { testImage };
+
+            context.Offers.Add(testOffer);
+            await context.SaveChangesAsync();
+
+            // 4. Seed test review
+            var testReview = new OfferReviews
+            {
+                OfferId = testOffer.Id,
+                CreatedById = testUser.Id,
+                IsRecommended = true,
+                Comment = "Дуже смачна та свіжа випічка! Круасани хрусткі, начинки багато. Знижка 50% ввечері — це чудовий привід зайти після роботи.",
+                CreatedAt = DateTime.UtcNow
+            };
+            context.OfferReviews.Add(testReview);
+            await context.SaveChangesAsync();
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error seeding test data: {ex.Message}");
+    }
 }
 
 app.MapControllers();

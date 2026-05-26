@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'https://localhost:7094/api', // Adjust this if your backend URL is different
+    baseURL: '/api', // Adjust this if your backend URL is different
 });
 
 api.interceptors.request.use(
@@ -23,9 +23,12 @@ api.interceptors.response.use(
     },
     (error) => {
         if (error.response && error.response.status === 401) {
-            // Optional: Handle token expiration globally
-            localStorage.removeItem('token');
-            window.location.href = '/login';
+            const isAuthRequest = error.config?.url?.includes('/Auth/');
+            if (!isAuthRequest) {
+                // Handle token expiration globally for regular requests
+                localStorage.removeItem('token');
+                window.location.href = '/login';
+            }
         }
         return Promise.reject(error);
     }

@@ -179,7 +179,7 @@ namespace SalesHub.Migrations
 
                     b.HasIndex("PlaceId");
 
-                    b.ToTable("PlaceLocations");
+                    b.ToTable("PlaceLocations", (string)null);
                 });
 
             modelBuilder.Entity("SalesHub.Models.ApplicationUser", b =>
@@ -289,7 +289,7 @@ namespace SalesHub.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Locations");
+                    b.ToTable("Locations", (string)null);
                 });
 
             modelBuilder.Entity("SalesHub.Models.Offer", b =>
@@ -346,7 +346,7 @@ namespace SalesHub.Migrations
 
                     b.HasIndex("PlaceId");
 
-                    b.ToTable("Offers");
+                    b.ToTable("Offers", (string)null);
                 });
 
             modelBuilder.Entity("SalesHub.Models.OfferCategory", b =>
@@ -377,7 +377,7 @@ namespace SalesHub.Migrations
 
                     b.HasIndex("ParentId");
 
-                    b.ToTable("OfferCategories");
+                    b.ToTable("OfferCategories", (string)null);
 
                     b.HasData(
                         new
@@ -434,7 +434,7 @@ namespace SalesHub.Migrations
 
                     b.HasIndex("OfferId");
 
-                    b.ToTable("OfferImages");
+                    b.ToTable("OfferImages", (string)null);
                 });
 
             modelBuilder.Entity("SalesHub.Models.OfferReviews", b =>
@@ -467,7 +467,7 @@ namespace SalesHub.Migrations
 
                     b.HasIndex("OfferId");
 
-                    b.ToTable("OfferReviews");
+                    b.ToTable("OfferReviews", (string)null);
                 });
 
             modelBuilder.Entity("SalesHub.Models.Place", b =>
@@ -491,9 +491,6 @@ namespace SalesHub.Migrations
                     b.Property<bool>("IsOnline")
                         .HasColumnType("boolean");
 
-                    b.Property<Point>("Location")
-                        .HasColumnType("geography");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
@@ -506,7 +503,7 @@ namespace SalesHub.Migrations
 
                     b.HasIndex("CreatedById");
 
-                    b.ToTable("Places");
+                    b.ToTable("Places", (string)null);
                 });
 
             modelBuilder.Entity("SalesHub.Models.PlaceImage", b =>
@@ -534,7 +531,7 @@ namespace SalesHub.Migrations
 
                     b.HasIndex("PlaceId");
 
-                    b.ToTable("PlaceImages");
+                    b.ToTable("PlaceImages", (string)null);
                 });
 
             modelBuilder.Entity("SalesHub.Models.UserSavedOffers", b =>
@@ -560,7 +557,7 @@ namespace SalesHub.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserSavedOffers");
+                    b.ToTable("UserSavedOffers", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>

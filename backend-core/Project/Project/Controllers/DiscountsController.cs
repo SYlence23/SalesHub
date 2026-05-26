@@ -190,6 +190,26 @@ namespace Project.Controllers
 
             return Ok(review);
         }
+
+        [HttpGet("{id:int}/review/check")]
+        [Authorize]
+        public async Task<IActionResult> CheckReview(int id)
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdString, out int userId)) 
+                return Unauthorized();
+
+            var review = await _context.OfferReviews
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.OfferId == id && r.CreatedById == userId);
+
+            if (review == null)
+            {
+                return Ok(new { hasReview = false, isRecommended = false, comment = "" });
+            }
+
+            return Ok(new { hasReview = true, isRecommended = review.IsRecommended, comment = review.Comment });
+        }
         
         }
     }
