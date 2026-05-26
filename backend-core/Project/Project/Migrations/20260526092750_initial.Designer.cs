@@ -13,8 +13,8 @@ using SalesHub.Data;
 namespace SalesHub.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260509092558_IdentityUpdate")]
-    partial class IdentityUpdate
+    [Migration("20260526092750_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -364,11 +364,9 @@ namespace SalesHub.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("IconUrl")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("MarkerColor")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Name")
@@ -383,6 +381,43 @@ namespace SalesHub.Migrations
                     b.HasIndex("ParentId");
 
                     b.ToTable("OfferCategories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc),
+                            MarkerColor = "#a83058ff",
+                            Name = "Розваги"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc),
+                            MarkerColor = "#fdad35ff",
+                            Name = "Заклади"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc),
+                            MarkerColor = "#115e10ff",
+                            Name = "Культура"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreatedAt = new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc),
+                            MarkerColor = "#5c2917ff",
+                            Name = "Книги"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CreatedAt = new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc),
+                            MarkerColor = "#1f1342ff",
+                            Name = "Спорт"
+                        });
                 });
 
             modelBuilder.Entity("SalesHub.Models.OfferImage", b =>
