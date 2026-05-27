@@ -159,9 +159,18 @@ export default function OfferFilters({
         <select
           className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none cursor-pointer"
           value={localSortOption}
-          onChange={(e) => setLocalSortOption(e.target.value)}
+          onChange={(e) => {
+            const val = e.target.value;
+            setLocalSortOption(val);
+            onApplyFilters({
+              searchTerm: localSearchTerm,
+              selectedCategory: localSelectedCategory,
+              sortOption: val
+            });
+          }}
         >
           <option value="newest">Нові додані</option>
+          <option value="popular">Найпопулярніші</option>
           <option value="price_asc">Ціна: від низької</option>
           <option value="price_desc">Ціна: від високої</option>
           <option value="discount_desc">Найбільша знижка</option>

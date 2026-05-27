@@ -45,6 +45,11 @@ namespace SalesHub.Services
                 "discount_desc" => query.OrderByDescending(query => (query.OldPrice - query.NewPrice) * 100 / query.OldPrice),
                 "valid_to_asc" => query.OrderBy(o => o.ValidTo == null ? DateTime.MaxValue : o.ValidTo),
                 "valid_to_desc" => query.OrderByDescending(o => o.ValidTo),
+                // Сортування за популярністю: спочатку вираховується рейтинг (лайки мінус дизлайки).
+                // У разі рівності рейтингу пріоритет віддається пропозиції з більшою кількістю лайків.
+                "popular" => query
+                    .OrderByDescending(o => o.Reviews.Count(r => r.IsRecommended) - o.Reviews.Count(r => !r.IsRecommended))
+                    .ThenByDescending(o => o.Reviews.Count(r => r.IsRecommended)),
                 _ => query.OrderByDescending(o => o.Id)
             };
 
@@ -144,6 +149,16 @@ namespace SalesHub.Services
             }
             else if (!string.IsNullOrWhiteSpace(dto.NewPlaceName))
             {
+                var nameTrimmed = dto.NewPlaceName.Trim();
+                var addressTrimmed = (dto.NewPlaceAddress ?? "Address not provided").Trim();
+                var exists = await _context.Places.AnyAsync(p => 
+                    p.Name.ToLower() == nameTrimmed.ToLower() &&
+                    p.PlaceLocations.Any(pl => pl.Location.Address.ToLower() == addressTrimmed.ToLower()), cancellationToken);
+                if (exists)
+                {
+                    throw new ArgumentException("Заклад з такою назвою та адресою вже існує.");
+                }
+
                 var newLocation = new SalesHub.Models.Location
                 {
                     Address = dto.NewPlaceAddress ?? "Address not provided",
@@ -214,7 +229,14 @@ namespace SalesHub.Services
             var offer = await _context.Offers.FindAsync(id);
             if (offer == null) return false;
 
-            offer.IsActive = isActive;
+            if (!isActive)
+            {
+                _context.Offers.Remove(offer);
+            }
+            else
+            {
+                offer.IsActive = true;
+            }
 
             await _context.SaveChangesAsync();
             return true;

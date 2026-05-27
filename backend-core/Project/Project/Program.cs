@@ -32,6 +32,7 @@ builder.Services.AddScoped<IPlaceService, PlaceService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IGoodDealService, GoodDealService>();
+builder.Services.AddHostedService<DiscountCleanupWorker>();
 builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
 builder.Services.AddAWSService<IAmazonS3>();
 builder.Services.AddOpenApi();
@@ -102,7 +103,7 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
     // Автоматичне застосування міграцій при старті
-    await dbContext.Database.MigrateAsync();
+    // await dbContext.Database.MigrateAsync();
 
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
 
@@ -112,7 +113,15 @@ using (var scope = app.Services.CreateScope())
     if (!await roleManager.RoleExistsAsync("User"))
         await roleManager.CreateAsync(new IdentityRole<int> { Name = "User" });
 
-    
+    var emptyLocations = dbContext.Locations.Where(l => string.IsNullOrEmpty(l.Address) || l.Address == "").ToList();
+    if (emptyLocations.Any())
+    {
+        foreach (var loc in emptyLocations)
+        {
+            loc.Address = "вул. " + loc.Name + ", Львів";
+        }
+        dbContext.SaveChanges();
+    }
 }
 
 app.MapControllers();

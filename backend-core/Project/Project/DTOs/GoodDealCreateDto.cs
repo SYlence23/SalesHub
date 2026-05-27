@@ -34,6 +34,13 @@ namespace SalesHub.DTOs
                     "ValidFrom date cannot be after ValidTo date.",
                     new[] { nameof(ValidFrom), nameof(ValidTo) });
             }
+
+            if (ValidTo.HasValue && ValidTo.Value < DateTime.UtcNow)
+            {
+                yield return new ValidationResult(
+                    "The good deal expiration date cannot be in the past.",
+                    new[] { nameof(ValidTo) });
+            }
         }
     }
 }

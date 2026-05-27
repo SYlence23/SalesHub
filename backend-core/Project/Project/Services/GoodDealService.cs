@@ -172,7 +172,16 @@ namespace SalesHub.Services
         {
             var deal = await _context.GoodDeals.FindAsync(id);
             if (deal == null) return false;
-            deal.IsActive = isActive;
+
+            if (!isActive)
+            {
+                _context.GoodDeals.Remove(deal);
+            }
+            else
+            {
+                deal.IsActive = true;
+            }
+
             await _context.SaveChangesAsync();
             return true;
         }

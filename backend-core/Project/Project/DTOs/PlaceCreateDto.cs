@@ -13,5 +13,7 @@ namespace SalesHub.DTOs
         // Optional location details if it's an offline place
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
+        public string? Address { get; set; }
+        public string? ImageUrl { get; set; }
     }
 }

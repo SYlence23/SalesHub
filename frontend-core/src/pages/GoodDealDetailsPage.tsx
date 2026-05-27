@@ -172,7 +172,7 @@ export default function GoodDealDetailsPage() {
         );
     }
 
-    if (error || (!isLoading && !deal)) {
+    if (error || !deal) {
         return (
             <div className="max-w-4xl mx-auto px-4 py-20 text-center">
                 <Sparkles className="w-12 h-12 text-zinc-300 mx-auto mb-4" />

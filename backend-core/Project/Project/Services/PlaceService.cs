@@ -33,6 +33,23 @@ namespace SalesHub.Services
 
         public async Task<int> CreateAsync(PlaceCreateDto dto, int userId)
         {
+            var nameTrimmed = dto.Name?.Trim();
+            if (string.IsNullOrEmpty(nameTrimmed))
+            {
+                throw new ArgumentException("Назва закладу не може бути порожньою.");
+            }
+
+            var addressTrimmed = (dto.Address ?? "").Trim();
+            var exists = await _context.Places.AnyAsync(p => 
+                p.Name.ToLower() == nameTrimmed.ToLower() &&
+                p.IsOnline == dto.IsOnline &&
+                (dto.IsOnline || p.PlaceLocations.Any(pl => pl.Location.Address.ToLower() == addressTrimmed.ToLower()))
+            );
+            if (exists)
+            {
+                throw new ArgumentException("Заклад з такою назвою та адресою вже існує.");
+            }
+
             var place = new Place
             {
                 Name = dto.Name,
@@ -41,6 +58,15 @@ namespace SalesHub.Services
                 IsOnline = dto.IsOnline,
                 OfferUrl = dto.OfferUrl ?? ""
             };
+
+            if (!string.IsNullOrEmpty(dto.ImageUrl))
+            {
+                place.Images.Add(new PlaceImage
+                {
+                    ImageUrl = dto.ImageUrl,
+                    IsMain = true
+                });
+            }
 
             _context.Places.Add(place);
             await _context.SaveChangesAsync();
@@ -51,7 +77,7 @@ namespace SalesHub.Services
                 var location = new Location
                 {
                     Name = dto.Name,
-                    Address = "",
+                    Address = dto.Address ?? "",
                     City = "",
                     Coordinates = new NetTopologySuite.Geometries.Point(dto.Longitude.Value, dto.Latitude.Value) { SRID = 4326 }
                 };
@@ -71,6 +97,7 @@ namespace SalesHub.Services
 
             return place.Id;
         }
+
         public async Task<PlaceFullDto?> GetPlaceDetailsAsync(int id)
         {
             var place = await _context.Places

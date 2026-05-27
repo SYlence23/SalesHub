@@ -33,7 +33,7 @@ export default function HomePage() {
 
     const fetchPopular = async () => {
       try {
-        const response = await axios.get<ApiResponse>('/api/Discounts?pageSize=6&sortOption=discount_desc');
+        const response = await axios.get<ApiResponse>('/api/Discounts?pageSize=6&sortOption=popular');
         setPopularOffers(response.data.data);
       } catch (error) {
         console.error("Failed to fetch popular offers:", error);
@@ -138,7 +138,7 @@ export default function HomePage() {
             <h2 className="text-3xl font-bold">Популярні знижки</h2>
           </div>
           <button
-            onClick={() => navigate('/offers?sortOption=discount_desc')}
+            onClick={() => navigate('/offers?sortOption=popular')}
             className="flex items-center gap-2 text-primary-500 font-semibold hover:underline"
           >
             Дивитися всі <ArrowRight className="w-4 h-4" />

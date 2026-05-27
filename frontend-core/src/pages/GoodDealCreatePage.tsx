@@ -28,6 +28,7 @@ interface PlaceForm {
     latitude: number;
     longitude: number;
     address: string;
+    imageUrl: string;
 }
 
 interface GoodDealForm {
@@ -163,8 +164,11 @@ export default function GoodDealCreatePage() {
             latitude: 0,
             longitude: 0,
             address: '',
+            imageUrl: '',
         };
     });
+
+    const [isPlaceImageUploading, setIsPlaceImageUploading] = useState(false);
 
     const [places, setPlaces] = useState<PlaceDTO[]>([]);
     const [selectedPlaceId, setSelectedPlaceId] = useState('');
@@ -351,6 +355,8 @@ export default function GoodDealCreatePage() {
                     offerUrl: placeForm.offerUrl,
                     latitude: currentLat,
                     longitude: currentLng,
+                    address: placeForm.address || undefined,
+                    imageUrl: placeForm.imageUrl || undefined,
                 });
                 finalPlaceId = placeRes.data.id.toString();
             }
@@ -721,6 +727,57 @@ export default function GoodDealCreatePage() {
                                     className={inputClass}
                                     placeholder="Короткий опис..."
                                 />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-2">Фото закладу</label>
+                                {placeForm.imageUrl ? (
+                                    <div className="relative w-40 h-40 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700">
+                                        <img src={placeForm.imageUrl} className="w-full h-full object-cover" />
+                                        <button
+                                            type="button"
+                                            onClick={() => setPlaceForm(prev => ({ ...prev, imageUrl: '' }))}
+                                            className="absolute top-2 right-2 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <label className="flex flex-col items-center justify-center w-40 h-40 border-2 border-zinc-300 border-dashed rounded-xl cursor-pointer bg-zinc-50 dark:hover:bg-zinc-800/50 dark:bg-zinc-900/50 hover:bg-zinc-100 dark:border-zinc-700 transition-all">
+                                        <div className="flex flex-col items-center justify-center p-4 text-center">
+                                            {isPlaceImageUploading ? (
+                                                <Loader2 className="w-6 h-6 text-orange-500 animate-spin mb-1" />
+                                            ) : (
+                                                <ImagePlus className="w-6 h-6 text-zinc-400 mb-1" />
+                                            )}
+                                            <span className="text-xs text-zinc-500 font-medium">
+                                                {isPlaceImageUploading ? 'Завантаження...' : 'Додати фото'}
+                                            </span>
+                                        </div>
+                                        <input 
+                                            type="file" 
+                                            className="hidden" 
+                                            accept="image/*" 
+                                            disabled={isPlaceImageUploading}
+                                            onChange={async (e) => {
+                                                if (e.target.files && e.target.files.length > 0) {
+                                                    setIsPlaceImageUploading(true);
+                                                    try {
+                                                        const file = e.target.files[0];
+                                                        const formData = new FormData();
+                                                        formData.append('file', file);
+                                                        const res = await api.post<{ url: string }>('/File/uploadImage?prefix=place-images', formData);
+                                                        setPlaceForm(prev => ({ ...prev, imageUrl: res.data.url }));
+                                                    } catch (err) {
+                                                        console.error("Failed to upload place image", err);
+                                                        setError("Не вдалося завантажити фото закладу.");
+                                                    } finally {
+                                                        setIsPlaceImageUploading(false);
+                                                    }
+                                                }
+                                            }} 
+                                        />
+                                    </label>
+                                )}
                             </div>
 
                             <label className="flex items-center gap-3 p-4 border border-zinc-200 dark:border-zinc-800 rounded-xl cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors">
