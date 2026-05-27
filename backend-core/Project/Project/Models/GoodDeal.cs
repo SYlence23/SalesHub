@@ -5,6 +5,7 @@ namespace SalesHub.Models
         public string Title { get; set; }
         public string Description { get; set; }
         public bool IsActive { get; set; } = true;
+        public bool IsArchived { get; set; } = false;
         public DateTime? ValidFrom { get; set; }
         public DateTime? ValidTo { get; set; }
 

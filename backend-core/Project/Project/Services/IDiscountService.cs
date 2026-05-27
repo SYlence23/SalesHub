@@ -8,7 +8,7 @@ namespace SalesHub.Services
 {
     public interface IDiscountService
     {
-        Task<(IEnumerable<OfferPreviewDto> Data, int Total)> GetAllAsync(int page, int pageSize, string? searchTerm = null, int? categoryId = null, string? sortOption = null);
+        Task<(IEnumerable<OfferPreviewDto> Data, int Total)> GetAllAsync(int page, int pageSize, string? searchTerm = null, int? categoryId = null, string? sortOption = null, bool? archived = null);
 
         Task<IEnumerable<CategoryPreviewDto>> GetCategoriesAsync();
 
@@ -17,6 +17,8 @@ namespace SalesHub.Services
         Task<bool> UpdateStatusAsync(int id, bool isActive);
 
         Task<bool> DeleteAsync(int id);
+
+        Task<int> ArchiveExpiredAsync();
         
         Task<IEnumerable<OfferReviewDto>> GetReviewsAsync(int offerId);
         Task<OfferReviewDto?> AddOrUpdateReviewAsync(int offerId, int userId, OfferReviewCreateDto dto);

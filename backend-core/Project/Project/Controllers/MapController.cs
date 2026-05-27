@@ -19,7 +19,7 @@ namespace SalesHub.Controllers
         public async Task<IActionResult> GetNearby([FromQuery] LocationSearchRequest request)
         {
             if (request.Latitude == 0 || request.Longitude == 0)
-                return BadRequest("User coordinates are required.");
+                return BadRequest("Координати користувача є обов'язковими.");
 
             var offers = await _discountService.GetByRadiusAsync(request);
             return Ok(offers);
@@ -45,7 +45,7 @@ namespace SalesHub.Controllers
         public IActionResult ShareLocation([FromBody] LocationSearchRequest request)
         {
             if (request.Latitude == 0 || request.Longitude == 0)
-                return BadRequest("User coordinates are required.");
+                return BadRequest("Координати користувача є обов'язковими.");
 
             var latStr = request.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture);
             var lngStr = request.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture);

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Sparkles, ChevronLeft, ChevronRight, Search, SlidersHorizontal, X, Users } from 'lucide-react';
+import { Sparkles, ChevronLeft, ChevronRight, Search, SlidersHorizontal, X, Users, Archive, LayoutGrid } from 'lucide-react';
 import GoodDealCard, { type GoodDeal, AudienceBadge } from '../components/Offer/GoodDealCard';
 import GoodDealSkeletonCard from '../components/Offer/GoodDealSkeletonCard';
 import { type Category } from '../components/Offer/OfferFilters';
@@ -30,7 +30,14 @@ export default function GoodDealsPage() {
     const selectedCategory = selectedCategoryStr ? parseInt(selectedCategoryStr, 10) : null;
     const selectedAudience = searchParams.get('audience') || null;
     const page = parseInt(searchParams.get('page') || '1', 10);
+    const isArchived = searchParams.get('archived') === 'true';
     const totalPages = Math.ceil(totalDeals / 10);
+
+    const toggleArchive = () => {
+        const newParams = new URLSearchParams();
+        if (!isArchived) newParams.set('archived', 'true');
+        setSearchParams(newParams);
+    };
 
     const [localSearch, setLocalSearch] = useState(searchTerm);
 
@@ -82,9 +89,13 @@ export default function GoodDealsPage() {
             setIsLoading(true);
             try {
                 const params = new URLSearchParams();
-                if (searchTerm) params.append('searchTerm', searchTerm);
-                if (selectedCategory !== null) params.append('categoryId', selectedCategory.toString());
-                if (selectedAudience) params.append('audience', selectedAudience);
+                if (isArchived) {
+                    params.append('archived', 'true');
+                } else {
+                    if (searchTerm) params.append('searchTerm', searchTerm);
+                    if (selectedCategory !== null) params.append('categoryId', selectedCategory.toString());
+                    if (selectedAudience) params.append('audience', selectedAudience);
+                }
                 params.append('page', page.toString());
 
                 const res = await axios.get<ApiGoodDealResponse>(`/api/GoodDeals?${params.toString()}`);
@@ -99,7 +110,7 @@ export default function GoodDealsPage() {
             }
         };
         fetchDeals();
-    }, [searchTerm, selectedCategory, selectedAudience, page]);
+    }, [searchTerm, selectedCategory, selectedAudience, page, isArchived]);
 
     const selectedCategoryName = categories.find(c => c.id === selectedCategory)?.name;
     const hasActiveFilters = !!(searchTerm || selectedCategory || selectedAudience);
@@ -112,23 +123,54 @@ export default function GoodDealsPage() {
                     <div className="flex items-center gap-2 mb-1">
                         <Sparkles className="w-6 h-6 text-orange-500" />
                         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-                            Студентська <span className="text-orange-500">вигода</span>
+                            {isArchived ? (
+                                <>Архів <span className="text-zinc-500">вигод</span></>
+                            ) : (
+                                <>Студентська <span className="text-orange-500">вигода</span></>
+                            )}
                         </h1>
                     </div>
                     <p className="text-zinc-500 dark:text-zinc-400">
-                        Хаб корисних вигід для молоді.
+                        {isArchived ? 'Вигоди з вичерпаним терміном дії.' : 'Хаб корисних вигід для молоді.'}
                     </p>
                 </div>
-                <button
-                    onClick={() => navigate('/good-deals/create')}
-                    className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl font-medium text-white bg-orange-500 hover:bg-orange-600 transition-all shadow-md hover:shadow-lg active:scale-95 gap-2 whitespace-nowrap"
-                >
-                    <Sparkles className="w-4 h-4" />
-                    Додати вигоду
-                </button>
+                <div className="flex items-center gap-3">
+                    {!isArchived && (
+                        <button
+                            onClick={() => navigate('/good-deals/create')}
+                            className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl font-medium text-white bg-orange-500 hover:bg-orange-600 transition-all shadow-md hover:shadow-lg active:scale-95 gap-2 whitespace-nowrap"
+                        >
+                            <Sparkles className="w-4 h-4" />
+                            Додати вигоду
+                        </button>
+                    )}
+                    <button
+                        onClick={toggleArchive}
+                        title={isArchived ? 'Повернутися до актуальних' : 'Переглянути архів'}
+                        className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm border transition-all active:scale-95 ${
+                            isArchived
+                                ? 'bg-zinc-700 text-white border-zinc-600 hover:bg-zinc-600'
+                                : 'bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:border-zinc-400'
+                        }`}
+                    >
+                        {isArchived
+                            ? <><LayoutGrid className="w-4 h-4" /> Актуальні</>
+                            : <><Archive className="w-4 h-4" /> Архів</>
+                        }
+                    </button>
+                </div>
             </div>
 
-            {/* Search Row */}
+            {/* Archive banner */}
+            {isArchived && (
+                <div className="flex items-center gap-3 px-4 py-3 mb-6 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 text-sm">
+                    <Archive className="w-4 h-4 shrink-0" />
+                    <span>Ви переглядаєте <strong>архів вигод</strong> — пропозиції з вичерпаним терміном дії.</span>
+                </div>
+            )}
+
+            {/* Search Row — only when not in archive mode */}
+            {!isArchived && (
             <div className="flex gap-3 mb-4 flex-wrap">
                 <div className="flex flex-1 min-w-[200px] gap-2">
                     <div className="relative flex-1">
@@ -163,6 +205,7 @@ export default function GoodDealsPage() {
                     )}
                 </button>
             </div>
+            )}
 
             {/* Filter Panel */}
             {isFilterOpen && (
