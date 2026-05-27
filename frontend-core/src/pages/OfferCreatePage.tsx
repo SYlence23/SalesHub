@@ -219,6 +219,7 @@ export default function OfferCreatePage() {
         imageUrl: localPlaceData.imageUrl || '',
     })
 
+    const [placeImagePreview, setPlaceImagePreview] = useState<string>('');
     const [isPlaceImageUploading, setIsPlaceImageUploading] = useState(false);
 
     const handlePlaceFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -309,10 +310,17 @@ export default function OfferCreatePage() {
         const loadOfferImages = async () => {
             const temp = await localforage.getItem('offerImages') || [];
             setImagePreviews((temp as File[]).map((image: File) => URL.createObjectURL(image)));
-        }
+        };
 
+        const loadPlaceImage = async () => {
+            const file = await localforage.getItem<File>('placeImage');
+            if (file) {
+                setPlaceImagePreview(URL.createObjectURL(file));
+            }
+        };
 
         loadOfferImages();
+        loadPlaceImage();
         fetchDependencies();
     }, []);
 
@@ -389,7 +397,22 @@ export default function OfferCreatePage() {
     const removeAllImages = async () => {
         await localforage.removeItem('offerImages');
         setImagePreviews([]);
-    }
+    };
+
+    const handlePlaceImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            const file = e.target.files[0];
+            await localforage.setItem('placeImage', file);
+            setPlaceImagePreview(URL.createObjectURL(file));
+            e.target.value = '';
+        }
+    };
+
+    const removePlaceImage = async () => {
+        await localforage.removeItem('placeImage');
+        setPlaceImagePreview('');
+        setPlaceForm(prev => ({ ...prev, imageUrl: '' }));
+    };
 
     useEffect(() => {
         localStorage.setItem('offerData', JSON.stringify(offerForm));
@@ -397,8 +420,9 @@ export default function OfferCreatePage() {
     }, [offerForm, placeForm])
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            removeAllImages();
+        const timer = setTimeout(async () => {
+            await removeAllImages();
+            await localforage.removeItem('placeImage');
             localStorage.removeItem('offerData');
             localStorage.removeItem('placeData');
         }, 180000);
@@ -457,6 +481,21 @@ export default function OfferCreatePage() {
                     throw new Error("Please select a valid address from the dropdown to get location coordinates.");
                 }
 
+                // Upload place image if one was selected
+                let placeImageUrl: string | undefined = undefined;
+                const storedPlaceImage = await localforage.getItem<File>('placeImage');
+                if (storedPlaceImage) {
+                    setIsPlaceImageUploading(true);
+                    try {
+                        const formData = new FormData();
+                        formData.append('file', storedPlaceImage);
+                        const res = await api.post<{ url: string }>('/File/uploadImage?prefix=place-images', formData);
+                        placeImageUrl = res.data.url;
+                    } finally {
+                        setIsPlaceImageUploading(false);
+                    }
+                }
+
                 const placeData: PlaceCreateDTO = {
                     name: placeForm.name,
                     description: placeForm.description,
@@ -465,7 +504,7 @@ export default function OfferCreatePage() {
                     latitude: currentLat,
                     longitude: currentLng,
                     address: placeForm.address || undefined,
-                    imageUrl: placeForm.imageUrl || undefined,
+                    imageUrl: placeImageUrl || undefined,
                 };
 
                 const placeRes = await api.post<{ id: number }>('/Places', placeData);
@@ -508,7 +547,8 @@ export default function OfferCreatePage() {
 
             localStorage.removeItem('offerData');
             localStorage.removeItem('placeData');
-            localforage.removeItem('offerImages');
+            await localforage.removeItem('offerImages');
+            await localforage.removeItem('placeImage');
 
             navigate('/offers');
         } catch (err: any) {
@@ -862,12 +902,12 @@ export default function OfferCreatePage() {
                             </div>
                             <div>
                                 <label className="block text-sm font-medium mb-2">Фото закладу</label>
-                                {placeForm.imageUrl ? (
+                                {placeImagePreview ? (
                                     <div className="relative w-40 h-40 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-700">
-                                        <img src={placeForm.imageUrl} className="w-full h-full object-cover" />
+                                        <img src={placeImagePreview} className="w-full h-full object-cover" alt="Place preview" />
                                         <button
                                             type="button"
-                                            onClick={() => setPlaceForm(prev => ({ ...prev, imageUrl: '' }))}
+                                            onClick={removePlaceImage}
                                             className="absolute top-2 right-2 p-1 bg-red-500 hover:bg-red-600 text-white rounded-full transition-colors"
                                         >
                                             <X className="w-4 h-4" />
@@ -876,37 +916,14 @@ export default function OfferCreatePage() {
                                 ) : (
                                     <label className="flex flex-col items-center justify-center w-40 h-40 border-2 border-zinc-300 border-dashed rounded-xl cursor-pointer bg-zinc-50 dark:hover:bg-zinc-800/50 dark:bg-zinc-900/50 hover:bg-zinc-100 dark:border-zinc-700 transition-all">
                                         <div className="flex flex-col items-center justify-center p-4 text-center">
-                                            {isPlaceImageUploading ? (
-                                                <Loader2 className="w-6 h-6 text-primary-500 animate-spin mb-1" />
-                                            ) : (
-                                                <ImagePlus className="w-6 h-6 text-zinc-400 mb-1" />
-                                            )}
-                                            <span className="text-xs text-zinc-500 font-medium">
-                                                {isPlaceImageUploading ? 'Завантаження...' : 'Додати фото'}
-                                            </span>
+                                            <ImagePlus className="w-6 h-6 text-zinc-400 mb-1" />
+                                            <span className="text-xs text-zinc-500 font-medium">Додати фото</span>
                                         </div>
-                                        <input 
-                                            type="file" 
-                                            className="hidden" 
-                                            accept="image/*" 
-                                            disabled={isPlaceImageUploading}
-                                            onChange={async (e) => {
-                                                if (e.target.files && e.target.files.length > 0) {
-                                                    setIsPlaceImageUploading(true);
-                                                    try {
-                                                        const file = e.target.files[0];
-                                                        const formData = new FormData();
-                                                        formData.append('file', file);
-                                                        const res = await api.post<{ url: string }>('/File/uploadImage?prefix=place-images', formData);
-                                                        setPlaceForm(prev => ({ ...prev, imageUrl: res.data.url }));
-                                                    } catch (err) {
-                                                        console.error("Failed to upload place image", err);
-                                                        setError("Не вдалося завантажити фото закладу.");
-                                                    } finally {
-                                                        setIsPlaceImageUploading(false);
-                                                    }
-                                                }
-                                            }} 
+                                        <input
+                                            type="file"
+                                            className="hidden"
+                                            accept="image/*"
+                                            onChange={handlePlaceImageChange}
                                         />
                                     </label>
                                 )}
