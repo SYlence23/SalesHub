@@ -20,7 +20,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchMode }) => {
     const [surname, setSurname] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [isStudent, setIsStudent] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
     const navigate = useNavigate();
@@ -34,7 +33,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchMode }) => {
             surname,
             email,
             password,
-            isStudent
+            isStudent: false
         };
         try {
             await api.post('/Auth/register', registerData);
@@ -120,17 +119,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchMode }) => {
                 />
             </div>
 
-            <label className="flex items-center gap-3 p-4 border border-zinc-200 dark:border-white/10 bg-white/50 dark:bg-zinc-800/50 rounded-xl cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
-                <input type="checkbox"
-                    className="w-5 h-5 rounded border-zinc-300 text-primary-500 focus:ring-primary-500 cursor-pointer"
-                    checked={isStudent}
-                    onChange={() => setIsStudent(!isStudent)}
-                />
-                <div className="flex flex-col">
-                    <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Ви є студентом?</span>
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400">Спеціальні пропозиції для студентів</span>
-                </div>
-            </label>
 
             <button type="submit" className="btn-primary w-full text-base py-3 mt-2">Зареєструватися</button>
 

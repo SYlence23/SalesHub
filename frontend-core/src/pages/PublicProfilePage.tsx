@@ -97,9 +97,7 @@ export default function PublicProfilePage() {
                             <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
                                 {profile.name} {profile.surname}
                             </h1>
-                            <span className="text-sm text-zinc-500 dark:text-zinc-400">
-                                {profile.category === 'Student' ? '🎓 Студент' : '👤 Користувач'}
-                            </span>
+
 
                             {/* Статистика */}
                             <div className="flex gap-6 mt-2">
