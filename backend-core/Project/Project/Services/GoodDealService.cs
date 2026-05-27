@@ -22,12 +22,12 @@ namespace SalesHub.Services
 
             if (archived == true)
             {
-                // Показати лише архівовані
+                // Показати лише архівовані (ті що вийшли з терміну або деактивовані)
                 query = _context.GoodDeals.AsNoTracking().Where(gd => gd.IsArchived);
             }
             else
             {
-                // За замовчуванням — лише активні, не архівовані
+                // Активні, ще не архівовані
                 query = _context.GoodDeals.AsNoTracking().Where(gd => gd.IsActive && !gd.IsArchived);
             }
 
@@ -185,17 +185,8 @@ namespace SalesHub.Services
             if (deal == null) return false;
 
             deal.IsActive = isActive;
-
-            if (!isActive)
-            {
-                // Деактивація — переміщуємо в архів
-                deal.IsArchived = true;
-            }
-            else
-            {
-                // Реактивація — витягуємо з архіву
-                deal.IsArchived = false;
-            }
+            // Деактивація — одразу переміщуємо в архів; реактивація — витягуємо з архіву
+            deal.IsArchived = !isActive;
 
             await _context.SaveChangesAsync();
             return true;

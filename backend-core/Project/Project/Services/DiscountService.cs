@@ -25,12 +25,12 @@ namespace SalesHub.Services
 
             if (archived == true)
             {
-                // Показати лише архівовані
+                // Показати лише архівовані (ті що вийшли з терміну або деактивовані)
                 query = _context.Offers.AsNoTracking().Where(o => o.IsArchived);
             }
             else
             {
-                // За замовчуванням — лише активні, не архівовані
+                // Активні, ще не архівовані
                 query = _context.Offers.AsNoTracking().Where(o => o.IsActive && !o.IsArchived);
             }
 
@@ -241,17 +241,8 @@ namespace SalesHub.Services
             if (offer == null) return false;
 
             offer.IsActive = isActive;
-
-            if (!isActive)
-            {
-                // Деактивація — переміщуємо в архів
-                offer.IsArchived = true;
-            }
-            else
-            {
-                // Реактивація — витягуємо з архіву
-                offer.IsArchived = false;
-            }
+            // Деактивація — одразу переміщуємо в архів; реактивація — витягуємо з архіву
+            offer.IsArchived = !isActive;
 
             await _context.SaveChangesAsync();
             return true;
