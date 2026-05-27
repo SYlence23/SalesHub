@@ -227,8 +227,8 @@ export default function UserProfilePage() {
     return (
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-            {/* ── Шапка профілю ─────────────────────────────────────────────── */}
-            <div className="glass-card p-8 mb-8 flex flex-col sm:flex-row items-center sm:items-start gap-6">
+            {/* ── Шапка профілю ─────────────────────────────────────── */}
+            <div className="glass-card p-5 sm:p-8 mb-8 flex flex-col sm:flex-row items-center sm:items-start gap-6">
                 <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-primary-500 to-orange-400 flex items-center justify-center text-white font-bold text-3xl shrink-0 shadow-lg">
                     {initials}
                 </div>
@@ -267,13 +267,12 @@ export default function UserProfilePage() {
                 </button>
             </div>
 
-            {/* ── Таби ──────────────────────────────────────────────────────── */}
-            <div className="flex gap-2 mb-8 border-b border-zinc-200 dark:border-zinc-700">
+            <div className="flex gap-1 mb-8 border-b border-zinc-200 dark:border-zinc-700 overflow-x-auto no-scrollbar">
                 {tabs.map(tab => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 transition-all -mb-px ${
+                        className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 transition-all -mb-px whitespace-nowrap shrink-0 ${
                             activeTab === tab.id
                                 ? 'border-primary-500 text-primary-600 dark:text-primary-400'
                                 : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200'

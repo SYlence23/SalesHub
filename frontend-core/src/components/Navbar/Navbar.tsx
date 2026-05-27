@@ -8,11 +8,11 @@ export default function Navbar() {
     const { isAuthenticated } = useAuth();
 
     const navLinks = [
-        { name: "Головна", path: "/", icon: Home },
-        { name: "Пропозиції", path: "/offers", icon: Tag },
-        { name: "Студентська вигода", path: "/good-deals", icon: Sparkles },
-        { name: "Заклади", path: "/places", icon: Store },
-        { name: "Карта", path: "/map", icon: MapIcon },
+        { name: "Головна", mobileLabel: "Головна", path: "/", icon: Home },
+        { name: "Пропозиції", mobileLabel: "Пропозиції", path: "/offers", icon: Tag },
+        { name: "Студентська вигода", mobileLabel: "Вигоди", path: "/good-deals", icon: Sparkles },
+        { name: "Заклади", mobileLabel: "Заклади", path: "/places", icon: Store },
+        { name: "Карта", mobileLabel: "Карта", path: "/map", icon: MapIcon },
     ];
 
 
@@ -85,7 +85,7 @@ export default function Navbar() {
                                 className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${isActive ? 'text-primary-500' : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'}`}
                             >
                                 <Icon size={22} strokeWidth={isActive ? 2.5 : 2} className={isActive ? 'drop-shadow-sm' : ''} />
-                                <span className={`text-[10px] font-medium ${isActive ? 'font-bold' : ''}`}>{link.name}</span>
+                                <span className={`text-[10px] font-medium ${isActive ? 'font-bold' : ''}`}>{link.mobileLabel}</span>
                             </Link>
                         );
                     })}

@@ -122,7 +122,7 @@ export default function OfferPage() {
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Header section */}
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div>
                     <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
                         {isArchived ? (
@@ -138,11 +138,11 @@ export default function OfferPage() {
                     </p>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 flex-wrap">
                     {!isArchived && (
                         <button
                             onClick={() => navigate('/offers/create')}
-                            className="btn-primary"
+                            className="btn-primary whitespace-nowrap"
                         >
                             Створити знижку
                         </button>
@@ -150,7 +150,7 @@ export default function OfferPage() {
                     <button
                         onClick={toggleArchive}
                         title={isArchived ? 'Повернутися до актуальних' : 'Переглянути архів'}
-                        className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm border transition-all active:scale-95 ${
+                        className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm border transition-all active:scale-95 whitespace-nowrap ${
                             isArchived
                                 ? 'bg-zinc-700 text-white border-zinc-600 hover:bg-zinc-600'
                                 : 'bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:border-zinc-400'
@@ -165,7 +165,7 @@ export default function OfferPage() {
                     {!isArchived && (
                         <button
                             onClick={() => setIsMobileDrawerOpen(true)}
-                            className="lg:hidden btn-secondary gap-2"
+                            className="lg:hidden btn-secondary gap-2 whitespace-nowrap"
                         >
                             <Filter className="w-5 h-5" />
                             <span>Фільтри</span>

@@ -673,10 +673,10 @@ export default function OfferCreatePage() {
                         {(imagePreviews.length < 8) && (<label className={`flex flex-col items-center justify-center w-full border-2 border-zinc-300 border-dashed rounded-lg cursor-pointer bg-zinc-50 dark:hover:bg-zinc-800/50 dark:bg-zinc-900/50 hover:bg-zinc-100 dark:border-zinc-700 transition-all ${imagePreviews.length > 0 ? 'h-32' : 'h-64'}`}>
                             <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                 <ImagePlus className={`${imagePreviews.length > 0 ? 'w-6 h-6 mb-2' : 'w-10 h-10 mb-3'} text-zinc-400`} />
-                                <p className={`mb-2 text-zinc-500 dark:text-zinc-400 ${imagePreviews.length > 0 ? 'text-sm' : ''}`}>
+                                <p className={`mb-2 text-zinc-500 dark:text-zinc-400 text-center ${imagePreviews.length > 0 ? 'text-sm' : ''}`}>
                                     <span className="font-semibold">Натисніть для завантаження</span> або перетягніть файли
                                 </p>
-                                {!imagePreviews.length && <p className="text-xs text-zinc-500 dark:text-zinc-400">PNG, JPG або WEBP (МАКС. 800x400px)</p>}
+                                {!imagePreviews.length && <p className="text-xs text-zinc-500 dark:text-zinc-400 text-center">PNG, JPG або WEBP (МАКС. 800x400px)</p>}
                             </div>
                             <input type="file" className="hidden" accept='image/*' multiple onChange={handleImageChange} />
                         </label>)}
@@ -707,7 +707,7 @@ export default function OfferCreatePage() {
                             name="description"
                             value={offerForm.description}
                             onChange={handleOfferFormChange}
-                            className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all min-h-[100px] resize-x"
+                            className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all min-h-[100px] resize-y"
                             placeholder="Опишіть вашу пропозицію..."
                         />
                     </div>
