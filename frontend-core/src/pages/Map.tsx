@@ -651,6 +651,7 @@ const MapPage: React.FC = () => {
                     options={{
                         styles: isDarkMode ? DARK_MAP_STYLES : undefined,
                         disableDefaultUI: false,
+                        streetViewControl: false,
                     }}
                 >
                     {/* User location marker */}
