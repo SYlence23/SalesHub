@@ -48,7 +48,7 @@ export default function PlacesPage() {
                     places.map(place => (
                         <Link key={place.id} to={`/places/${place.id}`} className="group relative block overflow-hidden rounded-2xl h-48 sm:h-56 shadow-[var(--shadow-glass)] dark:shadow-[var(--shadow-glass-dark)] transition-transform hover:-translate-y-1 border-2 border-primary-500">
                             {place.mainImageUrl ? (
-                                <div className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" style={{ backgroundImage: `url(${place.mainImageUrl})` }}>
+                                <div className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" style={{ backgroundImage: `url('${place.mainImageUrl}')` }}>
                                     <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
                                 </div>
                             ) : (
@@ -58,8 +58,8 @@ export default function PlacesPage() {
                             <div className={`relative h-full flex flex-col justify-center px-8 sm:px-12 z-10 ${place.mainImageUrl ? 'text-white' : 'text-zinc-900 dark:text-white'}`}>
                                 <h3 className="text-3xl font-bold mb-3 drop-shadow-md">{place.name}</h3>
                                 <div className="flex flex-col gap-2">
-                                    {place.addresses.length > 0 ? (
-                                        place.addresses.map((addr, idx) => (
+                                    {place.addresses && place.addresses.filter(addr => addr && addr.trim() !== "").length > 0 ? (
+                                        place.addresses.filter(addr => addr && addr.trim() !== "").map((addr, idx) => (
                                             <div key={idx} className={`flex items-center gap-2 ${place.mainImageUrl ? 'text-zinc-200' : 'text-zinc-600 dark:text-zinc-200'}`}>
                                                 <MapPin className="w-5 h-5 text-primary-400" />
                                                 <span className="text-base font-medium">{addr}</span>

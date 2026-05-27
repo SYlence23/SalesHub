@@ -65,7 +65,7 @@ export default function PlaceDetailsPage() {
             {/* Header Section */}
             <div className="relative rounded-3xl overflow-hidden shadow-2xl mb-12 min-h-[300px] flex items-end">
                 {place.mainImageUrl ? (
-                    <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${place.mainImageUrl})` }}>
+                    <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url('${place.mainImageUrl}')` }}>
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
                     </div>
                 ) : (

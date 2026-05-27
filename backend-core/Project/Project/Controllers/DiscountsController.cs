@@ -48,7 +48,21 @@ namespace Project.Controllers
             return Ok(new { Total = result.Total, Page = page, Data = result.Data });
         }
 
+        /// <summary>
+        /// Отримати найпопулярніші знижки, відсортовані за рейтингом (лайки - дизлайки).
+        /// </summary>
+        [HttpGet("popular")]
+        public async Task<IActionResult> GetPopular(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] int? categoryId = null)
+        {
+            if (page <= 0 || pageSize <= 0)
+                return BadRequest("Page and PageSize must be greater than zero.");
 
+            var result = await _discountService.GetAllAsync(page, pageSize, sortOption: "popular", categoryId: categoryId);
+            return Ok(new { Total = result.Total, Page = page, Data = result.Data });
+        }
         /// <summary>
         /// Отримати повну інформацію про одну знижку за її ID
         /// <summary>
