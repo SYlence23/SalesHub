@@ -39,12 +39,13 @@ namespace Project.Controllers
             [FromQuery] int pageSize = 10,
             [FromQuery] string? searchTerm = null,
             [FromQuery] int? categoryId = null,
-            [FromQuery] string? sortOption = null)
+            [FromQuery] string? sortOption = null,
+            [FromQuery] bool? archived = null)
         {
             if (page <= 0 || pageSize <= 0)
-                return BadRequest("Page and PageSize must be greater than zero.");
+                return BadRequest("Сторінка та розмір сторінки мають бути більше нуля.");
 
-            var result = await _discountService.GetAllAsync(page, pageSize, searchTerm, categoryId, sortOption);
+            var result = await _discountService.GetAllAsync(page, pageSize, searchTerm, categoryId, sortOption, archived);
             return Ok(new { Total = result.Total, Page = page, Data = result.Data });
         }
 
@@ -58,7 +59,7 @@ namespace Project.Controllers
             [FromQuery] int? categoryId = null)
         {
             if (page <= 0 || pageSize <= 0)
-                return BadRequest("Page and PageSize must be greater than zero.");
+                return BadRequest("Сторінка та розмір сторінки мають бути більше нуля.");
 
             var result = await _discountService.GetAllAsync(page, pageSize, sortOption: "popular", categoryId: categoryId);
             return Ok(new { Total = result.Total, Page = page, Data = result.Data });
@@ -80,11 +81,11 @@ namespace Project.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
-            if (id <= 0) return BadRequest("Invalid ID.");
+            if (id <= 0) return BadRequest("Невірний ID.");
 
             var offer = await _discountService.GetByIdAsync(id);
             if (offer == null)
-                return NotFound(new { message = $"Discount with ID {id} not found." });
+                return NotFound(new { message = $"Знижку з ID {id} не знайдено." });
 
             return Ok(offer);
         }
@@ -111,7 +112,7 @@ namespace Project.Controllers
 
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!int.TryParse(userIdString, out int userId)) 
-                return Unauthorized(new { message = "Invalid token or user ID" });
+                return Unauthorized(new { message = "Невірний токен або ID користувача" });
 
             try
             {
@@ -121,12 +122,12 @@ namespace Project.Controllers
             catch (ArgumentException ex)
             {
                 _logger.LogWarning(ex, "Validation error while creating offer");
-                return BadRequest(new ProblemDetails { Title = "Invalid input", Detail = ex.Message, Status = StatusCodes.Status400BadRequest });
+                return BadRequest(new ProblemDetails { Title = "Невірні дані", Detail = ex.Message, Status = StatusCodes.Status400BadRequest });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unexpected error while creating offer");
-                return StatusCode(500, new { message = "Error saving offer", details = ex.Message });
+                return StatusCode(500, new { message = "Помилка збереження знижки", details = ex.Message });
             }
         }
 
@@ -145,7 +146,7 @@ namespace Project.Controllers
             existingOffer.IsActive = dto.IsActive;
 
             if (existingOffer.NewPrice >= existingOffer.OldPrice)
-                return BadRequest("New price must be less than the old one.");
+                return BadRequest("Нова ціна має бути меншою за стару.");
             try
             {
                 await _context.SaveChangesAsync();
@@ -163,7 +164,7 @@ namespace Project.Controllers
         public async Task<IActionResult> UpdateStatus(int id, [FromQuery] bool isActive)
         {
             // Тільки валідація запиту
-            if (id <= 0) return BadRequest("Invalid ID");
+            if (id <= 0) return BadRequest("Невірний ID");
 
             // Виклик сервісу (вся робота там)
             var result = await _discountService.UpdateStatusAsync(id, isActive);
@@ -176,12 +177,24 @@ namespace Project.Controllers
             /// </summary>
             // [Authorize(Roles = "Admin")]
         [HttpDelete("{id:int}")]
+        [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
             var deleted = await _discountService.DeleteAsync(id);
-            if (!deleted) return NotFound(new { message = "Discount not found" });
+            if (!deleted) return NotFound(new { message = "Знижку не знайдено" });
 
             return NoContent();
+        }
+
+        /// <summary>
+        /// Архівує усі знижки з вичерпаним терміном дії
+        /// </summary>
+        [HttpPost("archive-expired")]
+        [Authorize]
+        public async Task<IActionResult> ArchiveExpired()
+        {
+            var count = await _discountService.ArchiveExpiredAsync();
+            return Ok(new { archivedCount = count, message = $"Архівовано {count} знижок." });
         }
 
         [HttpGet("{id:int}/reviews")]
@@ -200,7 +213,7 @@ namespace Project.Controllers
                 return Unauthorized();
 
             var review = await _discountService.AddOrUpdateReviewAsync(id, userId, dto);
-            if (review == null) return NotFound(new { message = "Discount not found" });
+            if (review == null) return NotFound(new { message = "Знижку не знайдено" });
 
             return Ok(review);
         }

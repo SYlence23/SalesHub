@@ -19,9 +19,20 @@ namespace SalesHub.Services
             _context = context;
         }
 
-        public async Task<(IEnumerable<OfferPreviewDto> Data, int Total)> GetAllAsync(int page, int pageSize, string? searchTerm = null, int? categoryId = null, string? sortOption = null)
+        public async Task<(IEnumerable<OfferPreviewDto> Data, int Total)> GetAllAsync(int page, int pageSize, string? searchTerm = null, int? categoryId = null, string? sortOption = null, bool? archived = null)
         {
-            var query = _context.Offers.AsNoTracking().Where(o => o.IsActive);
+            IQueryable<Offer> query;
+
+            if (archived == true)
+            {
+                // Показати лише архівовані
+                query = _context.Offers.AsNoTracking().Where(o => o.IsArchived);
+            }
+            else
+            {
+                // За замовчуванням — лише активні, не архівовані
+                query = _context.Offers.AsNoTracking().Where(o => o.IsActive && !o.IsArchived);
+            }
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
@@ -142,7 +153,7 @@ namespace SalesHub.Services
                     var coords = existingPlace.PlaceLocations.FirstOrDefault()?.Location?.Coordinates;
                     if (coords != null && !IsWithinLvivRegion(coords.Y, coords.X))
                     {
-                        throw new ArgumentException("The selected store is outside of the Lviv region boundaries.");
+                        throw new ArgumentException("Обраний заклад знаходиться за межами Львівської області.");
                     }
                 }
                 finalPlaceId = dto.PlaceId.Value;
@@ -189,12 +200,12 @@ namespace SalesHub.Services
             }
             else
             {
-                throw new ArgumentException("You must provide either an existing PlaceId or a NewPlaceName.");
+                throw new ArgumentException("Необхідно вказати існуючий PlaceId або назву нового закладу.");
             }
             // Validate DTO coordinates against Lviv region for offline offers with coordinates provided
             if (!string.IsNullOrWhiteSpace(dto.NewPlaceName) && !IsWithinLvivRegion(dto.Latitude, dto.Longitude))
             {
-                throw new ArgumentException("Offers can only be created for locations within Lviv and the Lviv region.");
+                throw new ArgumentException("Пропозиції можна створювати лише для локацій у межах Львова та Львівської області.");
             }
 
             var offer = new Offer
@@ -229,17 +240,40 @@ namespace SalesHub.Services
             var offer = await _context.Offers.FindAsync(id);
             if (offer == null) return false;
 
+            offer.IsActive = isActive;
+
             if (!isActive)
             {
-                _context.Offers.Remove(offer);
+                // Деактивація — переміщуємо в архів
+                offer.IsArchived = true;
             }
             else
             {
-                offer.IsActive = true;
+                // Реактивація — витягуємо з архіву
+                offer.IsArchived = false;
             }
 
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<int> ArchiveExpiredAsync()
+        {
+            var now = DateTime.UtcNow;
+            var expired = await _context.Offers
+                .Where(o => !o.IsArchived && (o.ValidTo != null && o.ValidTo < now))
+                .ToListAsync();
+
+            foreach (var offer in expired)
+            {
+                offer.IsArchived = true;
+                offer.IsActive = false;
+            }
+
+            if (expired.Any())
+                await _context.SaveChangesAsync();
+
+            return expired.Count;
         }
 
         public async Task<bool> DeleteAsync(int id)

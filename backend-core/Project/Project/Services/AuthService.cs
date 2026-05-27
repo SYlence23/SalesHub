@@ -25,7 +25,7 @@ namespace SalesHub.Services
             var userExists = await _userManager.FindByEmailAsync(model.Email);
 
             if (userExists != null)
-                return (false, "User with this email already exists.");
+                return (false, "Користувач з такою електронною адресою вже існує.");
 
             ApplicationUser user = new()
             {
@@ -39,7 +39,7 @@ namespace SalesHub.Services
 
             var result = await _userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
-                return (false, "User creation failed. Please check the details and try again.");
+                return (false, "Не вдалося створити користувача. Перевірте дані та спробуйте ще раз.");
 
             await _userManager.AddToRoleAsync(user, "User");
 

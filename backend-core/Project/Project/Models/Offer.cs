@@ -1,4 +1,4 @@
-﻿using SalesHub.Enums;
+using SalesHub.Enums;
 
 namespace SalesHub.Models
 {
@@ -8,6 +8,7 @@ namespace SalesHub.Models
         public string Title { get; set; }
         public string Description { get; set; }
         public bool IsActive { get; set; }
+        public bool IsArchived { get; set; } = false;
         public decimal NewPrice { get; set; }
         public decimal? OldPrice { get; set; }
         public DateTime? ValidFrom { get; set; }

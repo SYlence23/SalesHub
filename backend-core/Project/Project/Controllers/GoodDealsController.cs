@@ -28,12 +28,13 @@ namespace Project.Controllers
             [FromQuery] int pageSize = 10,
             [FromQuery] string? searchTerm = null,
             [FromQuery] int? categoryId = null,
-            [FromQuery] string? audience = null)
+            [FromQuery] string? audience = null,
+            [FromQuery] bool? archived = null)
         {
             if (page <= 0 || pageSize <= 0)
-                return BadRequest("Page and PageSize must be greater than zero.");
+                return BadRequest("Сторінка та розмір сторінки мають бути більше нуля.");
 
-            var result = await _goodDealService.GetAllAsync(page, pageSize, searchTerm, categoryId, audience);
+            var result = await _goodDealService.GetAllAsync(page, pageSize, searchTerm, categoryId, audience, archived);
             return Ok(new { Total = result.Total, Page = page, Data = result.Data });
         }
 
@@ -43,9 +44,9 @@ namespace Project.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
-            if (id <= 0) return BadRequest("Invalid ID.");
+            if (id <= 0) return BadRequest("Невірний ID.");
             var deal = await _goodDealService.GetByIdAsync(id);
-            if (deal == null) return NotFound(new { message = $"Good deal with ID {id} not found." });
+            if (deal == null) return NotFound(new { message = $"Пропозицію з ID {id} не знайдено." });
             return Ok(deal);
         }
 
@@ -67,7 +68,7 @@ namespace Project.Controllers
 
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!int.TryParse(userIdString, out int userId))
-                return Unauthorized(new { message = "Invalid token or user ID" });
+                return Unauthorized(new { message = "Невірний токен або ID користувача" });
 
             try
             {
@@ -82,7 +83,7 @@ namespace Project.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unexpected error while creating good deal");
-                return StatusCode(500, new { message = "Error saving good deal", details = ex.Message });
+                return StatusCode(500, new { message = "Помилка збереження пропозиції", details = ex.Message });
             }
         }
 
@@ -93,7 +94,7 @@ namespace Project.Controllers
         [Authorize]
         public async Task<IActionResult> UpdateStatus(int id, [FromQuery] bool isActive)
         {
-            if (id <= 0) return BadRequest("Invalid ID");
+            if (id <= 0) return BadRequest("Невірний ID");
             var result = await _goodDealService.UpdateStatusAsync(id, isActive);
             return result ? Ok() : NotFound();
         }
@@ -106,8 +107,19 @@ namespace Project.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             var deleted = await _goodDealService.DeleteAsync(id);
-            if (!deleted) return NotFound(new { message = "Good deal not found" });
+            if (!deleted) return NotFound(new { message = "Пропозицію не знайдено" });
             return NoContent();
+        }
+
+        /// <summary>
+        /// Архівує усі пропозиції з вичерпаним терміном дії
+        /// </summary>
+        [HttpPost("archive-expired")]
+        [Authorize]
+        public async Task<IActionResult> ArchiveExpired()
+        {
+            var count = await _goodDealService.ArchiveExpiredAsync();
+            return Ok(new { archivedCount = count, message = $"Архівовано {count} пропозицій." });
         }
     }
 }
