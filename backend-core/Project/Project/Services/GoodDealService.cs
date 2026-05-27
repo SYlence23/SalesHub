@@ -16,9 +16,20 @@ namespace SalesHub.Services
         }
 
         public async Task<(IEnumerable<GoodDealPreviewDto> Data, int Total)> GetAllAsync(
-            int page, int pageSize, string? searchTerm = null, int? categoryId = null, string? audience = null)
+            int page, int pageSize, string? searchTerm = null, int? categoryId = null, string? audience = null, bool? archived = null)
         {
-            var query = _context.GoodDeals.AsNoTracking().Where(gd => gd.IsActive);
+            IQueryable<GoodDeal> query;
+
+            if (archived == true)
+            {
+                // Показати лише архівовані (ті що вийшли з терміну або деактивовані)
+                query = _context.GoodDeals.AsNoTracking().Where(gd => gd.IsArchived);
+            }
+            else
+            {
+                // Активні, ще не архівовані
+                query = _context.GoodDeals.AsNoTracking().Where(gd => gd.IsActive && !gd.IsArchived);
+            }
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
@@ -102,7 +113,7 @@ namespace SalesHub.Services
             {
                 var existingPlace = await _context.Places.FindAsync(dto.PlaceId.Value);
                 if (existingPlace == null)
-                    throw new ArgumentException("Selected place not found.");
+                    throw new ArgumentException("Обраний заклад не знайдено.");
                 finalPlaceId = dto.PlaceId.Value;
             }
             else if (!string.IsNullOrWhiteSpace(dto.NewPlaceName))
@@ -139,7 +150,7 @@ namespace SalesHub.Services
             }
             else
             {
-                throw new ArgumentException("You must provide either an existing PlaceId or a NewPlaceName.");
+                throw new ArgumentException("Необхідно вказати існуючий PlaceId або назву нового закладу.");
             }
 
             var goodDeal = new GoodDeal
@@ -173,17 +184,31 @@ namespace SalesHub.Services
             var deal = await _context.GoodDeals.FindAsync(id);
             if (deal == null) return false;
 
-            if (!isActive)
-            {
-                _context.GoodDeals.Remove(deal);
-            }
-            else
-            {
-                deal.IsActive = true;
-            }
+            deal.IsActive = isActive;
+            // Деактивація — одразу переміщуємо в архів; реактивація — витягуємо з архіву
+            deal.IsArchived = !isActive;
 
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<int> ArchiveExpiredAsync()
+        {
+            var now = DateTime.UtcNow;
+            var expired = await _context.GoodDeals
+                .Where(gd => !gd.IsArchived && (gd.ValidTo != null && gd.ValidTo < now))
+                .ToListAsync();
+
+            foreach (var deal in expired)
+            {
+                deal.IsArchived = true;
+                deal.IsActive = false;
+            }
+
+            if (expired.Any())
+                await _context.SaveChangesAsync();
+
+            return expired.Count;
         }
 
         public async Task<bool> DeleteAsync(int id)

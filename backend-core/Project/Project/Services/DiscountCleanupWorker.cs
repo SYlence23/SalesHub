@@ -35,33 +35,42 @@ namespace SalesHub.Services
                         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                         var now = DateTime.UtcNow;
 
-                        // 1. Очистка Offers (Знижки)
+                        // 1. Архівація Offers (Знижки)
                         var expiredOffers = await context.Offers
-                            .Where(o => (o.ValidTo != null && o.ValidTo < now) || !o.IsActive)
+                            .Where(o => !o.IsArchived && o.ValidTo != null && o.ValidTo < now)
                             .ToListAsync(stoppingToken);
 
                         if (expiredOffers.Any())
                         {
-                            _logger.LogInformation("Found {Count} expired or inactive offers. Deleting...", expiredOffers.Count);
-                            context.Offers.RemoveRange(expiredOffers);
+                            _logger.LogInformation("Found {Count} expired offers. Archiving...", expiredOffers.Count);
+                            foreach (var offer in expiredOffers)
+                            {
+                                offer.IsArchived = true;
+                                offer.IsActive = false;
+                            }
                         }
 
-                        // 2. Очистка GoodDeals (Пропозиції)
+                        // 2. Архівація GoodDeals (Пропозиції)
                         var expiredGoodDeals = await context.GoodDeals
-                            .Where(gd => (gd.ValidTo != null && gd.ValidTo < now) || !gd.IsActive)
+                            .Where(gd => !gd.IsArchived && gd.ValidTo != null && gd.ValidTo < now)
                             .ToListAsync(stoppingToken);
 
                         if (expiredGoodDeals.Any())
                         {
-                            _logger.LogInformation("Found {Count} expired or inactive good deals. Deleting...", expiredGoodDeals.Count);
-                            context.GoodDeals.RemoveRange(expiredGoodDeals);
+                            _logger.LogInformation("Found {Count} expired good deals. Archiving...", expiredGoodDeals.Count);
+                            foreach (var deal in expiredGoodDeals)
+                            {
+                                deal.IsArchived = true;
+                                deal.IsActive = false;
+                            }
                         }
 
                         // Зберігаємо зміни у базі даних (якщо щось було знайдено)
                         if (expiredOffers.Any() || expiredGoodDeals.Any())
                         {
                             await context.SaveChangesAsync(stoppingToken);
-                            _logger.LogInformation("Successfully deleted expired/inactive discounts.");
+                            _logger.LogInformation("Successfully archived {OfferCount} offers and {DealCount} good deals.",
+                                expiredOffers.Count, expiredGoodDeals.Count);
                         }
                     }
                 }

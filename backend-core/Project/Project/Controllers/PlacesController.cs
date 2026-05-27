@@ -28,11 +28,11 @@ namespace Project.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
-            if (id <= 0) return BadRequest("Invalid ID.");
+            if (id <= 0) return BadRequest("Невірний ID.");
 
             var place = await _placeService.GetPlaceDetailsAsync(id);
             if (place == null)
-                return NotFound(new { message = $"Place with ID {id} not found." });
+                return NotFound(new { message = $"Заклад з ID {id} не знайдено." });
 
             
             return Ok(place);
@@ -46,7 +46,7 @@ namespace Project.Controllers
 
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!int.TryParse(userIdString, out int userId)) 
-                return Unauthorized(new { message = "Invalid token or user ID" });
+                return Unauthorized(new { message = "Невірний токен або ID користувача" });
 
             try
             {

@@ -798,6 +798,7 @@ const MapPage: React.FC = () => {
                         mapTypeControl: false,
                         fullscreenControl: false,
                         panControl: false,
+                        gestureHandling: 'greedy',
                     }}
                 >
                     {/* User location marker */}

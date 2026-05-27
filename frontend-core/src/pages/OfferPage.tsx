@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Filter, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Filter, ChevronLeft, ChevronRight, Archive, LayoutGrid } from 'lucide-react';
 import OfferCard, { type Offer } from '../components/Offer/OfferCard';
 import OfferSkeletonCard from '../components/Offer/OfferSkeletonCard';
 import OfferFilters, { type Category } from '../components/Offer/OfferFilters';
@@ -30,7 +30,14 @@ export default function OfferPage() {
     const selectedCategory = selectedCategoryStr ? parseInt(selectedCategoryStr, 10) : null;
     const sortOption = searchParams.get('sortOption') || 'newest';
     const page = parseInt(searchParams.get('page') || '1', 10);
+    const isArchived = searchParams.get('archived') === 'true';
     const totalPages = Math.ceil(totalOffers / 10);
+
+    const toggleArchive = () => {
+        const newParams = new URLSearchParams();
+        if (!isArchived) newParams.set('archived', 'true');
+        setSearchParams(newParams);
+    };
 
     const handleApplyFilters = (filters: { searchTerm: string; selectedCategory: number | null; sortOption: string }) => {
         const newParams = new URLSearchParams(searchParams);
@@ -85,9 +92,13 @@ export default function OfferPage() {
             try {
                 // Build query params for axios
                 const params = new URLSearchParams();
-                if (searchTerm) params.append('searchTerm', searchTerm);
-                if (selectedCategory !== null) params.append('categoryId', selectedCategory.toString());
-                if (sortOption) params.append('sortOption', sortOption);
+                if (!isArchived) {
+                    if (searchTerm) params.append('searchTerm', searchTerm);
+                    if (selectedCategory !== null) params.append('categoryId', selectedCategory.toString());
+                    if (sortOption) params.append('sortOption', sortOption);
+                } else {
+                    params.append('archived', 'true');
+                }
                 params.append('page', page.toString());
 
                 const response = await axios.get<ApiOfferResponse>(`/api/Discounts?${params.toString()}`);
@@ -106,38 +117,70 @@ export default function OfferPage() {
             }
         };
         fetchOffers();
-    }, [searchTerm, selectedCategory, sortOption, page]);
+    }, [searchTerm, selectedCategory, sortOption, page, isArchived]);
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Header section */}
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div>
                     <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
-                        Пошук <span className="text-primary-500">Знижок</span>
+                        {isArchived ? (
+                            <>Архів <span className="text-zinc-500">Знижок</span></>
+                        ) : (
+                            <>Пошук <span className="text-primary-500">Знижок</span></>
+                        )}
                     </h1>
                     <p className="text-zinc-500 dark:text-zinc-400">
-                        Відкривайте найкращі пропозиції та знижки.
+                        {isArchived
+                            ? 'Знижки з вичерпаним терміном дії.'
+                            : 'Відкривайте найкращі пропозиції та знижки.'}
                     </p>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 flex-wrap">
+                    {!isArchived && (
+                        <button
+                            onClick={() => navigate('/offers/create')}
+                            className="btn-primary whitespace-nowrap"
+                        >
+                            Створити знижку
+                        </button>
+                    )}
                     <button
-                        onClick={() => navigate('/offers/create')}
-                        className="btn-primary"
+                        onClick={toggleArchive}
+                        title={isArchived ? 'Повернутися до актуальних' : 'Переглянути архів'}
+                        className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm border transition-all active:scale-95 whitespace-nowrap ${
+                            isArchived
+                                ? 'bg-zinc-700 text-white border-zinc-600 hover:bg-zinc-600'
+                                : 'bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:border-zinc-400'
+                        }`}
                     >
-                        Створити знижку
+                        {isArchived
+                            ? <><LayoutGrid className="w-4 h-4" /> Актуальні</>
+                            : <><Archive className="w-4 h-4" /> Архів</>
+                        }
                     </button>
                     {/* Mobile Filter Toggle Button */}
-                    <button
-                        onClick={() => setIsMobileDrawerOpen(true)}
-                        className="lg:hidden btn-secondary gap-2"
-                    >
-                        <Filter className="w-5 h-5" />
-                        <span>Фільтри</span>
-                    </button>
+                    {!isArchived && (
+                        <button
+                            onClick={() => setIsMobileDrawerOpen(true)}
+                            className="lg:hidden btn-secondary gap-2 whitespace-nowrap"
+                        >
+                            <Filter className="w-5 h-5" />
+                            <span>Фільтри</span>
+                        </button>
+                    )}
                 </div>
             </div>
+
+            {/* Archive banner */}
+            {isArchived && (
+                <div className="flex items-center gap-3 px-4 py-3 mb-6 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 text-sm">
+                    <Archive className="w-4 h-4 shrink-0" />
+                    <span>Ви переглядаєте <strong>архів знижок</strong> — пропозиції з вичерпаним терміном дії.</span>
+                </div>
+            )}
 
             <div className="flex flex-col lg:flex-row gap-8">
                 {/* Filters Panel Component */}

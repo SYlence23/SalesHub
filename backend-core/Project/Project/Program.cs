@@ -101,6 +101,52 @@ app.UseAuthorization();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var connection = dbContext.Database.GetDbConnection();
+    await connection.OpenAsync();
+
+    // Створюємо таблицю історії міграцій якщо її немає
+    using (var cmd = connection.CreateCommand())
+    {
+        cmd.CommandText = """
+            CREATE EXTENSION IF NOT EXISTS postgis;
+            CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
+                "MigrationId" character varying(150) NOT NULL,
+                "ProductVersion" character varying(32) NOT NULL,
+                CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY ("MigrationId")
+            );
+            """;
+        await cmd.ExecuteNonQueryAsync();
+    }
+
+    // Якщо таблиця AspNetRoles вже існує, але запису про міграцію немає — вставляємо відомі застосовані міграції
+    var knownMigrations = new[]
+    {
+        ("20260526121413_initial", "9.0.4"),
+        ("20260526155524_singleOfferUpdate", "9.0.4"),
+        ("20260526164548_initial2", "9.0.4"),
+    };
+
+    foreach (var (migrationId, version) in knownMigrations)
+    {
+        using var checkCmd = connection.CreateCommand();
+        checkCmd.CommandText = $"SELECT COUNT(*) FROM \"__EFMigrationsHistory\" WHERE \"MigrationId\" = '{migrationId}'";
+        var count = (long)(await checkCmd.ExecuteScalarAsync() ?? 0L);
+
+        if (count == 0)
+        {
+            // Перевіряємо чи існують таблиці (initial міграція вже була застосована)
+            using var tableCheckCmd = connection.CreateCommand();
+            tableCheckCmd.CommandText = "SELECT COUNT(*) FROM information_schema.tables WHERE table_name = 'AspNetRoles'";
+            var tableExists = (long)(await tableCheckCmd.ExecuteScalarAsync() ?? 0L);
+
+            if (tableExists > 0)
+            {
+                using var insertCmd = connection.CreateCommand();
+                insertCmd.CommandText = $"INSERT INTO \"__EFMigrationsHistory\" (\"MigrationId\", \"ProductVersion\") VALUES ('{migrationId}', '{version}')";
+                await insertCmd.ExecuteNonQueryAsync();
+            }
+        }
+    }
 
     await dbContext.Database.MigrateAsync();
 

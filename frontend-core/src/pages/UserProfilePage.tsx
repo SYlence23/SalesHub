@@ -43,7 +43,6 @@ export default function UserProfilePage() {
     // Форма редагування профілю
     const [editName, setEditName] = useState('');
     const [editSurname, setEditSurname] = useState('');
-    const [editIsStudent, setEditIsStudent] = useState(false);
     const [profileMsg, setProfileMsg] = useState<{ text: string; ok: boolean } | null>(null);
     const [isSavingProfile, setIsSavingProfile] = useState(false);
 
@@ -63,7 +62,7 @@ export default function UserProfilePage() {
                 setProfile(res.data);
                 setEditName(res.data.name);
                 setEditSurname(res.data.surname);
-                setEditIsStudent(res.data.category === 'Student');
+
             } catch {
                 // Помилка автентифікації — axios interceptor перенаправить
             } finally {
@@ -180,9 +179,9 @@ export default function UserProfilePage() {
         setIsSavingProfile(true);
         setProfileMsg(null);
         try {
-            await api.put('/User/profile', { name: editName, surname: editSurname, isStudent: editIsStudent });
+            await api.put('/User/profile', { name: editName, surname: editSurname, isStudent: false });
             setProfileMsg({ text: 'Профіль успішно оновлено.', ok: true });
-            setProfile(prev => prev ? { ...prev, name: editName, surname: editSurname, category: editIsStudent ? 'Student' : 'NonStudent' } : prev);
+            setProfile(prev => prev ? { ...prev, name: editName, surname: editSurname } : prev);
         } catch (err: any) {
             setProfileMsg({ text: err.response?.data?.message || 'Update failed.', ok: false });
         } finally {
@@ -227,8 +226,8 @@ export default function UserProfilePage() {
     return (
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-            {/* ── Шапка профілю ─────────────────────────────────────────────── */}
-            <div className="glass-card p-8 mb-8 flex flex-col sm:flex-row items-center sm:items-start gap-6">
+            {/* ── Шапка профілю ─────────────────────────────────────── */}
+            <div className="glass-card p-5 sm:p-8 mb-8 flex flex-col sm:flex-row items-center sm:items-start gap-6">
                 <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-primary-500 to-orange-400 flex items-center justify-center text-white font-bold text-3xl shrink-0 shadow-lg">
                     {initials}
                 </div>
@@ -250,9 +249,7 @@ export default function UserProfilePage() {
                             <div className="flex flex-wrap gap-4 mt-2">
                                 <Stat label="Пропозицій" value={profile?.createdOffersCount ?? 0} />
                                 <Stat label="Збережено" value={profile?.savedOffersCount ?? 0} />
-                                <span className="text-sm text-zinc-400 dark:text-zinc-500">
-                                    {profile?.category === 'Student' ? '🎓 Студент' : '👤 Користувач'}
-                                </span>
+
                             </div>
                         </>
                     )}
@@ -267,13 +264,12 @@ export default function UserProfilePage() {
                 </button>
             </div>
 
-            {/* ── Таби ──────────────────────────────────────────────────────── */}
-            <div className="flex gap-2 mb-8 border-b border-zinc-200 dark:border-zinc-700">
+            <div className="flex gap-1 mb-8 border-b border-zinc-200 dark:border-zinc-700 overflow-x-auto no-scrollbar">
                 {tabs.map(tab => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 transition-all -mb-px ${
+                        className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 transition-all -mb-px whitespace-nowrap shrink-0 ${
                             activeTab === tab.id
                                 ? 'border-primary-500 text-primary-600 dark:text-primary-400'
                                 : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200'
@@ -514,16 +510,6 @@ export default function UserProfilePage() {
                                     required
                                     className="p-3 rounded-xl border border-zinc-200 dark:border-white/10 bg-white/50 dark:bg-zinc-800/50 focus:ring-2 focus:ring-primary-500 outline-none transition-all"
                                 />
-                            </div>
-                            <div className="flex items-center gap-3 py-2">
-                                <button
-                                    type="button"
-                                    onClick={() => setEditIsStudent(v => !v)}
-                                    className={`relative w-12 h-6 rounded-full transition-colors ${editIsStudent ? 'bg-primary-500' : 'bg-zinc-300 dark:bg-zinc-600'}`}
-                                >
-                                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${editIsStudent ? 'translate-x-6' : ''}`} />
-                                </button>
-                                <span className="text-sm text-zinc-700 dark:text-zinc-300">Я студент</span>
                             </div>
 
                             {profileMsg && (
