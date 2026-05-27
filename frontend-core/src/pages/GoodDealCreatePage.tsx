@@ -620,7 +620,7 @@ export default function GoodDealCreatePage() {
                     </div>
                 </div>
 
-                <div className={`glass-card p-6 rounded-2xl space-y-6 border-2 transition-all duration-300 ${
+                <div className={`glass-card p-6 rounded-2xl space-y-6 border-2 transition-all duration-300 relative z-20 ${
                     isNewPlace 
                         ? 'border-orange-400 !bg-orange-50/70 dark:!bg-orange-950/20' 
                         : 'border-orange-500'
