@@ -2,7 +2,7 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
 import usePlacesAutocomplete, { getGeocode, getLatLng } from 'use-places-autocomplete';
-import { X, ChevronLeft, ChevronRight, ExternalLink, MapPin, Clock, Tag, Store, Loader2 } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, ExternalLink, MapPin, Clock, Tag, Store, Loader2, Layers } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -17,6 +17,35 @@ interface MapMarker {
     longitude: number;
     markerColor?: string;
     categoryId: number;
+}
+
+interface MarkerCluster {
+    latitude: number;
+    longitude: number;
+    offers: MapMarker[];
+    markerColor?: string;
+    categoryId: number;
+}
+
+function clusterByLocation(markers: MapMarker[]): MarkerCluster[] {
+    const map = new Map<string, MapMarker[]>();
+    for (const m of markers) {
+        const key = `${m.latitude.toFixed(6)},${m.longitude.toFixed(6)}`;
+        if (!map.has(key)) map.set(key, []);
+        map.get(key)!.push(m);
+    }
+    return Array.from(map.values()).map(offers => ({
+        latitude: offers[0].latitude,
+        longitude: offers[0].longitude,
+        offers,
+        markerColor: offers[0].markerColor,
+        categoryId: offers[0].categoryId,
+    }));
+}
+
+function calcDiscountFromPrices(newPrice: number, oldPrice?: number) {
+    if (!oldPrice || oldPrice <= 0) return 0;
+    return Math.round(((oldPrice - newPrice) / oldPrice) * 100);
 }
 
 interface OfferDetail {
@@ -462,6 +491,98 @@ const PanelLoader: React.FC = () => (
     </div>
 );
 
+// ─── Cluster List Panel ───────────────────────────────────────────────────────
+
+const ClusterListPanel: React.FC<{
+    offers: MapMarker[];
+    onSelectOffer: (marker: MapMarker) => void;
+    onClose: () => void;
+}> = ({ offers, onSelectOffer, onClose }) => {
+    const storeName = offers[0]?.storeName ?? 'Заклад';
+
+    return (
+        <div className="flex flex-col h-full">
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-100 dark:border-zinc-800 flex-shrink-0 bg-white dark:bg-zinc-900">
+                <div className="flex items-center gap-2 min-w-0">
+                    <div className="flex items-center justify-center w-7 h-7 rounded-full bg-primary-100 dark:bg-primary-900/30 flex-shrink-0">
+                        <Layers className="w-4 h-4 text-primary-500" />
+                    </div>
+                    <div className="min-w-0">
+                        <p className="text-sm font-semibold text-zinc-900 dark:text-white truncate">{storeName}</p>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400">{offers.length} пропозиції в цьому місці</p>
+                    </div>
+                </div>
+                <button
+                    onClick={onClose}
+                    className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center transition-colors flex-shrink-0 ml-2"
+                    aria-label="Закрити"
+                >
+                    <X className="w-4 h-4 text-zinc-600 dark:text-zinc-300" />
+                </button>
+            </div>
+
+            {/* Offer list */}
+            <div className="flex-1 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800">
+                {offers.map((offer) => {
+                    const discount = calcDiscountFromPrices(offer.newPrice, offer.oldPrice);
+                    const imgSrc = offer.mainImageUrl
+                        ? (offer.mainImageUrl.startsWith('http') ? offer.mainImageUrl : `https://localhost:7094${offer.mainImageUrl}`)
+                        : 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=800&q=80';
+
+                    return (
+                        <button
+                            key={offer.id}
+                            onClick={() => onSelectOffer(offer)}
+                            className="w-full flex items-center gap-3 p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 transition-colors text-left group"
+                        >
+                            {/* Thumbnail */}
+                            <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 flex-shrink-0">
+                                <img
+                                    src={imgSrc}
+                                    alt={offer.title}
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                                    onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=800&q=80'; }}
+                                />
+                                {discount > 0 && (
+                                    <span className="absolute top-1 right-1 bg-red-500 text-white text-[9px] font-bold px-1 py-0.5 rounded shadow">
+                                        −{discount}%
+                                    </span>
+                                )}
+                            </div>
+
+                            {/* Info */}
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1.5 mb-0.5">
+                                    <span
+                                        className="w-2 h-2 rounded-full flex-shrink-0"
+                                        style={{ backgroundColor: offer.markerColor ?? '#6366f1' }}
+                                    />
+                                </div>
+                                <h4 className="font-semibold text-sm text-zinc-900 dark:text-white leading-snug line-clamp-2 mb-1.5">
+                                    {offer.title}
+                                </h4>
+                                <div className="flex items-baseline gap-1.5 flex-wrap">
+                                    <span className="text-base font-extrabold text-zinc-900 dark:text-white">
+                                        {offer.newPrice.toLocaleString('uk-UA')} ₴
+                                    </span>
+                                    {offer.oldPrice && offer.oldPrice > 0 && (
+                                        <span className="text-xs text-zinc-400 line-through">
+                                            {offer.oldPrice.toLocaleString('uk-UA')} ₴
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+
+                            <ChevronRight className="w-4 h-4 text-zinc-400 flex-shrink-0" />
+                        </button>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
+
 // ─── MapPage ──────────────────────────────────────────────────────────────────
 
 const MapPage: React.FC = () => {
@@ -494,6 +615,7 @@ const MapPage: React.FC = () => {
     const [isPanelLoading, setIsPanelLoading] = useState(false);
     const [selectedOffer, setSelectedOffer] = useState<OfferDetail | null>(null);
     const [activeImg, setActiveImg] = useState(0);
+    const [clusterOffers, setClusterOffers] = useState<MapMarker[] | null>(null);
 
     // Track global mouse position for tooltip
     useEffect(() => {
@@ -557,8 +679,8 @@ const MapPage: React.FC = () => {
     };
 
     // Hover handlers
-    const handleMarkerMouseOver = (marker: MapMarker) => {
-        setHoveredMarker(marker);
+    const handleMarkerMouseOver = (cluster: MarkerCluster) => {
+        setHoveredMarker(cluster.offers[0]);
         setTooltipPos({ x: mousePos.current.x, y: mousePos.current.y });
     };
     const handleMarkerMouseOut = () => {
@@ -570,6 +692,7 @@ const MapPage: React.FC = () => {
     const handleMarkerClick = async (marker: MapMarker) => {
         setHoveredMarker(null);
         setTooltipPos(null);
+        setClusterOffers(null);
         setIsPanelOpen(true);
         setIsPanelLoading(true);
         setSelectedOffer(null);
@@ -584,9 +707,23 @@ const MapPage: React.FC = () => {
         }
     };
 
+    const handleClusterClick = (cluster: MarkerCluster) => {
+        setHoveredMarker(null);
+        setTooltipPos(null);
+        if (cluster.offers.length === 1) {
+            handleMarkerClick(cluster.offers[0]);
+        } else {
+            setClusterOffers(cluster.offers);
+            setSelectedOffer(null);
+            setIsPanelOpen(true);
+            setIsPanelLoading(false);
+        }
+    };
+
     const closePanel = () => {
         setIsPanelOpen(false);
         setSelectedOffer(null);
+        setClusterOffers(null);
     };
 
     const handleStreetSelect = useCallback(({ lat, lng }: { lat: number; lng: number }) => {
@@ -624,6 +761,12 @@ const MapPage: React.FC = () => {
             activeImg={activeImg}
             setActiveImg={setActiveImg}
         />
+    ) : clusterOffers && clusterOffers.length > 1 ? (
+        <ClusterListPanel
+            offers={clusterOffers}
+            onSelectOffer={(marker) => handleMarkerClick(marker)}
+            onClose={closePanel}
+        />
     ) : null;
 
     return (
@@ -652,6 +795,9 @@ const MapPage: React.FC = () => {
                         styles: isDarkMode ? DARK_MAP_STYLES : undefined,
                         disableDefaultUI: false,
                         streetViewControl: false,
+                        mapTypeControl: false,
+                        fullscreenControl: false,
+                        panControl: false,
                     }}
                 >
                     {/* User location marker */}
@@ -662,27 +808,37 @@ const MapPage: React.FC = () => {
                         />
                     )}
 
-                    {/* Offer markers */}
-                    {markers.map((marker) => (
-                        <Marker
-                            key={marker.id}
-                            position={{ lat: marker.latitude, lng: marker.longitude }}
-                            onMouseOver={() => handleMarkerMouseOver(marker)}
-                            onMouseOut={handleMarkerMouseOut}
-                            onClick={() => handleMarkerClick(marker)}
-                            icon={marker.markerColor
-                                ? {
-                                    path: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z',
-                                    fillColor: marker.markerColor,
+                    {/* Offer markers — clustered by location */}
+                    {clusterByLocation(markers).map((cluster) => {
+                        const isMulti = cluster.offers.length > 1;
+                        const baseColor = cluster.markerColor ?? '#6366f1';
+                        return (
+                            <Marker
+                                key={`${cluster.latitude.toFixed(6)},${cluster.longitude.toFixed(6)}`}
+                                position={{ lat: cluster.latitude, lng: cluster.longitude }}
+                                onMouseOver={() => handleMarkerMouseOver(cluster)}
+                                onMouseOut={handleMarkerMouseOut}
+                                onClick={() => handleClusterClick(cluster)}
+                                label={isMulti ? {
+                                    text: cluster.offers.length.toString(),
+                                    color: '#FFFFFF',
+                                    fontWeight: 'bold',
+                                    fontSize: '11px',
+                                } : undefined}
+                                icon={{
+                                    path: isMulti
+                                        ? 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z'
+                                        : 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z',
+                                    fillColor: baseColor,
                                     fillOpacity: 1,
-                                    strokeWeight: 1,
-                                    strokeColor: '#FFFFFF',
-                                    scale: 1.5,
+                                    strokeWeight: isMulti ? 2.5 : 1,
+                                    strokeColor: isMulti ? '#FFFFFF' : '#FFFFFF',
+                                    scale: isMulti ? 1.9 : 1.5,
                                     anchor: new google.maps.Point(12, 22),
-                                }
-                                : undefined}
-                        />
-                    ))}
+                                }}
+                            />
+                        );
+                    })}
                 </GoogleMap>
             </div>
 
